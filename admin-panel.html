@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veracity Intelligence — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:   #080E1E;
+  --dark:   #0D1530;
+  --card:   #111827;
+  --blue:   #1240AB;
+  --cyan:   #00D4FF;
+  --white:  #FFFFFF;
+  --gray:   #8896B3;
+  --border: rgba(255,255,255,0.07);
+  --green:  #00E676;
+  --red:    #FF4D4D;
+  --yellow: #FFB800;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--navy); color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  display: flex; min-height: 100vh;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: var(--dark);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
+}
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo-main { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; }
+.sidebar-logo-sub { font-size: 9px; letter-spacing: 5px; color: var(--red); font-weight: 700; margin-top: -1px; }
+.sidebar-badge {
+  margin: 12px 16px 0;
+  background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.2);
+  padding: 8px 14px; font-size: 10px; font-weight: 700;
+  color: var(--red); letter-spacing: 3px; text-align: center;
+}
+.sidebar-nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 2px; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; cursor: pointer;
+  font-size: 14px; font-weight: 500; color: var(--gray);
+  transition: all 0.15s; border-radius: 4px; text-decoration: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+.nav-item.active { background: rgba(255,77,77,0.08); color: var(--red); border-left: 2px solid var(--red); }
+.nav-item-icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto; background: var(--red); color: #fff;
+  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 10px;
+}
+.sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
+.admin-info { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
+.admin-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--red); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.admin-name { font-size: 13px; font-weight: 600; }
+.admin-role { font-size: 11px; color: var(--red); font-weight: 700; letter-spacing: 1px; }
+
+/* ── MAIN ── */
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+.topbar {
+  background: var(--dark); border-bottom: 1px solid var(--border);
+  padding: 0 36px; height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 5;
+}
+.topbar-title { font-size: 16px; font-weight: 700; }
+.topbar-sub { font-size: 12px; color: var(--gray); margin-top: 1px; }
+.topbar-right { display: flex; gap: 12px; align-items: center; }
+.api-status {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(0,230,118,0.07); border: 1px solid rgba(0,230,118,0.2);
+  padding: 8px 14px; font-size: 12px; color: var(--green); font-weight: 600;
+}
+.api-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.content { padding: 32px 36px; flex: 1; }
+
+/* ── STATS ── */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 32px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border); padding: 24px;
+  position: relative; overflow: hidden;
+}
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.stat-card.cyan::before  { background: var(--cyan); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.yellow::before{ background: var(--yellow); }
+.stat-card.red::before   { background: var(--red); }
+.sc-label { font-size: 11px; color: var(--gray); letter-spacing: 2px; font-weight: 600; }
+.sc-val { font-family: 'Bebas Neue', sans-serif; font-size: 44px; line-height:1; margin: 8px 0 4px; letter-spacing:1px; }
+.sc-val.cyan   { color: var(--cyan); }
+.sc-val.green  { color: var(--green); }
+.sc-val.yellow { color: var(--yellow); }
+.sc-val.red    { color: var(--red); }
+.sc-sub { font-size: 12px; color: var(--gray); }
+.sc-trend { font-size: 12px; margin-top: 6px; }
+.trend-up   { color: var(--green); }
+.trend-down { color: var(--red); }
+
+/* ── REVENUE ── */
+.revenue-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+.chart-section { background: var(--card); border: 1px solid var(--border); padding: 24px; }
+.cs-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.cs-title { font-size: 15px; font-weight: 700; }
+.cs-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+.cs-total { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--green); letter-spacing: 1px; }
+.cs-total-label { font-size: 11px; color: var(--gray); letter-spacing: 2px; }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+.bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bar {
+  width: 100%; background: rgba(0,212,255,0.15); border-top: 2px solid var(--cyan);
+  transition: all 0.3s; cursor: pointer;
+}
+.bar:hover { background: rgba(0,212,255,0.25); }
+.bar.current { background: rgba(0,230,118,0.15); border-top-color: var(--green); }
+.bar-label { font-size: 10px; color: var(--gray); }
+
+.plan-dist { background: var(--card); border: 1px solid var(--border); padding: 24px; }
+.pd-header { margin-bottom: 24px; }
+.pd-title { font-size: 15px; font-weight: 700; }
+.pd-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+.pd-item { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.pd-item-top { display: flex; justify-content: space-between; font-size: 13px; }
+.pd-item-name { color: var(--white); font-weight: 600; }
+.pd-item-val { color: var(--gray); }
+.pd-bar-track { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.pd-bar-fill { height: 100%; border-radius: 2px; }
+
+/* ── CLIENTS TABLE ── */
+.clients-section { background: var(--card); border: 1px solid var(--border); margin-bottom: 24px; }
+.clients-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ch-title { font-size: 15px; font-weight: 700; }
+.ch-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+.ch-right { display: flex; gap: 10px; }
+.btn-sm {
+  font-size: 12px; font-weight: 700; letter-spacing: 1px;
+  padding: 8px 18px; border: none; cursor: pointer; transition: all 0.2s;
+}
+.btn-sm-cyan { background: var(--cyan); color: var(--navy); }
+.btn-sm-ghost { background: transparent; color: var(--gray); border: 1px solid var(--border); }
+.btn-sm-ghost:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+
+.search-bar {
+  padding: 14px 24px; border-bottom: 1px solid var(--border);
+}
+.search-input {
+  width: 320px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); color: var(--white);
+  padding: 9px 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none;
+}
+.search-input:focus { border-color: rgba(0,212,255,0.3); }
+.search-input::placeholder { color: var(--gray); }
+
+.clients-table { width: 100%; border-collapse: collapse; }
+.clients-table th {
+  padding: 11px 20px; font-size: 11px; font-weight: 700;
+  color: var(--gray); letter-spacing: 2px; text-align: left;
+  border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);
+}
+.clients-table td {
+  padding: 15px 20px; font-size: 13px; color: var(--gray);
+  border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle;
+}
+.clients-table tr:hover td { background: rgba(255,255,255,0.015); }
+.clients-table td.name { color: var(--white); font-weight: 600; }
+
+.plan-tag {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  padding: 3px 10px;
+}
+.plan-starter  { background: rgba(136,150,179,0.1); color: var(--gray); border: 1px solid rgba(136,150,179,0.2); }
+.plan-growth   { background: rgba(0,212,255,0.1); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
+.plan-scale    { background: rgba(255,184,0,0.1); color: var(--yellow); border: 1px solid rgba(255,184,0,0.2); }
+.plan-enterprise{ background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+
+.status-active {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--green); font-size: 11px; font-weight: 700;
+}
+.status-active::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); }
+.status-inactive { color: var(--red); }
+.status-inactive::before { background: var(--red); }
+
+.credits-cell { font-family: monospace; font-size: 12px; }
+.credits-low { color: var(--yellow); }
+.credits-ok  { color: var(--green); }
+
+.action-btn {
+  background: transparent; color: var(--gray);
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  padding: 5px 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+}
+.action-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+
+/* ── BOTTOM ROW ── */
+.bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.mini-section { background: var(--card); border: 1px solid var(--border); padding: 20px 24px; }
+.ms-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+.ms-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px;
+}
+.ms-item:last-child { border-bottom: none; }
+.ms-label { color: var(--gray); }
+.ms-val { font-weight: 700; color: var(--white); }
+.ms-val.green { color: var(--green); }
+.ms-val.yellow { color: var(--yellow); }
+.ms-val.red { color: var(--red); }
+
+.activity-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.activity-item:last-child { border-bottom: none; }
+.act-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.act-text { font-size: 13px; color: var(--gray); line-height: 1.5; }
+.act-text strong { color: var(--white); }
+.act-time { font-size: 11px; color: rgba(136,150,179,0.5); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-main">VERACITY</div>
+    <div class="sidebar-logo-sub">ADMIN PANEL</div>
+  </div>
+  <div class="sidebar-badge">ACESSO RESTRITO</div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" href="#"><span class="nav-item-icon">📊</span> Dashboard</a>
+    <a class="nav-item" href="#"><span class="nav-item-icon">👥</span> Clientes <span class="nav-badge">48</span></a>
+    <a class="nav-item" href="#"><span class="nav-item-icon">💳</span> Pagamentos</a>
+    <a class="nav-item" href="#"><span class="nav-item-icon">⚡</span> Uso da API</a>
+    <a class="nav-item" href="#"><span class="nav-item-icon">📦</span> Planos</a>
+    <a class="nav-item" href="#"><span class="nav-item-icon">🔔</span> Alertas <span class="nav-badge" style="background:var(--yellow);color:#000;">2</span></a>
+    <a class="nav-item" href="#"><span class="nav-item-icon">⚙️</span> Configurações</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-info">
+      <div class="admin-avatar">VT</div>
+      <div>
+        <div class="admin-name">Veracity Tech</div>
+        <div class="admin-role">ADMINISTRADOR</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Dashboard Administrativo</div>
+      <div class="topbar-sub">Visão geral da plataforma · Atualizado agora</div>
+    </div>
+    <div class="topbar-right">
+      <div class="api-status">
+        <div class="api-dot"></div>
+        API Casa dos Dados: Online
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card green">
+        <div class="sc-label">RECEITA DO MÊS</div>
+        <div class="sc-val green">38.265</div>
+        <div class="sc-sub">R$ 38.265,00 em abril</div>
+        <div class="sc-trend trend-up">↑ +23% vs março</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="sc-label">CLIENTES ATIVOS</div>
+        <div class="sc-val cyan">48</div>
+        <div class="sc-sub">3 novos esta semana</div>
+        <div class="sc-trend trend-up">↑ +6 vs mês anterior</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="sc-label">CONSULTAS API (MÊS)</div>
+        <div class="sc-val yellow">24.8K</div>
+        <div class="sc-sub">24.812 consultas realizadas</div>
+        <div class="sc-trend" style="color:var(--gray);">Saldo: 75.188 restantes</div>
+      </div>
+      <div class="stat-card red">
+        <div class="sc-label">CUSTO CASA DOS DADOS</div>
+        <div class="sc-val red">1.240</div>
+        <div class="sc-sub">R$ 1.240,00 no mês</div>
+        <div class="sc-trend trend-up" style="color:var(--green);">Margem: R$ 37.025</div>
+      </div>
+    </div>
+
+    <!-- REVENUE ROW -->
+    <div class="revenue-row">
+      <div class="chart-section">
+        <div class="cs-header">
+          <div>
+            <div class="cs-title">Receita Mensal</div>
+            <div class="cs-sub">Últimos 6 meses</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="cs-total-label">TOTAL ACUMULADO</div>
+            <div class="cs-total">R$ 142.890</div>
+          </div>
+        </div>
+        <div class="bar-chart">
+          <div class="bar-wrap">
+            <div class="bar" style="height:35%"></div>
+            <div class="bar-label">NOV</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:45%"></div>
+            <div class="bar-label">DEZ</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:52%"></div>
+            <div class="bar-label">JAN</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:68%"></div>
+            <div class="bar-label">FEV</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:80%"></div>
+            <div class="bar-label">MAR</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar current" style="height:100%"></div>
+            <div class="bar-label" style="color:var(--green);">ABR</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="plan-dist">
+        <div class="pd-header">
+          <div class="pd-title">Distribuição de Planos</div>
+          <div class="pd-sub">48 clientes ativos</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-top">
+            <span class="pd-item-name">Growth</span>
+            <span class="pd-item-val">22 clientes · R$ 17.534</span>
+          </div>
+          <div class="pd-bar-track">
+            <div class="pd-bar-fill" style="width:46%;background:var(--cyan);"></div>
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-top">
+            <span class="pd-item-name">Scale</span>
+            <span class="pd-item-val">14 clientes · R$ 20.958</span>
+          </div>
+          <div class="pd-bar-track">
+            <div class="pd-bar-fill" style="width:29%;background:var(--yellow);"></div>
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-top">
+            <span class="pd-item-name">Starter</span>
+            <span class="pd-item-val">8 clientes · R$ 3.176</span>
+          </div>
+          <div class="pd-bar-track">
+            <div class="pd-bar-fill" style="width:17%;background:var(--gray);"></div>
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-top">
+            <span class="pd-item-name">Enterprise</span>
+            <span class="pd-item-val">4 clientes · R$ 11.988</span>
+          </div>
+          <div class="pd-bar-track">
+            <div class="pd-bar-fill" style="width:8%;background:var(--green);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTS TABLE -->
+    <div class="clients-section">
+      <div class="clients-header">
+        <div>
+          <div class="ch-title">Clientes</div>
+          <div class="ch-sub">48 clientes ativos na plataforma</div>
+        </div>
+        <div class="ch-right">
+          <button class="btn-sm btn-sm-ghost">↓ EXPORTAR</button>
+          <button class="btn-sm btn-sm-cyan">+ NOVO CLIENTE</button>
+        </div>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" type="text" placeholder="Buscar cliente por nome ou e-mail...">
+      </div>
+      <table class="clients-table">
+        <thead>
+          <tr>
+            <th>CLIENTE</th>
+            <th>PLANO</th>
+            <th>CRÉDITOS</th>
+            <th>RECEITA/MÊS</th>
+            <th>MEMBRO DESDE</th>
+            <th>STATUS</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name">Agência Impulso Digital<br><span style="font-size:11px;font-weight:400;color:var(--gray);">contato@impulsodigital.com</span></td>
+            <td><span class="plan-tag plan-enterprise">ENTERPRISE</span></td>
+            <td class="credits-cell"><span class="credits-ok">18.240 / 20.000</span></td>
+            <td style="color:var(--green);font-weight:700;">R$ 2.997</td>
+            <td>Jan 2025</td>
+            <td><span class="status-active">ATIVO</span></td>
+            <td><button class="action-btn">VER</button></td>
+          </tr>
+          <tr>
+            <td class="name">Consultoria Vendas Pro<br><span style="font-size:11px;font-weight:400;color:var(--gray);">admin@vendaspro.com.br</span></td>
+            <td><span class="plan-tag plan-scale">SCALE</span></td>
+            <td class="credits-cell"><span class="credits-ok">3.820 / 5.000</span></td>
+            <td style="color:var(--yellow);font-weight:700;">R$ 1.497</td>
+            <td>Fev 2025</td>
+            <td><span class="status-active">ATIVO</span></td>
+            <td><button class="action-btn">VER</button></td>
+          </tr>
+          <tr>
+            <td class="name">João Ferreira MEI<br><span style="font-size:11px;font-weight:400;color:var(--gray);">joao@ferreira.com</span></td>
+            <td><span class="plan-tag plan-growth">GROWTH</span></td>
+            <td class="credits-cell"><span class="credits-ok">1.847 / 2.000</span></td>
+            <td style="color:var(--cyan);font-weight:700;">R$ 797</td>
+            <td>Abr 2025</td>
+            <td><span class="status-active">ATIVO</span></td>
+            <td><button class="action-btn">VER</button></td>
+          </tr>
+          <tr>
+            <td class="name">MKT Solutions LTDA<br><span style="font-size:11px;font-weight:400;color:var(--gray);">oi@mktsolutions.com</span></td>
+            <td><span class="plan-tag plan-growth">GROWTH</span></td>
+            <td class="credits-cell"><span class="credits-low">120 / 2.000</span></td>
+            <td style="color:var(--cyan);font-weight:700;">R$ 797</td>
+            <td>Mar 2025</td>
+            <td><span class="status-active">ATIVO</span></td>
+            <td><button class="action-btn">VER</button></td>
+          </tr>
+          <tr>
+            <td class="name">Carlos Mendes Autônomo<br><span style="font-size:11px;font-weight:400;color:var(--gray);">carlos@email.com</span></td>
+            <td><span class="plan-tag plan-starter">STARTER</span></td>
+            <td class="credits-cell"><span class="credits-ok">380 / 500</span></td>
+            <td style="color:var(--gray);font-weight:700;">R$ 397</td>
+            <td>Mar 2025</td>
+            <td><span class="status-active">ATIVO</span></td>
+            <td><button class="action-btn">VER</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+      <div class="mini-section">
+        <div class="ms-title">Saldo API · Casa dos Dados</div>
+        <div class="ms-item">
+          <span class="ms-label">Saldo disponível</span>
+          <span class="ms-val green">75.188 consultas</span>
+        </div>
+        <div class="ms-item">
+          <span class="ms-label">Consumido este mês</span>
+          <span class="ms-val">24.812 consultas</span>
+        </div>
+        <div class="ms-item">
+          <span class="ms-label">Custo acumulado</span>
+          <span class="ms-val red">R$ 1.240,00</span>
+        </div>
+        <div class="ms-item">
+          <span class="ms-label">Previsão de uso</span>
+          <span class="ms-val yellow">~32.000 até o fim do mês</span>
+        </div>
+        <div class="ms-item">
+          <span class="ms-label">Recomendação de recarga</span>
+          <span class="ms-val green">Saldo suficiente</span>
+        </div>
+      </div>
+
+      <div class="mini-section">
+        <div class="ms-title">Atividade Recente</div>
+        <div class="activity-item">
+          <div class="act-dot" style="background:var(--green);"></div>
+          <div>
+            <div class="act-text"><strong>Agência Impulso Digital</strong> exportou 500 empresas · SP</div>
+            <div class="act-time">há 12 minutos</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="act-dot" style="background:var(--cyan);"></div>
+          <div>
+            <div class="act-text"><strong>Novo cliente</strong> ativou plano Growth · João Ferreira</div>
+            <div class="act-time">há 2 horas</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="act-dot" style="background:var(--yellow);"></div>
+          <div>
+            <div class="act-text"><strong>MKT Solutions</strong> com créditos baixos · 120 restantes</div>
+            <div class="act-time">há 3 horas</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="act-dot" style="background:var(--green);"></div>
+          <div>
+            <div class="act-text"><strong>Pagamento recebido</strong> R$ 2.997 · Impulso Digital</div>
+            <div class="act-time">Hoje 09:14</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

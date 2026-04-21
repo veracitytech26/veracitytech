@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veracity Intelligence — Painel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:   #080E1E;
+  --dark:   #0D1530;
+  --card:   #111827;
+  --blue:   #1240AB;
+  --mid:    #1E56D4;
+  --cyan:   #00D4FF;
+  --white:  #FFFFFF;
+  --gray:   #8896B3;
+  --border: rgba(255,255,255,0.07);
+  --green:  #00E676;
+  --red:    #FF4D4D;
+  --yellow: #FFB800;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--navy); color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  display: flex; min-height: 100vh;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: var(--dark);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  padding: 28px 24px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo-main {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 3px; color: var(--white);
+}
+.sidebar-logo-sub {
+  font-size: 9px; letter-spacing: 5px; color: var(--cyan);
+  font-weight: 700; margin-top: -1px;
+}
+
+.sidebar-plan {
+  margin: 16px 16px 0;
+  background: rgba(0,212,255,0.07);
+  border: 1px solid rgba(0,212,255,0.2);
+  padding: 12px 14px;
+}
+.sp-label { font-size: 10px; color: var(--cyan); letter-spacing: 3px; font-weight: 700; }
+.sp-name { font-size: 15px; font-weight: 700; color: var(--white); margin-top: 2px; }
+
+.sidebar-nav {
+  flex: 1; padding: 20px 12px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; cursor: pointer;
+  font-size: 14px; font-weight: 500; color: var(--gray);
+  transition: all 0.15s; border-radius: 4px;
+  text-decoration: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+.nav-item.active {
+  background: rgba(0,212,255,0.08);
+  color: var(--cyan);
+  border-left: 2px solid var(--cyan);
+}
+.nav-item-icon { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--border);
+}
+.user-info {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+}
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--white);
+  flex-shrink: 0;
+}
+.user-name { font-size: 13px; font-weight: 600; color: var(--white); }
+.user-email { font-size: 11px; color: var(--gray); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: 240px; flex: 1;
+  display: flex; flex-direction: column;
+}
+
+.topbar {
+  background: var(--dark);
+  border-bottom: 1px solid var(--border);
+  padding: 0 36px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 5;
+}
+
+.topbar-title { font-size: 16px; font-weight: 700; color: var(--white); }
+.topbar-sub { font-size: 12px; color: var(--gray); margin-top: 1px; }
+
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+
+.credits-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(0,212,255,0.07);
+  border: 1px solid rgba(0,212,255,0.2);
+  padding: 8px 16px;
+}
+.cb-label { font-size: 11px; color: var(--gray); }
+.cb-val { font-size: 15px; font-weight: 700; color: var(--cyan); }
+
+/* ── CONTENT ── */
+.content { padding: 32px 36px; flex: 1; }
+
+/* ── STATS CARDS ── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 24px;
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.stat-card.blue::before  { background: var(--cyan); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.yellow::before{ background: var(--yellow); }
+.stat-card.red::before   { background: var(--red); }
+
+.sc-label { font-size: 11px; color: var(--gray); letter-spacing: 2px; font-weight: 600; }
+.sc-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 44px; line-height: 1; margin: 8px 0 4px;
+  letter-spacing: 1px;
+}
+.sc-val.blue   { color: var(--cyan); }
+.sc-val.green  { color: var(--green); }
+.sc-val.yellow { color: var(--yellow); }
+.sc-val.red    { color: var(--red); }
+.sc-sub { font-size: 12px; color: var(--gray); }
+
+/* ── SEARCH SECTION ── */
+.search-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.search-header {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.sh-title { font-size: 15px; font-weight: 700; color: var(--white); }
+.sh-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+
+.search-body { padding: 24px 28px; }
+
+.filters-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 20px;
+}
+
+.filter-group label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: var(--gray); letter-spacing: 2px; margin-bottom: 8px;
+}
+
+.filter-group select,
+.filter-group input {
+  width: 100%; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); color: var(--white);
+  padding: 10px 14px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.filter-group select:focus,
+.filter-group input:focus { border-color: rgba(0,212,255,0.4); }
+
+.filter-group select option { background: var(--dark); }
+
+.filters-row2 {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 24px;
+}
+
+.toggle-group { display: flex; flex-direction: column; gap: 8px; }
+.toggle-label { font-size: 11px; font-weight: 700; color: var(--gray); letter-spacing: 2px; }
+
+.toggle {
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+}
+.toggle input[type="checkbox"] { display: none; }
+.toggle-track {
+  width: 40px; height: 22px; background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border); border-radius: 11px;
+  position: relative; transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle-track::after {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--gray); top: 2px; left: 2px;
+  transition: all 0.2s;
+}
+.toggle input:checked + .toggle-track {
+  background: rgba(0,212,255,0.2);
+  border-color: rgba(0,212,255,0.4);
+}
+.toggle input:checked + .toggle-track::after {
+  background: var(--cyan); left: 20px;
+}
+.toggle-text { font-size: 13px; color: var(--gray); }
+
+.search-actions {
+  display: flex; gap: 12px; align-items: center;
+}
+
+.btn-search {
+  background: var(--cyan); color: var(--navy);
+  font-size: 14px; font-weight: 700; letter-spacing: 1px;
+  padding: 13px 36px; border: none; cursor: pointer;
+  transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+}
+.btn-search:hover { background: #00A8CC; }
+.btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-clear {
+  background: transparent; color: var(--gray);
+  font-size: 14px; font-weight: 500;
+  padding: 13px 20px; border: 1px solid var(--border); cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-clear:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+
+.search-count {
+  margin-left: auto;
+  font-size: 13px; color: var(--gray);
+}
+.search-count strong { color: var(--cyan); }
+
+/* ── RESULTS ── */
+.results-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.results-header {
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.rh-left { display: flex; align-items: center; gap: 16px; }
+.rh-title { font-size: 14px; font-weight: 700; color: var(--white); }
+.rh-count {
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.2);
+  color: var(--cyan); font-size: 12px; font-weight: 700;
+  padding: 3px 10px; letter-spacing: 1px;
+}
+
+.btn-export {
+  background: var(--green); color: var(--navy);
+  font-size: 13px; font-weight: 700; letter-spacing: 1px;
+  padding: 10px 24px; border: none; cursor: pointer;
+  transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+}
+.btn-export:hover { background: #00C060; }
+.btn-export:disabled { opacity: 0.4; cursor: not-allowed; background: var(--gray); }
+
+.results-table { width: 100%; border-collapse: collapse; }
+.results-table th {
+  padding: 12px 20px; font-size: 11px; font-weight: 700;
+  color: var(--gray); letter-spacing: 2px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.results-table td {
+  padding: 14px 20px; font-size: 13px; color: var(--gray);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+.results-table tr:hover td { background: rgba(255,255,255,0.02); }
+.results-table td.name { color: var(--white); font-weight: 600; }
+.results-table td.cnpj { font-family: monospace; font-size: 12px; }
+
+.badge-email {
+  display: inline-block;
+  background: rgba(0,230,118,0.1);
+  border: 1px solid rgba(0,230,118,0.2);
+  color: var(--green); font-size: 10px; font-weight: 700;
+  padding: 2px 8px; letter-spacing: 1px;
+}
+.badge-phone {
+  display: inline-block;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.2);
+  color: var(--cyan); font-size: 10px; font-weight: 700;
+  padding: 2px 8px; letter-spacing: 1px; margin-left: 4px;
+}
+
+/* Loading state */
+.loading {
+  display: none; padding: 60px 28px; text-align: center;
+}
+.loading.show { display: block; }
+.loading-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid rgba(0,212,255,0.2);
+  border-top-color: var(--cyan);
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p { font-size: 14px; color: var(--gray); }
+
+.empty-state {
+  padding: 60px 28px; text-align: center;
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-text { font-size: 15px; color: var(--gray); }
+
+/* ── HISTORY ── */
+.history-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  margin-top: 24px;
+}
+
+.history-header {
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+}
+.hh-title { font-size: 14px; font-weight: 700; color: var(--white); }
+
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th {
+  padding: 10px 20px; font-size: 11px; font-weight: 700;
+  color: var(--gray); letter-spacing: 2px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.history-table td {
+  padding: 13px 20px; font-size: 13px; color: var(--gray);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.history-table td:first-child { color: var(--white); font-weight: 500; }
+
+.status-done {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--green); font-size: 12px; font-weight: 600;
+}
+.status-done::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+}
+
+.btn-redownload {
+  background: transparent; color: var(--cyan);
+  font-size: 12px; font-weight: 700; letter-spacing: 1px;
+  padding: 6px 14px; border: 1px solid rgba(0,212,255,0.3); cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-redownload:hover { background: rgba(0,212,255,0.08); }
+
+/* ── CREDITS BAR ── */
+.credits-bar-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 20px 28px;
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 28px;
+}
+
+.cbs-label { font-size: 12px; color: var(--gray); font-weight: 600; letter-spacing: 1px; white-space: nowrap; }
+.cbs-bar-wrap { flex: 1; }
+.cbs-bar-track {
+  height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden;
+}
+.cbs-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  transition: width 0.5s ease;
+}
+.cbs-numbers { font-size: 13px; color: var(--white); font-weight: 700; white-space: nowrap; }
+.cbs-numbers span { color: var(--gray); font-weight: 400; }
+
+.btn-upgrade {
+  background: transparent; color: var(--cyan);
+  font-size: 12px; font-weight: 700; letter-spacing: 1px;
+  padding: 9px 20px; border: 1px solid rgba(0,212,255,0.3); cursor: pointer;
+  white-space: nowrap; transition: all 0.2s;
+}
+.btn-upgrade:hover { background: rgba(0,212,255,0.08); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-main">VERACITY</div>
+    <div class="sidebar-logo-sub">INTELLIGENCE</div>
+  </div>
+
+  <div class="sidebar-plan">
+    <div class="sp-label">PLANO ATUAL</div>
+    <div class="sp-name">Growth</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item active" href="#">
+      <span class="nav-item-icon">⚡</span> Nova Busca
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-item-icon">📋</span> Histórico
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-item-icon">💳</span> Créditos
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-item-icon">⚙️</span> Configurações
+    </a>
+    <a class="nav-item" href="#" style="margin-top:auto; color: var(--red);">
+      <span class="nav-item-icon">↩</span> Sair
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">JF</div>
+      <div>
+        <div class="user-name">João Ferreira</div>
+        <div class="user-email">joao@empresa.com</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Nova Busca</div>
+      <div class="topbar-sub">Filtre e exporte empresas segmentadas</div>
+    </div>
+    <div class="topbar-right">
+      <div class="credits-badge">
+        <span class="cb-label">CRÉDITOS</span>
+        <span class="cb-val" id="credit-display">1.847</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="sc-label">CRÉDITOS DISPONÍVEIS</div>
+        <div class="sc-val blue">1.847</div>
+        <div class="sc-sub">de 2.000 do plano</div>
+      </div>
+      <div class="stat-card green">
+        <div class="sc-label">EXPORTAÇÕES NO MÊS</div>
+        <div class="sc-val green">3</div>
+        <div class="sc-sub">153 empresas exportadas</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="sc-label">PLANO ATIVO</div>
+        <div class="sc-val yellow" style="font-size:28px;padding-top:8px;">GROWTH</div>
+        <div class="sc-sub">Renova em 18/05/2025</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="sc-label">MEMBRO DESDE</div>
+        <div class="sc-val blue" style="font-size:28px;padding-top:8px;">ABR 25</div>
+        <div class="sc-sub">1 mês de plataforma</div>
+      </div>
+    </div>
+
+    <!-- CREDITS BAR -->
+    <div class="credits-bar-section">
+      <div class="cbs-label">USO DO PLANO</div>
+      <div class="cbs-bar-wrap">
+        <div class="cbs-bar-track">
+          <div class="cbs-bar-fill" style="width: 7.6%"></div>
+        </div>
+      </div>
+      <div class="cbs-numbers">1.847 <span>de 2.000 créditos</span></div>
+      <button class="btn-upgrade">FAZER UPGRADE</button>
+    </div>
+
+    <!-- SEARCH SECTION -->
+    <div class="search-section">
+      <div class="search-header">
+        <div>
+          <div class="sh-title">Filtros de Busca</div>
+          <div class="sh-sub">Configure os filtros para encontrar as empresas certas</div>
+        </div>
+      </div>
+      <div class="search-body">
+
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>ESTADO (UF)</label>
+            <select id="f-estado">
+              <option value="">Todos os estados</option>
+              <option value="SP">São Paulo</option>
+              <option value="RJ">Rio de Janeiro</option>
+              <option value="MG">Minas Gerais</option>
+              <option value="RS">Rio Grande do Sul</option>
+              <option value="PR">Paraná</option>
+              <option value="SC">Santa Catarina</option>
+              <option value="BA">Bahia</option>
+              <option value="GO">Goiás</option>
+              <option value="PE">Pernambuco</option>
+              <option value="CE">Ceará</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>CIDADE</label>
+            <input type="text" id="f-cidade" placeholder="Ex: São Paulo">
+          </div>
+          <div class="filter-group">
+            <label>NICHO / SEGMENTO</label>
+            <select id="f-nicho">
+              <option value="">Todos os segmentos</option>
+              <option value="comercio">Comércio</option>
+              <option value="servicos">Serviços</option>
+              <option value="industria">Indústria</option>
+              <option value="saude">Saúde</option>
+              <option value="educacao">Educação</option>
+              <option value="tecnologia">Tecnologia</option>
+              <option value="alimentacao">Alimentação</option>
+              <option value="construcao">Construção</option>
+              <option value="transporte">Transporte</option>
+              <option value="beleza">Beleza e Estética</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filters-row2">
+          <div class="filter-group">
+            <label>PORTE DA EMPRESA</label>
+            <select id="f-porte">
+              <option value="">Todos os portes</option>
+              <option value="MEI">MEI</option>
+              <option value="ME">Microempresa</option>
+              <option value="EPP">Pequeno Porte</option>
+              <option value="MEDIO">Médio Porte</option>
+              <option value="GRANDE">Grande Porte</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>QUANTIDADE DE EMPRESAS</label>
+            <select id="f-qtd">
+              <option value="50">50 empresas</option>
+              <option value="100">100 empresas</option>
+              <option value="250">250 empresas</option>
+              <option value="500" selected>500 empresas</option>
+              <option value="1000">1.000 empresas</option>
+            </select>
+          </div>
+          <div class="toggle-group">
+            <div class="toggle-label">COM E-MAIL</div>
+            <label class="toggle">
+              <input type="checkbox" id="f-email" checked>
+              <div class="toggle-track"></div>
+              <span class="toggle-text">Somente com e-mail</span>
+            </label>
+          </div>
+          <div class="toggle-group">
+            <div class="toggle-label">COM CELULAR</div>
+            <label class="toggle">
+              <input type="checkbox" id="f-celular">
+              <div class="toggle-track"></div>
+              <span class="toggle-text">Somente com celular</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <button class="btn-search" id="btn-buscar" onclick="buscar()">
+            ⚡ BUSCAR EMPRESAS
+          </button>
+          <button class="btn-clear" onclick="limparFiltros()">LIMPAR</button>
+          <div class="search-count" id="search-count" style="display:none;">
+            Encontradas: <strong id="count-num">0</strong> empresas
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-section">
+      <div class="results-header">
+        <div class="rh-left">
+          <div class="rh-title">Resultados</div>
+          <div class="rh-count" id="result-badge" style="display:none;">0 empresas</div>
+        </div>
+        <button class="btn-export" id="btn-export" disabled onclick="exportar()">
+          ↓ EXPORTAR EXCEL
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>Buscando empresas na base de dados...</p>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">Configure os filtros acima e clique em <strong style="color:var(--white)">Buscar Empresas</strong> para ver os resultados.</div>
+      </div>
+
+      <!-- Table -->
+      <div id="results-table-wrap" style="display:none; overflow-x:auto;">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>RAZÃO SOCIAL</th>
+              <th>CNPJ</th>
+              <th>CIDADE / UF</th>
+              <th>SEGMENTO</th>
+              <th>CONTATOS</th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="history-section">
+      <div class="history-header">
+        <div class="hh-title">Histórico de Exportações</div>
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>BUSCA</th>
+            <th>DATA</th>
+            <th>EMPRESAS</th>
+            <th>CRÉDITOS USADOS</th>
+            <th>STATUS</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Clínicas · São Paulo · SP</td>
+            <td>12/04/2025</td>
+            <td>100</td>
+            <td>100</td>
+            <td><span class="status-done">CONCLUÍDO</span></td>
+            <td><button class="btn-redownload">↓ BAIXAR</button></td>
+          </tr>
+          <tr>
+            <td>Academias · Rio de Janeiro · RJ</td>
+            <td>08/04/2025</td>
+            <td>53</td>
+            <td>53</td>
+            <td><span class="status-done">CONCLUÍDO</span></td>
+            <td><button class="btn-redownload">↓ BAIXAR</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ── DEMO DATA ──
+const DEMO_EMPRESAS = [
+  { nome: "CLINICA SAUDE TOTAL LTDA", cnpj: "12.345.678/0001-90", cidade: "São Paulo", uf: "SP", segmento: "Saúde", email: true, cel: true },
+  { nome: "ACADEMIA FIT PRIME ME", cnpj: "23.456.789/0001-01", cidade: "Rio de Janeiro", uf: "RJ", segmento: "Beleza e Estética", email: true, cel: false },
+  { nome: "RESTAURANTE BOM SABOR LTDA", cnpj: "34.567.890/0001-12", cidade: "Belo Horizonte", uf: "MG", segmento: "Alimentação", email: true, cel: true },
+  { nome: "TECH SOLUTIONS BRASIL SA", cnpj: "45.678.901/0001-23", cidade: "São Paulo", uf: "SP", segmento: "Tecnologia", email: true, cel: false },
+  { nome: "CONSTRUTORA NOVA ERA ME", cnpj: "56.789.012/0001-34", cidade: "Curitiba", uf: "PR", segmento: "Construção", email: false, cel: true },
+  { nome: "ESCOLA DE IDIOMAS LINGUA VIVA", cnpj: "67.890.123/0001-45", cidade: "Porto Alegre", uf: "RS", segmento: "Educação", email: true, cel: true },
+  { nome: "FARMACIA SAUDE E VIDA LTDA", cnpj: "78.901.234/0001-56", cidade: "Salvador", uf: "BA", segmento: "Saúde", email: true, cel: false },
+  { nome: "OFICINA MECANICA RAPIDA ME", cnpj: "89.012.345/0001-67", cidade: "Goiânia", uf: "GO", segmento: "Serviços", email: false, cel: true },
+  { nome: "DISTRIBUIDORA CENTRO SUL LTDA", cnpj: "90.123.456/0001-78", cidade: "Florianópolis", uf: "SC", segmento: "Comércio", email: true, cel: true },
+  { nome: "CONSULTORIA DIGITAL ATIVA EPP", cnpj: "01.234.567/0001-89", cidade: "Recife", uf: "PE", segmento: "Tecnologia", email: true, cel: true },
+];
+
+let currentResults = [];
+let credits = 1847;
+
+function buscar() {
+  const btn = document.getElementById('btn-buscar');
+  btn.disabled = true;
+  btn.textContent = 'Buscando...';
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-table-wrap').style.display = 'none';
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('search-count').style.display = 'none';
+  document.getElementById('result-badge').style.display = 'none';
+  document.getElementById('btn-export').disabled = true;
+
+  setTimeout(() => {
+    document.getElementById('loading').classList.remove('show');
+
+    const qtd = parseInt(document.getElementById('f-qtd').value);
+    const soEmail = document.getElementById('f-email').checked;
+    const soCelular = document.getElementById('f-celular').checked;
+
+    // Filter demo data
+    let results = [...DEMO_EMPRESAS];
+    if (soEmail) results = results.filter(e => e.email);
+    if (soCelular) results = results.filter(e => e.cel);
+
+    // Repeat to fill quantity (demo)
+    while (results.length < Math.min(qtd, 10)) {
+      results = [...results, ...DEMO_EMPRESAS];
+    }
+    results = results.slice(0, Math.min(qtd, 10));
+    currentResults = results;
+
+    renderResults(results);
+
+    btn.disabled = false;
+    btn.innerHTML = '⚡ BUSCAR EMPRESAS';
+  }, 1800);
+}
+
+function renderResults(data) {
+  const tbody = document.getElementById('results-tbody');
+  tbody.innerHTML = '';
+
+  data.forEach((e, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--gray);font-size:12px;">${String(i+1).padStart(2,'0')}</td>
+      <td class="name">${e.nome}</td>
+      <td class="cnpj">${e.cnpj}</td>
+      <td>${e.cidade} · ${e.uf}</td>
+      <td>${e.segmento}</td>
+      <td>
+        ${e.email ? '<span class="badge-email">E-MAIL</span>' : ''}
+        ${e.cel ? '<span class="badge-phone">CELULAR</span>' : ''}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('results-table-wrap').style.display = 'block';
+
+  const n = data.length;
+  document.getElementById('search-count').style.display = 'flex';
+  document.getElementById('count-num').textContent = n.toLocaleString('pt-BR');
+  document.getElementById('result-badge').style.display = 'inline-block';
+  document.getElementById('result-badge').textContent = n + ' empresas';
+  document.getElementById('btn-export').disabled = false;
+}
+
+function exportar() {
+  const qtd = currentResults.length;
+  if (qtd === 0) return;
+
+  // CSV export
+  const header = ['Razão Social', 'CNPJ', 'Cidade', 'UF', 'Segmento', 'Tem Email', 'Tem Celular'];
+  const rows = currentResults.map(e => [
+    e.nome, e.cnpj, e.cidade, e.uf, e.segmento,
+    e.email ? 'Sim' : 'Não', e.cel ? 'Sim' : 'Não'
+  ]);
+
+  const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'veracity-intelligence-leads.csv'; a.click();
+
+  // Deduct credits
+  credits -= qtd;
+  document.getElementById('credit-display').textContent = credits.toLocaleString('pt-BR');
+  alert(`✓ ${qtd} empresas exportadas! ${qtd} créditos utilizados.`);
+}
+
+function limparFiltros() {
+  document.getElementById('f-estado').value = '';
+  document.getElementById('f-cidade').value = '';
+  document.getElementById('f-nicho').value = '';
+  document.getElementById('f-porte').value = '';
+  document.getElementById('f-qtd').value = '500';
+  document.getElementById('f-email').checked = true;
+  document.getElementById('f-celular').checked = false;
+  document.getElementById('results-table-wrap').style.display = 'none';
+  document.getElementById('empty-state').style.display = 'block';
+  document.getElementById('search-count').style.display = 'none';
+  document.getElementById('result-badge').style.display = 'none';
+  document.getElementById('btn-export').disabled = true;
+  currentResults = [];
+}
+</script>
+</body>
+</html>

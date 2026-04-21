@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veracity Intelligence — Inteligência que gera clientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #080E1E;
+    --dark:   #0D1530;
+    --blue:   #1240AB;
+    --mid:    #1E56D4;
+    --cyan:   #00D4FF;
+    --cyan2:  #00A8CC;
+    --white:  #FFFFFF;
+    --off:    #F0F4FF;
+    --gray:   #8896B3;
+    --border: rgba(255,255,255,0.08);
+    --card:   rgba(255,255,255,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: 0.4;
+  }
+
+  /* ── GRID LINES ── */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(8,14,30,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    display: flex; flex-direction: column;
+  }
+  .nav-logo-main {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 3px; color: var(--white);
+  }
+  .nav-logo-sub {
+    font-size: 10px; letter-spacing: 6px; color: var(--cyan);
+    font-weight: 600; margin-top: -2px;
+  }
+
+  .nav-links { display: flex; gap: 32px; align-items: center; flex-wrap: nowrap; }
+  .nav-links a {
+    font-size: 13px; font-weight: 500; color: var(--gray);
+    text-decoration: none; letter-spacing: 0.5px;
+    transition: color 0.2s; white-space: nowrap;
+  }
+  .nav-links a:hover { color: var(--white); }
+
+  .nav-cta {
+    background: var(--cyan); color: var(--navy) !important;
+    padding: 10px 24px; font-weight: 700 !important;
+    font-size: 13px !important; letter-spacing: 1px;
+    transition: opacity 0.2s !important;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* ── SECTIONS ── */
+  section { position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 140px 60px 100px;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 900px; height: 900px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(18,64,171,0.25) 0%, transparent 65%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid rgba(0,212,255,0.3);
+    background: rgba(0,212,255,0.06);
+    color: var(--cyan); font-size: 12px; font-weight: 600;
+    letter-spacing: 4px; padding: 10px 24px;
+    margin-bottom: 48px; animation: fadeUp 0.8s ease forwards;
+  }
+
+  .hero-tag::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--cyan); animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 10vw, 130px);
+    line-height: 0.95; letter-spacing: 2px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.8s 0.1s ease forwards;
+  }
+
+  .hero h1 .line-cyan { color: var(--cyan); }
+  .hero h1 .line-dim { color: rgba(255,255,255,0.2); }
+
+  .hero-sub {
+    font-size: 20px; font-weight: 400; color: var(--gray);
+    max-width: 600px; margin: 0 auto 52px;
+    line-height: 1.7; animation: fadeUp 0.8s 0.2s ease forwards;
+  }
+
+  .hero-sub strong { color: var(--white); font-weight: 600; }
+
+  .hero-actions {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.3s ease forwards;
+  }
+
+  .btn-primary {
+    background: var(--cyan); color: var(--navy);
+    font-size: 15px; font-weight: 700; letter-spacing: 1px;
+    padding: 18px 48px; border: none; cursor: pointer;
+    transition: all 0.2s; text-decoration: none; display: inline-block;
+  }
+  .btn-primary:hover { background: var(--cyan2); transform: translateY(-2px); }
+
+  .btn-ghost {
+    background: transparent; color: var(--white);
+    font-size: 15px; font-weight: 500;
+    padding: 18px 48px; border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
+
+  .hero-stats {
+    display: flex; gap: 60px; justify-content: center;
+    margin-top: 80px; flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.4s ease forwards;
+    padding: 0 40px;
+  }
+
+  .hero-stat { text-align: center; padding: 0 20px; border-right: 1px solid rgba(255,255,255,0.08); }
+  .hero-stat:last-child { border-right: none; }
+  .hero-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px; color: var(--white); letter-spacing: 2px;
+    line-height: 1;
+  }
+  .hero-stat-num span { color: var(--cyan); }
+  .hero-stat-label { font-size: 11px; color: var(--gray); letter-spacing: 1px; margin-top: 4px; white-space: nowrap; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── PROBLEMA ── */
+  .problema {
+    padding: 120px 60px;
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; color: var(--cyan);
+    letter-spacing: 6px; margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 0.95; letter-spacing: 2px; margin-bottom: 24px;
+  }
+
+  .problema-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 60px; margin-top: 80px; align-items: center;
+  }
+
+  .problema-left { }
+
+  .problema-list { display: flex; flex-direction: column; gap: 0; }
+
+  .problema-item {
+    display: flex; align-items: flex-start; gap: 24px;
+    padding: 28px 0; border-bottom: 1px solid var(--border);
+  }
+  .problema-item:first-child { border-top: 1px solid var(--border); }
+
+  .problema-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px; color: rgba(255,255,255,0.1);
+    letter-spacing: 2px; line-height: 1; flex-shrink: 0; width: 52px;
+  }
+
+  .problema-text strong {
+    display: block; font-size: 18px; font-weight: 700;
+    color: var(--white); margin-bottom: 6px;
+  }
+  .problema-text span { font-size: 14px; color: var(--gray); }
+
+  .problema-right {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 48px; position: relative; overflow: hidden;
+  }
+
+  .problema-right::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+  }
+
+  .calc-preview-label {
+    font-size: 11px; font-weight: 700; color: var(--cyan);
+    letter-spacing: 4px; margin-bottom: 32px;
+  }
+
+  .calc-preview-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 0; border-bottom: 1px solid var(--border);
+  }
+  .calc-preview-item:last-child { border-bottom: none; }
+
+  .cpi-label { font-size: 14px; color: var(--gray); }
+  .cpi-val { font-size: 20px; font-weight: 700; color: var(--white); }
+  .cpi-val.red { color: #FF4D4D; }
+  .cpi-val.green { color: #00E676; }
+
+  .calc-preview-total {
+    margin-top: 24px; padding: 20px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.2);
+    text-align: center;
+  }
+  .cpt-label { font-size: 12px; color: var(--cyan); letter-spacing: 2px; margin-bottom: 8px; }
+  .cpt-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px; color: var(--cyan); letter-spacing: 2px;
+  }
+
+  /* ── ROI CALCULATOR ── */
+  .calculator {
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 120px 60px;
+  }
+
+  .calc-inner { max-width: 1100px; margin: 0 auto; }
+
+  .calc-header { text-align: center; margin-bottom: 72px; }
+  .calc-header p { font-size: 18px; color: var(--gray); margin-top: 16px; }
+
+  .calc-body {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 48px; align-items: start;
+  }
+
+  .calc-inputs { display: flex; flex-direction: column; gap: 32px; }
+
+  .calc-field label {
+    display: flex; justify-content: space-between;
+    font-size: 13px; font-weight: 600; color: var(--gray);
+    letter-spacing: 1px; margin-bottom: 14px;
+  }
+  .calc-field label span { color: var(--cyan); font-size: 18px; font-weight: 700; }
+
+  .calc-field input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%; height: 4px;
+    background: rgba(255,255,255,0.1);
+    outline: none; border-radius: 2px;
+  }
+  .calc-field input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--cyan); cursor: pointer;
+    box-shadow: 0 0 12px rgba(0,212,255,0.5);
+  }
+
+  .calc-result {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 44px; position: sticky; top: 100px;
+  }
+
+  .calc-result::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+  }
+
+  .cr-title {
+    font-size: 12px; font-weight: 700; color: var(--cyan);
+    letter-spacing: 4px; margin-bottom: 32px;
+  }
+
+  .cr-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .cr-row:last-of-type { border-bottom: none; }
+  .cr-label { font-size: 14px; color: var(--gray); }
+  .cr-val { font-size: 16px; font-weight: 700; color: var(--white); }
+  .cr-val.loss { color: #FF4D4D; }
+  .cr-val.gain { color: #00E676; }
+
+  .cr-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .cr-highlight {
+    background: rgba(0,230,118,0.06);
+    border: 1px solid rgba(0,230,118,0.2);
+    padding: 24px; text-align: center; margin-top: 24px;
+  }
+  .crh-label { font-size: 11px; color: #00E676; letter-spacing: 4px; margin-bottom: 10px; }
+  .crh-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px; color: #00E676; letter-spacing: 2px; line-height: 1;
+  }
+  .crh-sub { font-size: 13px; color: var(--gray); margin-top: 8px; }
+
+  .cr-btn {
+    display: block; width: 100%; background: var(--cyan);
+    color: var(--navy); font-size: 15px; font-weight: 700;
+    padding: 18px; border: none; cursor: pointer;
+    margin-top: 24px; letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .cr-btn:hover { background: var(--cyan2); }
+
+  /* ── COMO FUNCIONA ── */
+  .como {
+    padding: 120px 60px;
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  .como-header { text-align: center; margin-bottom: 80px; }
+
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 2px; position: relative;
+  }
+
+  .step {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 48px 36px;
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .step:hover { border-color: rgba(0,212,255,0.3); }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px; color: rgba(255,255,255,0.04);
+    position: absolute; top: 16px; right: 24px;
+    line-height: 1; letter-spacing: 2px;
+  }
+
+  .step-icon {
+    width: 52px; height: 52px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 28px; font-size: 22px;
+  }
+
+  .step h3 {
+    font-size: 22px; font-weight: 700; margin-bottom: 12px;
+    color: var(--white);
+  }
+
+  .step p { font-size: 14px; color: var(--gray); line-height: 1.7; }
+
+  .step-connector {
+    position: absolute; top: 50%; right: -1px;
+    width: 24px; height: 2px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+  }
+
+  /* ── PLANOS ── */
+  .planos {
+    padding: 120px 60px;
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+  }
+
+  .planos-inner { max-width: 1200px; margin: 0 auto; }
+  .planos-header { text-align: center; margin-bottom: 80px; }
+  .planos-header p { font-size: 18px; color: var(--gray); margin-top: 16px; }
+
+  .plans-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 2px; min-width: 0;
+  }
+  @media (min-width: 901px) {
+    .plans-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  }
+
+  .plan {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 40px 32px;
+    position: relative; overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .plan:hover { border-color: rgba(0,212,255,0.2); transform: translateY(-4px); }
+
+  .plan.featured {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.06);
+  }
+
+  .plan.featured::before {
+    content: 'MAIS VENDIDO';
+    position: absolute; top: 0; left: 0; right: 0;
+    background: var(--cyan); color: var(--navy);
+    font-size: 10px; font-weight: 800; letter-spacing: 4px;
+    padding: 8px; text-align: center;
+  }
+
+  .plan.featured { padding-top: 56px; }
+
+  .plan-name {
+    font-size: 11px; font-weight: 700; color: var(--gray);
+    letter-spacing: 4px; margin-bottom: 16px;
+  }
+
+  .plan-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px; color: var(--white);
+    letter-spacing: 2px; line-height: 1; margin-bottom: 4px;
+  }
+
+  .plan-price span { font-family: 'DM Sans', sans-serif; font-size: 18px; color: var(--gray); }
+
+  .plan-period { font-size: 13px; color: var(--gray); margin-bottom: 32px; }
+
+  .plan-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
+
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+
+  .plan-features li {
+    font-size: 14px; color: var(--gray);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+
+  .plan-features li::before {
+    content: '→'; color: var(--cyan);
+    font-weight: 700; flex-shrink: 0;
+  }
+
+  .plan-features li strong { color: var(--white); }
+
+  .plan-btn {
+    display: block; width: 100%; margin-top: 36px;
+    padding: 16px; text-align: center;
+    font-size: 14px; font-weight: 700; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s; text-decoration: none;
+    border: none;
+  }
+
+  .plan-btn-ghost {
+    background: transparent; color: var(--white);
+    border: 1px solid var(--border);
+  }
+  .plan-btn-ghost:hover { border-color: rgba(255,255,255,0.3); }
+
+  .plan-btn-solid {
+    background: var(--cyan); color: var(--navy);
+  }
+  .plan-btn-solid:hover { background: var(--cyan2); }
+
+  .plan-ideal {
+    font-size: 12px; color: var(--gray); margin-top: 20px;
+    padding-top: 20px; border-top: 1px solid var(--border);
+  }
+  .plan-ideal strong { color: var(--white); display: block; margin-bottom: 4px; }
+
+  /* ── COMPARATIVO ── */
+  .comparativo {
+    padding: 120px 60px;
+    max-width: 1000px; margin: 0 auto;
+  }
+
+  .comp-header { text-align: center; margin-bottom: 72px; }
+
+  .comp-table { width: 100%; border-collapse: collapse; }
+
+  .comp-table th {
+    padding: 20px 24px; font-size: 13px; font-weight: 700;
+    letter-spacing: 2px; text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table th:first-child { text-align: left; }
+  .comp-table th.highlight { color: var(--cyan); }
+
+  .comp-table td {
+    padding: 18px 24px; font-size: 14px; color: var(--gray);
+    border-bottom: 1px solid var(--border); text-align: center;
+  }
+  .comp-table td:first-child { text-align: left; color: var(--white); font-weight: 500; }
+  .comp-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .check { color: #00E676; font-size: 18px; font-weight: 700; }
+  .cross { color: #FF4D4D; font-size: 18px; }
+  .partial { color: #FFB800; font-size: 13px; }
+
+  /* ── GARANTIA ── */
+  .garantia {
+    padding: 100px 60px;
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+  }
+
+  .garantia-inner {
+    max-width: 800px; margin: 0 auto; text-align: center;
+  }
+
+  .garantia-badge {
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 3px solid var(--cyan);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    margin: 0 auto 40px;
+    background: rgba(0,212,255,0.06);
+  }
+
+  .gb-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px; color: var(--cyan); line-height: 1;
+  }
+  .gb-label { font-size: 10px; color: var(--cyan); letter-spacing: 3px; }
+
+  .garantia h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px; letter-spacing: 2px; margin-bottom: 20px;
+  }
+
+  .garantia p { font-size: 18px; color: var(--gray); line-height: 1.7; }
+
+  /* ── CTA FINAL ── */
+  .cta-final {
+    padding: 140px 60px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+
+  .cta-final-glow {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(18,64,171,0.3) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-final h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 8vw, 100px);
+    line-height: 0.95; letter-spacing: 2px;
+    margin-bottom: 28px; position: relative; z-index: 1;
+  }
+
+  .cta-final h2 .cyan { color: var(--cyan); }
+
+  .cta-final p {
+    font-size: 18px; color: var(--gray);
+    max-width: 500px; margin: 0 auto 48px;
+    position: relative; z-index: 1;
+  }
+
+  .cta-final-actions {
+    display: flex; gap: 16px; justify-content: center;
+    flex-wrap: wrap; position: relative; z-index: 1;
+  }
+
+  .whatsapp-btn {
+    background: #25D366; color: #fff;
+    font-size: 16px; font-weight: 700; letter-spacing: 1px;
+    padding: 20px 56px; border: none; cursor: pointer;
+    transition: all 0.2s; text-decoration: none; display: inline-block;
+  }
+  .whatsapp-btn:hover { background: #20BD5A; transform: translateY(-2px); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 48px 60px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 20px;
+  }
+
+  .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; }
+  .footer-logo span { color: var(--cyan); }
+
+  footer p { font-size: 13px; color: var(--gray); }
+
+  .footer-group { font-size: 12px; color: rgba(255,255,255,0.3); letter-spacing: 2px; }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .reveal {
+    opacity: 0.85;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.revealed {
+    opacity: 1;
+  }
+
+  /* ── RESPONSIVE BASICS ── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 120px 24px 80px; }
+    .problema-grid, .calc-body, .plans-grid, .steps { grid-template-columns: 1fr; }
+    .plans-grid { gap: 16px; }
+    section, .problema, .como, .comparativo { padding: 80px 24px; }
+    .calculator, .planos, .garantia, .cta-final { padding: 80px 24px; }
+    footer { padding: 32px 24px; flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-main">VERACITY</div>
+    <div class="nav-logo-sub">INTELLIGENCE</div>
+  </div>
+  <div class="nav-links">
+    <a href="#problema">O Problema</a>
+    <a href="#calculator">Calcular ROI</a>
+    <a href="#como">Como Funciona</a>
+    <a href="#planos">Planos</a>
+    <a href="#cta" class="nav-cta">COMEÇAR GRÁTIS</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-tag">PLATAFORMA DE INTELIGÊNCIA COMERCIAL</div>
+  <h1>
+    SUA PROSPECÇÃO<br>
+    <span class="line-cyan">PODE SER</span><br>
+    <span class="line-dim">MAIS INTELIGENTE.</span>
+  </h1>
+  <p class="hero-sub">
+    Enquanto você gasta horas prospectando manualmente,
+    seus concorrentes já estão usando <strong>inteligência de dados</strong>
+    para gerar clientes no piloto automático.
+  </p>
+  <div class="hero-actions">
+    <a href="#calculator" class="btn-primary">CALCULAR MEU PREJUÍZO</a>
+    <a href="#planos" class="btn-ghost">Ver Planos</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">45<span>M+</span></div>
+      <div class="hero-stat-label">EMPRESAS NA BASE</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">20<span>+</span></div>
+      <div class="hero-stat-label">FILTROS AVANÇADOS</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">3<span>min</span></div>
+      <div class="hero-stat-label">PARA GERAR SUA LISTA</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">7<span>dias</span></div>
+      <div class="hero-stat-label">GRÁTIS PARA TESTAR</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section id="problema">
+<div class="problema">
+  <div class="reveal">
+    <div class="section-label">O PROBLEMA</div>
+    <div class="section-title">
+      PROSPECÇÃO MANUAL<br>É DINHEIRO<br>JOGADO FORA
+    </div>
+  </div>
+  <div class="problema-grid reveal">
+    <div class="problema-left">
+      <div class="problema-list">
+        <div class="problema-item">
+          <div class="problema-num">01</div>
+          <div class="problema-text">
+            <strong>Horas desperdiçadas</strong>
+            <span>Seu vendedor passa mais tempo pesquisando do que vendendo. Cada hora vale dinheiro.</span>
+          </div>
+        </div>
+        <div class="problema-item">
+          <div class="problema-num">02</div>
+          <div class="problema-text">
+            <strong>Dados desatualizados</strong>
+            <span>Listas compradas ficam velhas em semanas. Você liga para empresas que fecharam.</span>
+          </div>
+        </div>
+        <div class="problema-item">
+          <div class="problema-num">03</div>
+          <div class="problema-text">
+            <strong>Zero segmentação</strong>
+            <span>Sem filtros precisos, sua equipe aborda empresas que nunca vão comprar.</span>
+          </div>
+        </div>
+        <div class="problema-item">
+          <div class="problema-num">04</div>
+          <div class="problema-text">
+            <strong>Sem previsibilidade</strong>
+            <span>Você não sabe quantos leads chegam essa semana. Crescimento fica na sorte.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="problema-right">
+      <div class="calc-preview-label">CUSTO REAL DA PROSPECÇÃO MANUAL</div>
+      <div class="calc-preview-item">
+        <span class="cpi-label">Salário do vendedor</span>
+        <span class="cpi-val">R$ 3.000/mês</span>
+      </div>
+      <div class="calc-preview-item">
+        <span class="cpi-label">Tempo prospectando</span>
+        <span class="cpi-val">3h por dia</span>
+      </div>
+      <div class="calc-preview-item">
+        <span class="cpi-label">Custo mensal desperdiçado</span>
+        <span class="cpi-val red">R$ 750/mês</span>
+      </div>
+      <div class="calc-preview-item">
+        <span class="cpi-label">Veracity Intelligence</span>
+        <span class="cpi-val green">R$ 397/mês</span>
+      </div>
+      <div class="calc-preview-total">
+        <div class="cpt-label">POTENCIAL DE ECONOMIA *</div>
+        <div class="cpt-val">R$ 353/mês</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CALCULADORA DE ROI -->
+<section id="calculator" class="calculator">
+  <div class="calc-inner">
+    <div class="calc-header reveal">
+      <div class="section-label">CALCULADORA DE ROI</div>
+      <div class="section-title">QUANTO VOCÊ PERDE<br>POR MÊS?</div>
+      <p>Ajuste os valores abaixo para ter uma <strong>estimativa</strong> do que a prospecção manual pode estar custando. Os resultados reais dependem da execução do seu time.</p>
+    </div>
+    <div class="calc-body reveal">
+      <div class="calc-inputs">
+
+        <div class="calc-field">
+          <label>
+            Número de vendedores
+            <span id="val-vendedores">1</span>
+          </label>
+          <input type="range" id="vendedores" min="1" max="20" value="1"
+            oninput="document.getElementById('val-vendedores').textContent=this.value; calcROI()" style="cursor:pointer;">
+        </div>
+
+        <div class="calc-field">
+          <label>
+            Salário médio por vendedor
+            <span>R$ <span id="val-salario">3.000</span></span>
+          </label>
+          <input type="range" id="salario" min="1500" max="10000" step="500" value="3000"
+            oninput="document.getElementById('val-salario').textContent=Number(this.value).toLocaleString('pt-BR'); calcROI()">
+        </div>
+
+        <div class="calc-field">
+          <label>
+            Horas por dia prospectando
+            <span id="val-horas">3</span>h
+          </label>
+          <input type="range" id="horas" min="1" max="8" value="3"
+            oninput="document.getElementById('val-horas').textContent=this.value; calcROI()">
+        </div>
+
+        <div class="calc-field">
+          <label>
+            Taxa de conversão atual
+            <span id="val-conv">5</span>%
+          </label>
+          <input type="range" id="conv" min="1" max="30" value="5"
+            oninput="document.getElementById('val-conv').textContent=this.value; calcROI()">
+        </div>
+
+        <div class="calc-field">
+          <label>
+            Ticket médio por venda
+            <span>R$ <span id="val-ticket">1.000</span></span>
+          </label>
+          <input type="range" id="ticket" min="500" max="50000" step="500" value="1000"
+            oninput="document.getElementById('val-ticket').textContent=Number(this.value).toLocaleString('pt-BR'); calcROI()">
+        </div>
+
+      </div>
+
+      <div class="calc-result" style="position:relative;">
+        <div class="cr-title">RESULTADO DO CÁLCULO</div>
+
+        <div class="cr-row">
+          <span class="cr-label">Custo mensal desperdiçado</span>
+          <span class="cr-val loss" id="res-custo">R$ 1.500</span>
+        </div>
+        <div class="cr-row">
+          <span class="cr-label">Leads/mês na prospecção manual</span>
+          <span class="cr-val" id="res-leads-manual">120</span>
+        </div>
+        <div class="cr-row">
+          <span class="cr-label">Leads/mês com Veracity Intelligence</span>
+          <span class="cr-val gain" id="res-leads-vi">600</span>
+        </div>
+        <div class="cr-row">
+          <span class="cr-label">Potencial de vendas adicionais</span>
+          <span class="cr-val gain" id="res-vendas">+24</span>
+        </div>
+        <div class="cr-row">
+          <span class="cr-label">Potencial de receita adicional</span>
+          <span class="cr-val gain" id="res-receita">R$ 48.000</span>
+        </div>
+
+        <div class="cr-divider"></div>
+
+        <div class="cr-highlight">
+          <div class="crh-label">ESTIMATIVA DE ROI *</div>
+          <div class="crh-val" id="res-roi">11.968%</div>
+          <div class="crh-sub">* Estimativa baseada nos dados inseridos. Resultados reais variam conforme a execução do seu time.</div>
+        </div>
+
+        <button class="cr-btn" onclick="window.open('https://wa.me/5521973855107?text=Quero+conhecer+a+Veracity+Intelligence','_blank')">
+          QUERO CONHECER A PLATAFORMA
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section id="como">
+<div class="como">
+  <div class="como-header reveal">
+    <div class="section-label">COMO FUNCIONA</div>
+    <div class="section-title">SIMPLES. RÁPIDO.<br>PODEROSO.</div>
+  </div>
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">🎯</div>
+      <h3>Defina seu público</h3>
+      <p>Escolha estado, cidade, nicho de mercado, porte da empresa, com e-mail, com celular — mais de 20 filtros disponíveis.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">⚡</div>
+      <h3>Gere sua lista</h3>
+      <p>Em menos de 3 minutos sua lista está pronta com dados atualizados diretamente da Receita Federal e fontes validadas.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">📥</div>
+      <h3>Baixe e venda</h3>
+      <p>Exporte em Excel ou CSV com CNPJ, razão social, e-mail, telefone, celular e endereço completo. Pronto para usar.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PLANOS -->
+<section id="planos" class="planos">
+  <div class="planos-inner">
+    <div class="planos-header reveal">
+      <div class="section-label">PLANOS E PREÇOS</div>
+      <div class="section-title">ESCOLHA SEU<br>NÍVEL DE ESCALA</div>
+      <p>Cancele quando quiser. Sem taxa de setup. Sem fidelidade.</p>
+    </div>
+    <div class="plans-grid reveal">
+
+      <!-- STARTER -->
+      <div class="plan">
+        <div class="plan-name">STARTER</div>
+        <div class="plan-price"><span>R$</span> 397</div>
+        <div class="plan-period">/mês · cobrado mensalmente</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><strong>500 empresas</strong>/mês</li>
+          <li>Filtros básicos</li>
+          <li>Exportação CSV e Excel</li>
+          <li>Suporte por e-mail</li>
+          <li>1 usuário</li>
+        </ul>
+        <a href="https://wa.me/5521973855107" class="plan-btn plan-btn-ghost" target="_blank">COMEÇAR AGORA</a>
+        <div class="plan-ideal">
+          <strong>Ideal para:</strong>
+          MEI e autônomos que estão começando a prospectar.
+        </div>
+      </div>
+
+      <!-- GROWTH -->
+      <div class="plan featured">
+        <div class="plan-name">GROWTH</div>
+        <div class="plan-price"><span>R$</span> 797</div>
+        <div class="plan-period">/mês · cobrado mensalmente</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><strong>2.000 empresas</strong>/mês</li>
+          <li>Filtros avançados</li>
+          <li>Exportação CSV e Excel</li>
+          <li>E-mail marketing incluso</li>
+          <li>Suporte prioritário</li>
+          <li>2 usuários</li>
+        </ul>
+        <a href="https://wa.me/5521973855107" class="plan-btn plan-btn-solid" target="_blank">COMEÇAR AGORA</a>
+        <div class="plan-ideal">
+          <strong>Ideal para:</strong>
+          Pequenas empresas querendo escalar vendas.
+        </div>
+      </div>
+
+      <!-- SCALE -->
+      <div class="plan">
+        <div class="plan-name">SCALE</div>
+        <div class="plan-price"><span>R$</span> 1.497</div>
+        <div class="plan-period">/mês · cobrado mensalmente</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><strong>5.000 empresas</strong>/mês</li>
+          <li>Todos os filtros</li>
+          <li>E-mail marketing + landing page</li>
+          <li>Consultoria mensal inclusa</li>
+          <li>Gerente dedicado</li>
+          <li>5 usuários</li>
+        </ul>
+        <a href="https://wa.me/5521973855107" class="plan-btn plan-btn-ghost" target="_blank">COMEÇAR AGORA</a>
+        <div class="plan-ideal">
+          <strong>Ideal para:</strong>
+          Empresas em expansão com equipe comercial.
+        </div>
+      </div>
+
+      <!-- ENTERPRISE -->
+      <div class="plan">
+        <div class="plan-name">ENTERPRISE</div>
+        <div class="plan-price"><span>R$</span> 2.997</div>
+        <div class="plan-period">/mês · cobrado mensalmente</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><strong>20.000 empresas</strong>/mês</li>
+          <li>Acesso total à plataforma</li>
+          <li>E-mail + landing page + CRM</li>
+          <li>Consultoria semanal</li>
+          <li>API própria</li>
+          <li>Usuários ilimitados</li>
+        </ul>
+        <a href="https://wa.me/5521973855107" class="plan-btn plan-btn-ghost" target="_blank">FALAR COM CONSULTOR</a>
+        <div class="plan-ideal">
+          <strong>Ideal para:</strong>
+          Grandes operações comerciais B2B.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- COMPARATIVO -->
+<section>
+<div class="comparativo reveal">
+  <div class="comp-header">
+    <div class="section-label">COMPARATIVO</div>
+    <div class="section-title">POR QUE VERACITY<br>INTELLIGENCE?</div>
+  </div>
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>Recurso</th>
+        <th class="highlight">Veracity Intelligence</th>
+        <th>Speedio</th>
+        <th>Econodata</th>
+        <th>Manual</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Dados atualizados</td>
+        <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+        <td><span class="cross">✗</span></td>
+      </tr>
+      <tr>
+        <td>E-mail marketing incluso</td>
+        <td><span class="check">✓</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+      </tr>
+      <tr>
+        <td>Landing page inclusa</td>
+        <td><span class="check">✓</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+      </tr>
+      <tr>
+        <td>Consultoria estratégica</td>
+        <td><span class="check">✓</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+      </tr>
+      <tr>
+        <td>Preço inicial</td>
+        <td style="color:#00E676;font-weight:700;">R$ 397/mês</td>
+        <td><span class="partial">R$ 500/mês</span></td>
+        <td><span class="partial">R$ 300/mês</span></td>
+        <td style="color:#FF4D4D;">R$ 750+/mês*</td>
+      </tr>
+      <tr>
+        <td>7 dias grátis</td>
+        <td><span class="check">✓</span></td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="partial">Trial limitado</span></td>
+        <td><span class="cross">✗</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--gray);margin-top:16px;text-align:right;">* Custo estimado de mão de obra em prospecção manual. Resultados variam por empresa.</p>
+</div>
+</section>
+
+<!-- GARANTIA -->
+<section class="garantia reveal">
+  <div class="garantia-inner">
+    <div class="garantia-badge">
+      <div class="gb-num">7</div>
+      <div class="gb-label">DIAS</div>
+    </div>
+    <h2>TESTE SEM<br>RISCO NENHUM</h2>
+    <p>Você tem 7 dias para explorar a plataforma gratuitamente. Se não fizer sentido para o seu negócio, simplesmente não assina. Sem cobrança antecipada, sem burocracia.</p>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="cta" class="cta-final">
+  <div class="cta-final-glow"></div>
+  <h2>
+    PARE DE<br>
+    PROSPECTAR<br>
+    <span class="cyan">NA RAÇA.</span>
+  </h2>
+  <p>Comece hoje com 7 dias grátis. Explore a plataforma e veja se faz sentido para o seu negócio.</p>
+  <div class="cta-final-actions">
+    <a href="https://wa.me/5521973855107?text=Quero+testar+a+Veracity+Intelligence+grátis" class="whatsapp-btn" target="_blank">
+      COMEÇAR 7 DIAS GRÁTIS
+    </a>
+    <a href="#calculator" class="btn-ghost">Calcular meu ROI</a>
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<section style="padding: 32px 60px; border-top: 1px solid var(--border); background: var(--dark);">
+  <p style="font-size: 12px; color: var(--gray); max-width: 900px; margin: 0 auto; text-align: center; line-height: 1.7;">
+    <strong style="color: rgba(255,255,255,0.4);">AVISO IMPORTANTE:</strong> 
+    Todos os valores apresentados na calculadora são estimativas baseadas nos dados inseridos pelo usuário e em médias de mercado. 
+    Os resultados reais dependem exclusivamente da estratégia, execução e esforço de cada empresa. 
+    A Veracity Intelligence fornece a ferramenta — o resultado depende de você.
+  </p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">VERACITY <span>INTELLIGENCE</span></div>
+  <p style="font-size:13px;color:var(--gray);">© 2025 Veracity Tech · Todos os direitos reservados</p>
+  <div class="footer-group">GRUPO VERACITY</div>
+</footer>
+
+<script>
+// ── ROI CALCULATOR ──
+function calcROI() {
+  const vendedores = parseInt(document.getElementById('vendedores').value);
+  const salario    = parseInt(document.getElementById('salario').value);
+  const horas      = parseInt(document.getElementById('horas').value);
+  const conv       = parseInt(document.getElementById('conv').value) / 100;
+  const ticket     = parseInt(document.getElementById('ticket').value);
+
+  const diasMes       = 22;
+  const horasMes      = vendedores * horas * diasMes;
+  const horasTotais   = vendedores * 8 * diasMes;
+  const percDesp      = horasMes / horasTotais;
+  const custoDesp     = Math.round(vendedores * salario * percDesp);
+
+  // leads manual: 10 leads por hora de prospecção manual
+  const leadsManual   = Math.round(horasMes * 10);
+  // leads vi: 5x mais eficiente
+  const leadsVI       = leadsManual * 5;
+
+  const vendasAdd     = Math.round((leadsVI - leadsManual) * conv);
+  const receitaAdd    = vendasAdd * ticket;
+
+  const planoBase     = 397;
+  const roi           = Math.round(((receitaAdd - planoBase) / planoBase) * 100);
+  const retorno       = Math.round(receitaAdd / planoBase);
+
+  const fmt = (n) => n.toLocaleString('pt-BR');
+
+  document.getElementById('res-custo').textContent      = 'R$ ' + fmt(custoDesp);
+  document.getElementById('res-leads-manual').textContent = fmt(leadsManual);
+  document.getElementById('res-leads-vi').textContent    = fmt(leadsVI);
+  document.getElementById('res-vendas').textContent      = '+' + fmt(vendasAdd);
+  document.getElementById('res-receita').textContent     = 'R$ ' + fmt(receitaAdd);
+  document.getElementById('res-roi').textContent         = fmt(roi) + '%';
+  document.getElementById('res-retorno').textContent     = fmt(retorno);
+}
+
+calcROI();
+
+// ── SCROLL REVEAL ──
+// Add subtle fade-in on scroll without hiding content
+window.addEventListener('DOMContentLoaded', () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      e.target.classList.add('revealed');
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+});
+</script>
+
+</body>
+</html>
