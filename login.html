@@ -637,7 +637,22 @@ body {
 const SUPABASE_URL = 'https://nfusabwpxpdcqedrehrc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MTEyOTUsImV4cCI6MjA5MjM4NzI5NX0.sUmFeXhXsx7D7BKPrKrXFHSVuqhFdIKgOCdfUQumECY';
 const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+const db = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  db: { schema: 'public' },
+  auth: { persistSession: true, autoRefreshToken: true },
+  global: {
+    fetch: (url, options = {}) => {
+      options.headers = {
+        ...options.headers,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      };
+      return fetch(url, options);
+    }
+  }
+});
 
 // ── CASA DOS DADOS API ──
 const CDD_KEY = '006a51b4658af302f4d83f9d40653599cb48728be1e18d6329358bb1add897955d80035df7feeb6e15d2395f284f40449dab49124329e2996d517f6dbebf01e8';
@@ -753,12 +768,22 @@ async function register() {
 async function loadProfile() {
   if (!currentUser) return;
 
-  const { data } = await db.from('profiles')
-    .select('*')
-    .eq('id', currentUser.id)
-    .single();
+  try {
+    const { data, error } = await db.from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .maybeSingle();
 
-  currentProfile = data;
+    if (error) {
+      console.error('Erro ao carregar perfil:', error);
+      currentProfile = null;
+    } else {
+      currentProfile = data;
+    }
+  } catch(e) {
+    console.error('Erro loadProfile:', e);
+    currentProfile = null;
+  }
 }
 
 // ── MOSTRAR DASHBOARD ──
