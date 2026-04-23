@@ -973,25 +973,35 @@ function renderResults(data) {
   tbody.innerHTML = '';
 
   data.forEach((e, i) => {
-    // v5 API structure
-    const email  = e.email || (e.emails && e.emails[0]) || '';
-    const tel    = e.telefone || e.telefone1 || (e.telefones && e.telefones[0]) || '';
-    const cel    = e.celular || (e.celulares && e.celulares[0]) || '';
-    const hasEmail = email && email.trim();
-    const hasCel   = cel && cel.trim();
-    const hasTel   = tel && tel.trim();
-    const uf       = e.uf || (e.endereco && e.endereco.uf) || '';
-    const mun      = e.municipio || (e.endereco && e.endereco.municipio) || '';
-    const cidade   = mun.split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ');
-    const cnae     = e.cnae_fiscal_descricao || (e.atividade_principal && e.atividade_principal.descricao) || '-';
+    // v5 API - campos corretos
+    const email    = e.email || '';
+    const tel      = e.telefone || '';
+    const cel      = e.celular || '';
+    const hasEmail = email && email.trim() !== '';
+    const hasCel   = cel && cel.trim() !== '';
+    const hasTel   = tel && tel.trim() !== '' && !hasCel;
+    
+    // Endereço vem dentro de objeto endereco na v5
+    const end      = e.endereco || {};
+    const uf       = end.uf || e.uf || '';
+    const mun      = end.municipio || e.municipio || '';
+    const cidade   = mun ? mun.split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ') : '';
+    
+    // CNAE vem dentro de objeto atividade_principal na v5
+    const atv      = e.atividade_principal || {};
+    const cnae     = atv.descricao || e.cnae_fiscal_descricao || '-';
+    
     const cnpj     = e.cnpj || '-';
     const nome     = e.razao_social || '-';
+    
+    // Formata CNPJ
+    const cnpjFmt  = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="color:var(--gray);font-size:11px;">${String(i+1).padStart(2,'0')}</td>
       <td class="td-name">${nome}</td>
-      <td style="font-family:monospace;font-size:11px;">${cnpj}</td>
+      <td style="font-family:monospace;font-size:11px;">${cnpjFmt || cnpj}</td>
       <td>${cidade}${uf ? ' · ' + uf.toUpperCase() : ''}</td>
       <td style="font-size:11px;">${cnae}</td>
       <td>
@@ -1014,17 +1024,26 @@ function renderResults(data) {
 
 function exportar() {
   if (!currentResults.length) return;
-  const header = ['Razão Social','CNPJ','Município','UF','Segmento','E-mail','Telefone','Celular'];
-  const rows = currentResults.map(e => [
-    e.razao_social || '',
-    e.cnpj || '',
-    e.municipio || (e.endereco && e.endereco.municipio) || '',
-    e.uf || (e.endereco && e.endereco.uf) || '',
-    e.cnae_fiscal_descricao || (e.atividade_principal && e.atividade_principal.descricao) || '',
-    e.email || (e.emails && e.emails[0]) || '',
-    e.telefone || e.telefone1 || (e.telefones && e.telefones[0]) || '',
-    e.celular || (e.celulares && e.celulares[0]) || ''
-  ]);
+
+  const rows = currentResults.map(e => {
+    const end = e.endereco || {};
+    const atv = e.atividade_principal || {};
+    return [
+      e.razao_social || '',
+      e.cnpj || '',
+      end.municipio || e.municipio || '',
+      end.uf || e.uf || '',
+      atv.descricao || e.cnae_fiscal_descricao || '',
+      e.email || '',
+      e.telefone || '',
+      e.celular || '',
+      end.logradouro || '',
+      end.numero || '',
+      end.bairro || '',
+      end.cep || ''
+    ];
+  });
+  const header = ['Razão Social','CNPJ','Município','UF','Segmento','E-mail','Telefone','Celular','Endereço','Número','Bairro','CEP'];
   const csv = [header, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
