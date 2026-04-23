@@ -870,44 +870,44 @@ async function buscar() {
   document.getElementById('resultBadge').style.display = 'none';
   document.getElementById('btnExport').disabled = true;
 
-  const estado   = document.getElementById('fEstado').value;
-  const cidade   = document.getElementById('fCidade').value;
-  const segmento = document.getElementById('fSegmento').value;
-  const porte    = document.getElementById('fPorte').value;
-  const qtd      = parseInt(document.getElementById('fQtd').value);
+  const estado      = document.getElementById('fEstado').value;
+  const cidade      = document.getElementById('fCidade').value;
+  const segmento    = document.getElementById('fSegmento').value;
+  const porte       = document.getElementById('fPorte').value;
+  const qtd         = parseInt(document.getElementById('fQtd').value);
+  const texto       = document.getElementById('fTexto') ? document.getElementById('fTexto').value : '';
+  const bairro      = document.getElementById('fBairro') ? document.getElementById('fBairro').value : '';
+  const ddd         = document.getElementById('fDDD') ? document.getElementById('fDDD').value : '';
+  const situacao    = document.getElementById('fSituacao') ? document.getElementById('fSituacao').value : 'ATIVA';
+  const dataDe      = document.getElementById('fDataDe') ? document.getElementById('fDataDe').value : '';
+  const dataAte     = document.getElementById('fDataAte') ? document.getElementById('fDataAte').value : '';
+  const capitalMin  = document.getElementById('fCapitalMin') ? document.getElementById('fCapitalMin').value : '';
+  const comEmail    = document.getElementById('fComEmail') ? document.getElementById('fComEmail').checked : false;
+  const comTelefone = document.getElementById('fComTelefone') ? document.getElementById('fComTelefone').checked : false;
+  const celular     = document.getElementById('fSomenteCelular') ? document.getElementById('fSomenteCelular').checked : false;
+  const matriz      = document.getElementById('fSomenteMatriz') ? document.getElementById('fSomenteMatriz').checked : false;
 
   try {
-    // Busca real na API da Casa dos Dados v5
+    // Monta payload no formato v5 da Casa dos Dados
     const payload = {
-      query: {
-        termo: cidade ? [cidade] : [],
-        atividade_principal: segmento ? [segmento] : [],
-        natureza_juridica: [],
-        uf: estado ? [estado.toLowerCase()] : [],
-        municipio: cidade ? [cidade.toLowerCase()] : [],
-        situacao_cadastral: 'ATIVA',
-        cep: [], ddd: []
-      },
-      range_query: {
-        data_abertura: { lte: null, gte: null },
-        capital_social: { lte: null, gte: null }
-      },
-      extras: {
-        somente_mei: porte === 'MEI',
-        excluir_mei: porte === 'ME' || porte === 'EPP',
-        com_email: true,
-        incluir_atividade_secundaria: false,
-        com_contato_telefonico: true,
-        somente_fixo: false,
-        somente_celular: false,
-        somente_matriz: false,
-        somente_filial: false
-      },
-      page: 1
+      situacao_cadastral: situacao ? [situacao] : ['ATIVA'],
+      codigo_atividade_principal: segmento ? [segmento] : [],
+      uf: estado ? [estado] : [],
+      municipio: cidade ? [cidade.toLowerCase()] : [],
+      bairro: bairro ? [bairro.toLowerCase()] : [],
+      ddd: ddd ? [ddd.replace(/[^0-9]/g, '')] : [],
+      com_email: comEmail,
+      com_telefone: comTelefone,
+      somente_celular: celular,
+      mei_optante: porte === 'mei',
+      mei_excluir: porte === 'me' || porte === 'epp',
+      texto: texto || '',
+      data_abertura: (dataDe || dataAte) ? { inicio: dataDe || null, fim: dataAte || null } : {},
+      limite: qtd,
+      pagina: 1
     };
 
-    // Chama proxy Netlify Function
-    console.log('Chamando proxy /.netlify/functions/buscar...');
+    console.log('Chamando proxy /.netlify/functions/buscar...', JSON.stringify(payload));
     const res = await fetch('/.netlify/functions/buscar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
