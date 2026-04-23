@@ -973,29 +973,36 @@ function renderResults(data) {
   tbody.innerHTML = '';
 
   data.forEach((e, i) => {
-    // v5 API - campos corretos
-    const email    = e.email || '';
-    const tel      = e.telefone || '';
-    const cel      = e.celular || '';
+    // v5 API - estrutura correta
+    // Email vem em contato_email[0].email
+    const emailObj = (e.contato_email && e.contato_email[0]) || {};
+    const email    = emailObj.email || emailObj.contato || '';
+
+    // Telefone vem em contato_telefonico
+    const tels     = e.contato_telefonico || [];
+    const telFixo  = tels.find(t => t.tipo === 'FIXO' || !t.tipo) || {};
+    const telCel   = tels.find(t => t.tipo === 'CELULAR' || t.tipo === 'MOVEL') || {};
+    const tel      = telFixo.ddd ? `(${telFixo.ddd}) ${telFixo.numero}` : '';
+    const cel      = telCel.ddd  ? `(${telCel.ddd}) ${telCel.numero}`  : 
+                     (tels[0] && tels[0].ddd ? `(${tels[0].ddd}) ${tels[0].numero}` : '');
+
     const hasEmail = email && email.trim() !== '';
     const hasCel   = cel && cel.trim() !== '';
-    const hasTel   = tel && tel.trim() !== '' && !hasCel;
-    
-    // Endereço vem dentro de objeto endereco na v5
-    const end      = e.endereco || {};
-    const uf       = end.uf || e.uf || '';
-    const mun      = end.municipio || e.municipio || '';
-    const cidade   = mun ? mun.split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ') : '';
-    
-    // CNAE vem dentro de objeto atividade_principal na v5
-    const atv      = e.atividade_principal || {};
-    const cnae     = atv.descricao || e.cnae_fiscal_descricao || '-';
-    
-    const cnpj     = e.cnpj || '-';
-    const nome     = e.razao_social || '-';
-    
-    // Formata CNPJ
-    const cnpjFmt  = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    const hasTel   = tel && tel.trim() !== '';
+
+    // Endereço
+    const end    = e.endereco || {};
+    const uf     = end.uf || '';
+    const mun    = end.municipio || '';
+    const cidade = mun ? mun.split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : '').join(' ') : '';
+
+    // CNAE
+    const atv  = e.atividade_principal || {};
+    const cnae = atv.descricao || '-';
+
+    const cnpj    = e.cnpj || '-';
+    const nome    = e.razao_social || '-';
+    const cnpjFmt = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -1026,19 +1033,25 @@ function exportar() {
   if (!currentResults.length) return;
 
   const rows = currentResults.map(e => {
-    const end = e.endereco || {};
-    const atv = e.atividade_principal || {};
+    const end      = e.endereco || {};
+    const atv      = e.atividade_principal || {};
+    const emailObj = (e.contato_email && e.contato_email[0]) || {};
+    const email    = emailObj.email || emailObj.contato || '';
+    const tels     = e.contato_telefonico || [];
+    const telFixo  = tels.find(t => t.tipo === 'FIXO' || !t.tipo) || {};
+    const telCel   = tels.find(t => t.tipo === 'CELULAR' || t.tipo === 'MOVEL') || tels[0] || {};
+    const tel      = telFixo.ddd ? telFixo.ddd + telFixo.numero : '';
+    const cel      = telCel.ddd  ? telCel.ddd  + telCel.numero  : '';
     return [
       e.razao_social || '',
       e.cnpj || '',
-      end.municipio || e.municipio || '',
-      end.uf || e.uf || '',
-      atv.descricao || e.cnae_fiscal_descricao || '',
-      e.email || '',
-      e.telefone || '',
-      e.celular || '',
-      end.logradouro || '',
-      end.numero || '',
+      end.municipio || '',
+      end.uf || '',
+      atv.descricao || '',
+      email,
+      tel,
+      cel,
+      (end.logradouro || '') + ' ' + (end.numero || ''),
       end.bairro || '',
       end.cep || ''
     ];
