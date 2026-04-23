@@ -599,6 +599,16 @@ body {
           Encontradas: <strong id="countNum" style="color:var(--cyan);">0</strong> empresas
         </span>
       </div>
+
+      <!-- BUSCA POR CNPJ -->
+      <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+        <label class="filter-label">🔍 BUSCA AVULSA POR CNPJ</label>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <input class="filter-input" type="text" id="fCnpj" placeholder="Digite o CNPJ — ex: 12.345.678/0001-90" style="flex:1;max-width:360px;">
+          <button class="btn-search" onclick="buscarCnpj()" style="padding:10px 24px;white-space:nowrap;">🔎 CONSULTAR CNPJ</button>
+        </div>
+        <div id="cnpjResult" style="display:none;margin-top:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:20px;"></div>
+      </div>
     </div>
   </div>
 
@@ -1091,6 +1101,106 @@ function limpar() {
   document.getElementById('resultBadge').style.display = 'none';
   document.getElementById('btnExport').disabled = true;
   currentResults = [];
+}
+
+// ── BUSCA POR CNPJ AVULSO ──
+async function buscarCnpj() {
+  const cnpjRaw = document.getElementById('fCnpj').value.replace(/[^0-9]/g, '');
+  if (!cnpjRaw || cnpjRaw.length !== 14) {
+    alert('Digite um CNPJ válido com 14 dígitos!');
+    return;
+  }
+
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Consultando...';
+
+  const resultDiv = document.getElementById('cnpjResult');
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);">Buscando dados...</div>';
+
+  try {
+    const res = await fetch('/api/buscar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cnpj_avulso: cnpjRaw, limite: 1 })
+    });
+
+    const json = await res.json();
+    const e = json.cnpjs && json.cnpjs[0];
+
+    if (!e) {
+      resultDiv.innerHTML = '<div style="color:#FF4D4D;text-align:center;">CNPJ não encontrado.</div>';
+      btn.disabled = false; btn.textContent = '🔎 CONSULTAR CNPJ';
+      return;
+    }
+
+    const end = e.endereco || {};
+    const atv = e.atividade_principal || {};
+    const emailObj = (e.contato_email && e.contato_email[0]) || {};
+    const email = emailObj.email || emailObj.contato || '';
+    const tels = e.contato_telefonico || [];
+    const telCel = tels[0] || {};
+    const cel = telCel.ddd ? `(${telCel.ddd}) ${telCel.numero}` : '';
+    const celNum = cel.replace(/[^0-9]/g, '');
+    const waLink = celNum ? `https://wa.me/55${celNum}` : '';
+    const cnpjFmt = e.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    const socios = (e.quadro_societario || []).map(s => s.nome).join(', ') || '-';
+
+    resultDiv.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">RAZÃO SOCIAL</div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);">${e.razao_social}</div>
+          ${e.nome_fantasia ? `<div style="font-size:12px;color:var(--gray);">${e.nome_fantasia}</div>` : ''}
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">CNPJ</div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);font-family:monospace;">${cnpjFmt}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">SITUAÇÃO</div>
+          <div style="font-size:14px;font-weight:700;color:#00E676;">${(e.situacao_cadastral && e.situacao_cadastral.situacao_atual) || '-'}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">PORTE</div>
+          <div style="font-size:14px;color:var(--white);">${(e.porte_empresa && e.porte_empresa.descricao) || '-'}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">SEGMENTO</div>
+          <div style="font-size:13px;color:var(--white);">${atv.descricao || '-'}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">DATA ABERTURA</div>
+          <div style="font-size:13px;color:var(--white);">${e.data_abertura ? new Date(e.data_abertura).toLocaleDateString('pt-BR') : '-'}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">ENDEREÇO</div>
+          <div style="font-size:12px;color:var(--white);">${end.logradouro || ''} ${end.numero || ''}, ${end.bairro || ''}<br>${end.municipio || ''} · ${end.uf || ''} · ${end.cep || ''}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">SÓCIOS</div>
+          <div style="font-size:12px;color:var(--white);">${socios}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">CAPITAL SOCIAL</div>
+          <div style="font-size:13px;color:var(--white);">R$ ${(e.capital_social || 0).toLocaleString('pt-BR')}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--cyan);letter-spacing:2px;margin-bottom:4px;">CONTATOS</div>
+          <div>
+            ${email ? `<a href="mailto:${email}" style="display:block;color:#00E676;font-size:12px;text-decoration:none;margin-bottom:6px;">✉ ${email}</a>` : ''}
+            ${waLink ? `<a href="${waLink}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:6px 16px;text-decoration:none;">WhatsApp</a>` : ''}
+            ${!email && !waLink ? '<span style="color:var(--gray);font-size:12px;">Sem contatos</span>' : ''}
+          </div>
+        </div>
+      </div>
+    `;
+
+  } catch(e) {
+    resultDiv.innerHTML = `<div style="color:#FF4D4D;">Erro ao consultar: ${e.message}</div>`;
+  }
+
+  btn.disabled = false; btn.textContent = '🔎 CONSULTAR CNPJ';
 }
 
 // ── VERIFICAR SESSION ATIVA ──
