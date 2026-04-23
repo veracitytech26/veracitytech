@@ -35,7 +35,10 @@ exports.handler = async function(event) {
       municipio: filtros.municipio || [],
       data_abertura: filtros.data_abertura || {},
       capital_social: { minimo: 0, maximo: 0 },
-      mei: { optante: filtros.mei_optante || false, excluir_optante: filtros.mei_excluir || false },
+      mei: {
+        optante: filtros.mei_optante || false,
+        excluir_optante: filtros.mei_excluir || false
+      },
       simples: { optante: false, excluir_optante: false },
       mais_filtros: {
         somente_matriz: false,
@@ -61,7 +64,9 @@ exports.handler = async function(event) {
       }];
     }
 
-    const res = await fetch('https://api.casadosdados.com.br/v5/cnpj/pesquisa', {
+    console.log('Payload CDD v5:', JSON.stringify(payload));
+
+    const res = await fetch('https://api.casadosdados.com.br/v5/cnpj/pesquisa?tipo_resultado=completo', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,7 +76,7 @@ exports.handler = async function(event) {
     });
 
     const responseText = await res.text();
-    console.log('CDD status:', res.status, 'body:', responseText.slice(0, 300));
+    console.log('CDD status:', res.status, 'sample:', responseText.slice(0, 500));
 
     return {
       statusCode: res.status,
