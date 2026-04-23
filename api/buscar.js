@@ -11,6 +11,21 @@ export default async function handler(req, res) {
   try {
     const filtros = req.body;
 
+    // Busca por CNPJ avulso
+    if (filtros.cnpj_avulso) {
+      const response = await fetch(`https://api.casadosdados.com.br/v4/cnpj/${filtros.cnpj_avulso}?tipo_resultado=completo`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': CDD_KEY
+        }
+      });
+      const data = await response.json();
+      // Retorna no mesmo formato da busca avancada
+      return res.status(response.status).json({ cnpjs: [data], total: 1 });
+    }
+
+    // Busca avancada normal
     const payload = {
       cnpj: [],
       cnpj_raiz: [],
