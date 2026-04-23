@@ -1004,17 +1004,25 @@ function renderResults(data) {
     const nome    = e.razao_social || '-';
     const cnpjFmt = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
 
+    // Formata número para WhatsApp
+    const celNum = cel.replace(/[^0-9]/g, '');
+    const waLink = celNum ? `https://wa.me/55${celNum}` : '';
+    const emailLink = email ? `mailto:${email}` : '';
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="color:var(--gray);font-size:11px;">${String(i+1).padStart(2,'0')}</td>
-      <td class="td-name">${nome}</td>
+      <td class="td-name" style="max-width:200px;">
+        ${nome}
+        ${e.nome_fantasia ? `<br><span style="font-size:10px;color:var(--gray);font-weight:400;">${e.nome_fantasia}</span>` : ''}
+      </td>
       <td style="font-family:monospace;font-size:11px;">${cnpjFmt || cnpj}</td>
-      <td>${cidade}${uf ? ' · ' + uf.toUpperCase() : ''}</td>
+      <td style="font-size:12px;">${cidade}${uf ? ' · ' + uf.toUpperCase() : ''}</td>
       <td style="font-size:11px;">${cnae}</td>
-      <td>
-        ${hasEmail ? '<span class="badge-email">E-MAIL</span>' : ''}
-        ${hasCel   ? '<span class="badge-cel">CELULAR</span>' : ''}
-        ${hasTel && !hasCel ? '<span class="badge-cel" style="background:rgba(255,184,0,0.1);border-color:rgba(255,184,0,0.2);color:#FFB800;">FIXO</span>' : ''}
+      <td style="min-width:160px;">
+        ${emailLink ? `<a href="${emailLink}" style="display:block;color:#00E676;font-size:11px;text-decoration:none;margin-bottom:4px;" title="${email}">✉ ${email.length > 22 ? email.slice(0,22)+'...' : email}</a>` : ''}
+        ${waLink ? `<a href="${waLink}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;text-decoration:none;border-radius:2px;">WhatsApp</a>` : ''}
+        ${hasTel && !hasCel ? `<span style="color:var(--gray);font-size:11px;">${tel}</span>` : ''}
         ${!hasEmail && !hasCel && !hasTel ? '<span style="color:var(--gray);font-size:11px;">-</span>' : ''}
       </td>
     `;
