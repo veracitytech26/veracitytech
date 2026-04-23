@@ -906,12 +906,11 @@ async function buscar() {
       page: 1
     };
 
-    const res = await fetch('https://api.casadosdados.com.br/v2/public/cnpj/search', {
+    // Chama proxy Netlify Function
+    console.log('Chamando proxy /.netlify/functions/buscar...');
+    const res = await fetch('/.netlify/functions/buscar', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Token ${CDD_KEY}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
