@@ -1647,51 +1647,19 @@ function gerarMsg2() {
   try { localStorage.setItem('g_nome',nome); localStorage.setItem('g_prod',prod); localStorage.setItem('g_tel',tel); } catch(e){}
   
   const empresa = e.razao_social || '';
-  const telStr = tel ? '
-
-📞 ' + tel : '';
+  const telStr = tel ? '\n\n📞 ' + tel : '';
   
   let msg = '';
   if (tmpl === 'saude') {
-    msg = 'Olá! Tudo bem? 😊
-
-Aqui é o ' + nome + ', especialista em planos de saúde empresariais.
-
-Vi que a *' + empresa + '* está em *' + cidade + '* e quero apresentar uma solução de saúde com o melhor custo-benefício para sua equipe.
-
-Posso te apresentar as opções? É rápido e sem compromisso! 💙' + telStr;
+    msg = 'Olá! Tudo bem? 😊\n\nAqui é o ' + nome + ', especialista em planos de saúde empresariais.\n\nVi que a *' + empresa + '* está em *' + cidade + '* e quero apresentar uma solução de saúde com o melhor custo-benefício para sua equipe.\n\nPosso te apresentar as opções? É rápido e sem compromisso! 💙' + telStr;
   } else if (tmpl === 'seguros') {
-    msg = 'Olá! Tudo bem? 😊
-
-Aqui é o ' + nome + ', especialista em seguros empresariais.
-
-Identifiquei que a *' + empresa + '* em *' + cidade + '* pode se beneficiar de uma cobertura que protege seu patrimônio.
-
-Posso fazer uma análise gratuita? 🛡️' + telStr;
+    msg = 'Olá! Tudo bem? 😊\n\nAqui é o ' + nome + ', especialista em seguros empresariais.\n\nIdentifiquei que a *' + empresa + '* em *' + cidade + '* pode se beneficiar de uma cobertura que protege seu patrimônio.\n\nPosso fazer uma análise gratuita? 🛡️' + telStr;
   } else if (tmpl === 'tech') {
-    msg = 'Olá! Tudo bem? 😊
-
-Aqui é o ' + nome + ' da ' + prod + '.
-
-Vi que a *' + empresa + '* em *' + cidade + '* e acredito que nossa solução pode otimizar seus processos.
-
-Podemos conversar rapidamente? 🚀' + telStr;
+    msg = 'Olá! Tudo bem? 😊\n\nAqui é o ' + nome + ' da ' + prod + '.\n\nVi que a *' + empresa + '* em *' + cidade + '* e acredito que nossa solução pode otimizar seus processos.\n\nPodemos conversar rapidamente? 🚀' + telStr;
   } else if (tmpl === 'contabil') {
-    msg = 'Olá! Tudo bem? 😊
-
-Meu nome é ' + nome + ' e sou contador especializado em empresas do seu segmento.
-
-Vi que a *' + empresa + '* está em *' + cidade + '* e gostaria de mostrar como posso ajudar a pagar menos impostos. 📊
-
-Posso fazer um diagnóstico gratuito?' + telStr;
+    msg = 'Olá! Tudo bem? 😊\n\nMeu nome é ' + nome + ' e sou contador especializado em empresas do seu segmento.\n\nVi que a *' + empresa + '* está em *' + cidade + '* e gostaria de mostrar como posso ajudar a pagar menos impostos. 📊\n\nPosso fazer um diagnóstico gratuito?' + telStr;
   } else {
-    msg = 'Olá! Tudo bem? 😊
-
-Meu nome é ' + nome + ' e trabalho com ' + prod + '.
-
-Vi que a *' + empresa + '* está em *' + cidade + '* e acredito que posso agregar muito valor ao seu negócio.
-
-Poderia te apresentar em 5 minutinhos como funciona? 🚀' + telStr;
+    msg = 'Olá! Tudo bem? 😊\n\nMeu nome é ' + nome + ' e trabalho com ' + prod + '.\n\nVi que a *' + empresa + '* está em *' + cidade + '* e acredito que posso agregar muito valor ao seu negócio.\n\nPoderia te apresentar em 5 minutinhos como funciona? 🚀' + telStr;
   }
   
   document.getElementById('msgBox2').textContent = msg;
