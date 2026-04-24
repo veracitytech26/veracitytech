@@ -1543,11 +1543,11 @@ let _empresasMSG = [];
 let _idxMSG = 0;
 
 const TMPL = {
-  geral: (e,c) => `Olá! Tudo bem? 😊\n\nMeu nome é ${c.n} e trabalho com ${c.p}.\n\nVi que a *${e.nome}* está em *${e.cidade}* e acredito que posso agregar muito valor ao seu negócio.\n\nPoderia te apresentar em 5 minutinhos como funciona? 🚀\n${c.t ? '\n📞 ' + c.t : ''}`,
-  saude: (e,c) => `Olá! Tudo bem? 😊\n\nAqui é o ${c.n}, especialista em planos de saúde empresariais.\n\nVi que a *${e.nome}* está em *${e.cidade}* e quero apresentar uma solução de saúde com o melhor custo-benefício para sua equipe.\n\nPosso te apresentar as opções? É rápido e sem compromisso! 💙\n${c.t ? '\n📞 ' + c.t : ''}`,
-  seguros: (e,c) => `Olá! Tudo bem? 😊\n\nAqui é o ${c.n}, especialista em seguros empresariais.\n\nIdentifiquei que a *${e.nome}* em *${e.cidade}* pode se beneficiar de uma cobertura que protege seu patrimônio com o melhor custo-benefício.\n\nPosso fazer uma análise gratuita e sem compromisso? 🛡️\n${c.t ? '\n📞 ' + c.t : ''}`,
-  tech: (e,c) => `Olá! Tudo bem? 😊\n\nAqui é o ${c.n} da ${c.p}.\n\nVi que a *${e.nome}* em *${e.cidade}* e acredito que nossa solução pode otimizar seus processos e aumentar sua produtividade.\n\nPodemos conversar rapidamente? 🚀\n${c.t ? '\n📞 ' + c.t : ''}`,
-  contabil: (e,c) => `Olá! Tudo bem? 😊\n\nMeu nome é ${c.n} e sou contador especializado em empresas do seu segmento.\n\nVi que a *${e.nome}* está em *${e.cidade}* e gostaria de mostrar como posso ajudar a pagar menos impostos dentro da lei. 📊\n\nPosso fazer um diagnóstico gratuito?\n${c.t ? '\n📞 ' + c.t : ''}`
+  geral: (e,c) => "Olá! Tudo bem? 😊\n\nMeu nome é " + c.n + " e trabalho com " + c.p + ".\n\nVi que a *" + e.nome + "* está em *" + e.cidade + "* e acredito que posso agregar muito valor ao seu negócio.\n\nPoderia te apresentar em 5 minutinhos como funciona? 🚀" + (c.t ? "\n\n📞 " + c.t : ""),
+  saude: (e,c) => "Olá! Tudo bem? 😊\n\nAqui é o " + c.n + ", especialista em planos de saúde empresariais.\n\nVi que a *" + e.nome + "* está em *" + e.cidade + "* e quero apresentar uma solução de saúde com o melhor custo-benefício para sua equipe.\n\nPosso te apresentar as opções? É rápido e sem compromisso! 💙" + (c.t ? "\n\n📞 " + c.t : ""),
+  seguros: (e,c) => "Olá! Tudo bem? 😊\n\nAqui é o " + c.n + ", especialista em seguros empresariais.\n\nIdentifiquei que a *" + e.nome + "* em *" + e.cidade + "* pode se beneficiar de uma cobertura que protege seu patrimônio com o melhor custo-benefício.\n\nPosso fazer uma análise gratuita e sem compromisso? 🛡️" + (c.t ? "\n\n📞 " + c.t : ""),
+  tech: (e,c) => "Olá! Tudo bem? 😊\n\nAqui é o " + c.n + " da " + c.p + ".\n\nVi que a *" + e.nome + "* em *" + e.cidade + "* e acredito que nossa solução pode otimizar seus processos e aumentar sua produtividade.\n\nPodemos conversar rapidamente? 🚀" + (c.t ? "\n\n📞 " + c.t : ""),
+  contabil: (e,c) => "Olá! Tudo bem? 😊\n\nMeu nome é " + c.n + " e sou contador especializado em empresas do seu segmento.\n\nVi que a *" + e.nome + "* está em *" + e.cidade + "* e gostaria de mostrar como posso ajudar a pagar menos impostos dentro da lei. 📊\n\nPosso fazer um diagnóstico gratuito?" + (c.t ? "\n\n📞 " + c.t : "")
 };
 
 function abrirGerador() {
@@ -1586,8 +1586,17 @@ function navEmpresa(dir) {
 }
 
 function abrirWhatsAppMsg() {
-  const href = document.getElementById('btnWaMsg').dataset.href;
-  if (href) window.open(href, '_blank');
+  const btn = document.getElementById('btnWaMsg');
+  const href = btn.dataset.href;
+  if (href && href !== 'undefined') {
+    window.open(href, '_blank');
+  } else {
+    // Gera link simples sem número
+    const msg = document.getElementById('msgBox').textContent;
+    if (msg && msg !== 'Configure seus dados acima...') {
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    }
+  }
 }
 
 function gerarMsg() {
