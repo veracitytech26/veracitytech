@@ -793,26 +793,69 @@ async function loadProfile() {
   if (!currentUser) return;
 
   try {
-    // Usa fetch direto com headers corretos
+    // Pega o token da sessão atual
+    const { data: { session } } = await db.auth.getSession();
+    const token = session ? session.access_token : SUPABASE_KEY;
+
+    // Busca perfil existente
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/profiles?select=*&id=eq.${currentUser.id}`,
       {
         method: 'GET',
         headers: {
           'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${currentUser.access_token || SUPABASE_KEY}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         }
       }
     );
 
     if (res.ok) {
       const data = await res.json();
-      currentProfile = data && data.length > 0 ? data[0] : null;
-      console.log('Perfil carregado:', currentProfile);
+      if (data && data.length > 0) {
+        currentProfile = data[0];
+        console.log('Perfil carregado:', currentProfile);
+      } else {
+        // Perfil não existe — cria agora com token válido
+        console.log('Criando perfil para usuário:', currentUser.id);
+        const meta = currentUser.user_metadata || {};
+        const plan = meta.plan || 'growth';
+        const credits = PLANOS[plan]?.creditos || 2000;
+
+        const createRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            id: currentUser.id,
+            email: currentUser.email,
+            name: meta.full_name || currentUser.email,
+            plan: plan,
+            phone: meta.phone || '',
+            credits_total: credits,
+            credits_used: 0,
+            exports: 0,
+            created_at: new Date().toISOString()
+          })
+        });
+
+        if (createRes.ok) {
+          const created = await createRes.json();
+          currentProfile = Array.isArray(created) ? created[0] : created;
+          console.log('Perfil criado:', currentProfile);
+        } else {
+          const err = await createRes.text();
+          console.error('Erro ao criar perfil:', err);
+          currentProfile = null;
+        }
+      }
     } else {
-      console.warn('Perfil não encontrado, usando dados do auth');
+      console.error('Erro ao buscar perfil:', await res.text());
       currentProfile = null;
     }
   } catch(e) {
@@ -943,11 +986,13 @@ async function buscar() {
     if (currentProfile) {
       const newUsed = (currentProfile.credits_used || 0) + empresasFinal.length;
       const newExports = (currentProfile.exports || 0) + 1;
+      const { data: { session: sess } } = await db.auth.getSession();
+      const tok = sess ? sess.access_token : SUPABASE_KEY;
       await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentUser.id}`, {
         method: 'PATCH',
         headers: {
           'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Authorization': `Bearer ${tok}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
