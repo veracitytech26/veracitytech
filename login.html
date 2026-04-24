@@ -948,8 +948,9 @@ async function loadProfile() {
         // Perfil não existe — cria agora com token válido
         console.log('Criando perfil para usuário:', currentUser.id);
         const meta = currentUser.user_metadata || {};
-        const plan = meta.plan || 'growth';
-        const credits = PLANOS[plan]?.creditos || 2000;
+        // Sempre começa como trial com 30 créditos — plano real só após pagamento
+        const plan = 'trial';
+        const credits = 30;
 
         const createRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
           method: 'POST',
