@@ -264,6 +264,116 @@ body {
 .empty-row { padding: 50px; text-align: center; }
 .empty-icon { font-size: 40px; opacity: 0.3; margin-bottom: 12px; }
 .empty-text { font-size: 14px; color: var(--gray); }
+
+  /* ── MODAL MENSAGEM ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+    justify-content: center; align-items: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--dark); border: 1px solid var(--border);
+    padding: 36px; max-width: 600px; width: 90%; position: relative;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+  }
+  .modal-title {
+    font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 8px;
+  }
+  .modal-sub { font-size: 13px; color: var(--gray); margin-bottom: 24px; }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: transparent; border: none; color: var(--gray);
+    font-size: 20px; cursor: pointer;
+  }
+  .modal-close:hover { color: var(--white); }
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .config-field label {
+    display: block; font-size: 10px; font-weight: 700;
+    color: var(--gray); letter-spacing: 2px; margin-bottom: 6px;
+  }
+  .config-field input, .config-field select, .config-field textarea {
+    width: 100%; background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border); color: var(--white);
+    padding: 10px 12px; font-size: 13px;
+    font-family: 'DM Sans', sans-serif; outline: none;
+  }
+  .config-field textarea { resize: vertical; min-height: 80px; }
+  .msg-preview {
+    background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2);
+    padding: 20px; margin: 20px 0; font-size: 14px;
+    color: var(--white); line-height: 1.7; white-space: pre-wrap;
+  }
+  .msg-actions { display: flex; gap: 12px; }
+  .btn-copy {
+    background: var(--cyan); color: var(--navy);
+    font-size: 13px; font-weight: 700; letter-spacing: 1px;
+    padding: 12px 24px; border: none; cursor: pointer; flex: 1;
+  }
+  .btn-whatsapp {
+    background: #25D366; color: #fff;
+    font-size: 13px; font-weight: 700; letter-spacing: 1px;
+    padding: 12px 24px; border: none; cursor: pointer; flex: 1;
+    text-decoration: none; text-align: center; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .empresa-selecionada {
+    background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.15);
+    padding: 12px 16px; margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .es-nome { font-size: 14px; font-weight: 700; color: var(--white); }
+  .es-info { font-size: 12px; color: var(--cyan); }
+  .select-empresa-btn {
+    background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);
+    color: var(--cyan); font-size: 11px; font-weight: 700;
+    padding: 6px 14px; cursor: pointer; letter-spacing: 1px;
+    margin-left: 8px;
+  }
+
+  .modal-overlay {
+    display:none; position:fixed; inset:0; z-index:1000;
+    background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
+    justify-content:center; align-items:center;
+  }
+  .modal-overlay.show { display:flex; }
+  .modal {
+    background:var(--dark); border:1px solid var(--border);
+    padding:36px; max-width:580px; width:92%; position:relative;
+    max-height:90vh; overflow-y:auto;
+  }
+  .modal::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,var(--blue),var(--cyan));
+  }
+  .modal-close {
+    position:absolute; top:14px; right:16px;
+    background:transparent; border:none; color:var(--gray);
+    font-size:20px; cursor:pointer;
+  }
+  .modal-close:hover { color:var(--white); }
+  .cfg-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .cfg-field label { display:block; font-size:10px; font-weight:700; color:var(--gray); letter-spacing:2px; margin-bottom:6px; }
+  .cfg-field input, .cfg-field select {
+    width:100%; background:rgba(255,255,255,0.04);
+    border:1px solid var(--border); color:var(--white);
+    padding:10px 12px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none;
+  }
+  .msg-box {
+    background:rgba(0,212,255,0.05); border:1px solid rgba(0,212,255,0.2);
+    padding:18px; margin:16px 0; font-size:13px; color:var(--white);
+    line-height:1.7; white-space:pre-wrap; min-height:120px;
+  }
+  .msg-btns { display:flex; gap:10px; }
+  .btn-copiar { background:var(--cyan); color:var(--navy); font-size:13px; font-weight:700; padding:12px 20px; border:none; cursor:pointer; flex:1; }
+  .btn-wa { background:#25D366; color:#fff; font-size:13px; font-weight:700; padding:12px 20px; border:none; cursor:pointer; flex:1; text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center; }
+  .empresa-sel { background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.15); padding:12px 16px; margin-bottom:20px; }
+  .es-nome { font-size:14px; font-weight:700; color:var(--white); }
+  .es-info { font-size:11px; color:var(--cyan); margin-top:2px; }
 </style>
 </head>
 <body>
@@ -618,7 +728,10 @@ body {
         <div class="rh-title">Resultados</div>
         <div class="rh-badge" id="resultBadge">0 empresas</div>
       </div>
-      <button class="btn-export" id="btnExport" disabled onclick="exportar()">↓ EXPORTAR CSV</button>
+      <div style="display:flex;gap:10px;">
+        <button id="btnMsg" disabled onclick="abrirGerador()" style="background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);color:#25D366;font-size:12px;font-weight:700;letter-spacing:1px;padding:10px 18px;cursor:pointer;">💬 GERAR MENSAGEM</button>
+        <button class="btn-export" id="btnExport" disabled onclick="exportar()">↓ EXPORTAR CSV</button>
+      </div>
     </div>
     <div class="loading-row" id="loadingRow">
       <div class="spinner"></div>
@@ -1066,6 +1179,7 @@ function renderResults(data) {
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
+      <td><input type="checkbox" id="cb_${i}" style="accent-color:var(--cyan);width:14px;height:14px;"></td>
       <td style="color:var(--gray);font-size:11px;">${String(i+1).padStart(2,'0')}</td>
       <td class="td-name" style="max-width:200px;">
         ${nome}
@@ -1090,6 +1204,8 @@ function renderResults(data) {
   document.getElementById('resultBadge').style.display = 'inline-block';
   document.getElementById('resultBadge').textContent = data.length + ' empresas';
   document.getElementById('btnExport').disabled = false;
+  document.getElementById('btnMsg').disabled = false;
+  document.getElementById('btnMsg').disabled = false;
 }
 
 function exportar() {
@@ -1145,6 +1261,7 @@ function limpar() {
   document.getElementById('searchCount').style.display = 'none';
   document.getElementById('resultBadge').style.display = 'none';
   document.getElementById('btnExport').disabled = true;
+  document.getElementById('btnMsg').disabled = true;
   currentResults = [];
 }
 
@@ -1248,6 +1365,262 @@ async function buscarCnpj() {
   btn.disabled = false; btn.textContent = '🔎 CONSULTAR CNPJ';
 }
 
+
+// ── GERADOR DE MENSAGEM ──
+let empresasParaMensagem = [];
+let indiceEmpresaAtual = 0;
+
+const TEMPLATES = {
+  apresentacao: (e, cfg) => `Olá! Tudo bem? 😊
+
+Meu nome é ${cfg.nome} e trabalho com ${cfg.produto}.
+
+Vi que a *${e.nome}* está em *${e.cidade}* e acredito que posso agregar muito valor ao seu negócio.
+
+Poderia te apresentar em apenas 5 minutinhos como funciona?
+
+Qualquer dúvida estou à disposição! 🚀
+${cfg.tel ? '📞 ' + cfg.tel : ''}`,
+
+  seguros: (e, cfg) => `Olá! Tudo bem? 😊
+
+Aqui é o ${cfg.nome}, especialista em seguros empresariais.
+
+Identifiquei que a *${e.nome}* em *${e.cidade}* pode se beneficiar de uma cobertura que protege seu patrimônio com o melhor custo-benefício do mercado.
+
+Posso fazer uma análise gratuita e sem compromisso para a sua empresa?
+
+${cfg.tel ? '📞 ' + cfg.tel : ''}`,
+
+  plano_saude: (e, cfg) => `Olá! Tudo bem? 😊
+
+Meu nome é ${cfg.nome} e sou especialista em planos de saúde empresariais.
+
+Vi que a *${e.nome}* está em *${e.cidade}* e quero apresentar uma solução de saúde que cabe no orçamento da sua empresa — com cobertura completa para você e sua equipe.
+
+Posso te apresentar as opções disponíveis? É rápido e sem compromisso! 💙
+
+${cfg.tel ? '📞 ' + cfg.tel : ''}`,
+
+  tecnologia: (e, cfg) => `Olá! Tudo bem? 😊
+
+Aqui é o ${cfg.nome} da ${cfg.produto}.
+
+Vi que a *${e.nome}* em *${e.cidade}* está no mercado e acredito que nossa solução pode otimizar seus processos e aumentar sua produtividade.
+
+Podemos conversar rapidamente? Tenho cases incríveis do seu segmento para te mostrar! 🚀
+
+${cfg.tel ? '📞 ' + cfg.tel : ''}`,
+
+  contabilidade: (e, cfg) => `Olá! Tudo bem? 😊
+
+Meu nome é ${cfg.nome} e sou contador especializado em empresas do seu segmento.
+
+Vi que a *${e.nome}* está em *${e.cidade}* e gostaria de apresentar como posso ajudar sua empresa a pagar menos impostos dentro da lei e manter tudo em dia.
+
+Posso fazer um diagnóstico gratuito? 📊
+
+${cfg.tel ? '📞 ' + cfg.tel : ''}`,
+
+  personalizado: (e, cfg) => `Olá! Tudo bem? 😊
+
+Meu nome é ${cfg.nome} e trabalho com ${cfg.produto}.
+
+Vi que a *${e.nome}* está em *${e.cidade}* e gostaria de apresentar como posso ajudar o seu negócio.
+
+Podemos conversar? 😊
+
+${cfg.tel ? '📞 ' + cfg.tel : ''}`
+};
+
+function abrirGerador() {
+  const selecionadas = currentResults.filter((e, i) => {
+    const cb = document.getElementById(`cb_${i}`);
+    return cb && cb.checked;
+  });
+
+  empresasParaMensagem = selecionadas.length > 0 ? selecionadas : currentResults;
+  indiceEmpresaAtual = 0;
+
+  document.getElementById('empresaTotal').textContent = empresasParaMensagem.length;
+  atualizarEmpresaModal();
+  document.getElementById('modalMsg').classList.add('show');
+  gerarMensagem();
+}
+
+function fecharModal() {
+  document.getElementById('modalMsg').classList.remove('show');
+}
+
+function atualizarEmpresaModal() {
+  if (!empresasParaMensagem.length) return;
+  const e = empresasParaMensagem[indiceEmpresaAtual];
+  const end = e.endereco || {};
+  const cidade = end.municipio ? end.municipio.split(' ').map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
+  const uf = end.uf || '';
+  const atv = e.atividade_principal || {};
+
+  document.getElementById('esNome').textContent = e.razao_social || '-';
+  document.getElementById('esInfo').textContent = `${cidade}${uf ? ' · ' + uf.toUpperCase() : ''} · ${atv.descricao || ''}`;
+  document.getElementById('empresaAtual').textContent = indiceEmpresaAtual + 1;
+  gerarMensagem();
+}
+
+function navegarEmpresa(dir) {
+  indiceEmpresaAtual = Math.max(0, Math.min(indiceEmpresaAtual + dir, empresasParaMensagem.length - 1));
+  atualizarEmpresaModal();
+}
+
+function gerarMensagem() {
+  if (!empresasParaMensagem.length) return;
+
+  const e = empresasParaMensagem[indiceEmpresaAtual];
+  const end = e.endereco || {};
+  const cidade = end.municipio ? end.municipio.split(' ').map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
+
+  const cfg = {
+    nome: document.getElementById('cfgNome').value || 'Fulano',
+    produto: document.getElementById('cfgProduto').value || 'nosso produto',
+    tel: document.getElementById('cfgTelefone').value || ''
+  };
+
+  const template = document.getElementById('cfgTemplate').value;
+  const fn = TEMPLATES[template] || TEMPLATES.apresentacao;
+
+  const empresaData = { nome: e.razao_social, cidade };
+  const msg = fn(empresaData, cfg);
+
+  document.getElementById('msgPreview').textContent = msg;
+
+  // Atualiza link WhatsApp da empresa
+  const emailObj = (e.contato_email && e.contato_email[0]) || {};
+  const tels = e.contato_telefonico || [];
+  const telCel = tels[0] || {};
+  const celNum = telCel.ddd ? (telCel.ddd + telCel.numero).replace(/[^0-9]/g, '') : '';
+  const waLink = celNum
+    ? `https://wa.me/55${celNum}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+  document.getElementById('btnWhatsappMsg').href = waLink;
+
+  // Salva configurações no localStorage
+  try {
+    localStorage.setItem('cfgNome', cfg.nome);
+    localStorage.setItem('cfgProduto', cfg.produto);
+    localStorage.setItem('cfgTelefone', cfg.tel);
+  } catch(err) {}
+}
+
+function copiarMensagem() {
+  const msg = document.getElementById('msgPreview').textContent;
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = event.target;
+    btn.textContent = '✅ COPIADO!';
+    setTimeout(() => btn.textContent = '📋 COPIAR MENSAGEM', 2000);
+  });
+}
+
+function toggleSelectAll(cb) {
+  const checkboxes = document.querySelectorAll('[id^="cb_"]');
+  checkboxes.forEach(c => c.checked = cb.checked);
+}
+
+// Carrega configurações salvas
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const n = localStorage.getItem('cfgNome');
+    const p = localStorage.getItem('cfgProduto');
+    const t = localStorage.getItem('cfgTelefone');
+    if (n) document.getElementById('cfgNome').value = n;
+    if (p) document.getElementById('cfgProduto').value = p;
+    if (t) document.getElementById('cfgTelefone').value = t;
+  } catch(err) {}
+});
+
+
+// ── GERADOR DE MENSAGEM ──
+let _empresasMSG = [];
+let _idxMSG = 0;
+
+const TMPL = {
+  geral: (e,c) => `Olá! Tudo bem? 😊\n\nMeu nome é ${c.n} e trabalho com ${c.p}.\n\nVi que a *${e.nome}* está em *${e.cidade}* e acredito que posso agregar muito valor ao seu negócio.\n\nPoderia te apresentar em 5 minutinhos como funciona? 🚀\n${c.t ? '\n📞 ' + c.t : ''}`,
+  saude: (e,c) => `Olá! Tudo bem? 😊\n\nAqui é o ${c.n}, especialista em planos de saúde empresariais.\n\nVi que a *${e.nome}* está em *${e.cidade}* e quero apresentar uma solução de saúde com o melhor custo-benefício para sua equipe.\n\nPosso te apresentar as opções? É rápido e sem compromisso! 💙\n${c.t ? '\n📞 ' + c.t : ''}`,
+  seguros: (e,c) => `Olá! Tudo bem? 😊\n\nAqui é o ${c.n}, especialista em seguros empresariais.\n\nIdentifiquei que a *${e.nome}* em *${e.cidade}* pode se beneficiar de uma cobertura que protege seu patrimônio com o melhor custo-benefício.\n\nPosso fazer uma análise gratuita e sem compromisso? 🛡️\n${c.t ? '\n📞 ' + c.t : ''}`,
+  tech: (e,c) => `Olá! Tudo bem? 😊\n\nAqui é o ${c.n} da ${c.p}.\n\nVi que a *${e.nome}* em *${e.cidade}* e acredito que nossa solução pode otimizar seus processos e aumentar sua produtividade.\n\nPodemos conversar rapidamente? 🚀\n${c.t ? '\n📞 ' + c.t : ''}`,
+  contabil: (e,c) => `Olá! Tudo bem? 😊\n\nMeu nome é ${c.n} e sou contador especializado em empresas do seu segmento.\n\nVi que a *${e.nome}* está em *${e.cidade}* e gostaria de mostrar como posso ajudar a pagar menos impostos dentro da lei. 📊\n\nPosso fazer um diagnóstico gratuito?\n${c.t ? '\n📞 ' + c.t : ''}`
+};
+
+function abrirGerador() {
+  _empresasMSG = currentResults.length > 0 ? currentResults : [];
+  if (!_empresasMSG.length) return;
+  _idxMSG = 0;
+  document.getElementById('esTotal').textContent = _empresasMSG.length;
+  atualizarEmpresaMSG();
+  document.getElementById('modalMsg').classList.add('show');
+  // Carrega configs salvas
+  try {
+    const n = localStorage.getItem('cfgN'); const p = localStorage.getItem('cfgP'); const t = localStorage.getItem('cfgT');
+    if(n) document.getElementById('cfgNome').value = n;
+    if(p) document.getElementById('cfgProduto').value = p;
+    if(t) document.getElementById('cfgTel').value = t;
+  } catch(e) {}
+  gerarMsg();
+}
+
+function atualizarEmpresaMSG() {
+  const e = _empresasMSG[_idxMSG];
+  const end = e.endereco || {};
+  const mun = end.municipio || '';
+  const cidade = mun.split(' ').map(w => w ? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' ');
+  const uf = end.uf || '';
+  const atv = e.atividade_principal || {};
+  document.getElementById('esNome').textContent = e.razao_social || '-';
+  document.getElementById('esInfo').textContent = cidade + (uf ? ' · '+uf.toUpperCase() : '') + (atv.descricao ? ' · '+atv.descricao : '');
+  document.getElementById('esAtual').textContent = _idxMSG + 1;
+  gerarMsg();
+}
+
+function navEmpresa(dir) {
+  _idxMSG = Math.max(0, Math.min(_idxMSG + dir, _empresasMSG.length - 1));
+  atualizarEmpresaMSG();
+}
+
+function gerarMsg() {
+  if (!_empresasMSG.length) return;
+  const e = _empresasMSG[_idxMSG];
+  const end = e.endereco || {};
+  const mun = end.municipio || '';
+  const cidade = mun.split(' ').map(w => w ? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' ');
+  const cfg = {
+    n: document.getElementById('cfgNome').value || 'Fulano',
+    p: document.getElementById('cfgProduto').value || 'nosso produto',
+    t: document.getElementById('cfgTel').value || ''
+  };
+  try { localStorage.setItem('cfgN',cfg.n); localStorage.setItem('cfgP',cfg.p); localStorage.setItem('cfgT',cfg.t); } catch(e) {}
+  const tmpl = document.getElementById('cfgTemplate').value;
+  const fn = TMPL[tmpl] || TMPL.geral;
+  const msg = fn({nome: e.razao_social, cidade}, cfg);
+  document.getElementById('msgBox').textContent = msg;
+  // Link WhatsApp da empresa
+  const tels = e.contato_telefonico || [];
+  const tel0 = tels[0] || {};
+  const celNum = tel0.ddd ? (tel0.ddd + tel0.numero).replace(/[^0-9]/g,'') : '';
+  const waHref = celNum
+    ? 'https://wa.me/55'+celNum+'?text='+encodeURIComponent(msg)
+    : 'https://wa.me/?text='+encodeURIComponent(msg);
+  document.getElementById('btnWaMsg').href = waHref;
+}
+
+function copiarMsg() {
+  const msg = document.getElementById('msgBox').textContent;
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✅ COPIADO!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
 // ── VERIFICAR SESSION ATIVA ──
 async function init() {
   await setupDB();
@@ -1261,5 +1634,112 @@ async function init() {
 
 init();
 </script>
+
+<!-- MODAL GERADOR DE MENSAGEM -->
+<div class="modal-overlay" id="modalMsg">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal()">✕</button>
+    <div class="modal-title">💬 Gerador de Mensagem</div>
+    <div class="modal-sub">Configure seus dados uma vez e gere mensagens personalizadas para cada empresa</div>
+
+    <!-- Empresa selecionada -->
+    <div class="empresa-selecionada" id="empresaSelecionada">
+      <div>
+        <div class="es-nome" id="esNome">Selecione uma empresa</div>
+        <div class="es-info" id="esInfo">-</div>
+      </div>
+    </div>
+
+    <!-- Configurações do vendedor -->
+    <div class="config-grid">
+      <div class="config-field">
+        <label>SEU NOME</label>
+        <input type="text" id="cfgNome" placeholder="Ex: João Silva" oninput="gerarMensagem()">
+      </div>
+      <div class="config-field">
+        <label>SEU PRODUTO/SERVIÇO</label>
+        <input type="text" id="cfgProduto" placeholder="Ex: Plano de saúde empresarial" oninput="gerarMensagem()">
+      </div>
+      <div class="config-field">
+        <label>SEU WHATSAPP</label>
+        <input type="text" id="cfgTelefone" placeholder="Ex: (21) 99999-9999" oninput="gerarMensagem()">
+      </div>
+      <div class="config-field">
+        <label>TEMPLATE</label>
+        <select id="cfgTemplate" onchange="gerarMensagem()">
+          <option value="apresentacao">Apresentação inicial</option>
+          <option value="seguros">Corretor de seguros</option>
+          <option value="plano_saude">Plano de saúde</option>
+          <option value="tecnologia">Tecnologia/Software</option>
+          <option value="contabilidade">Contabilidade</option>
+          <option value="personalizado">Personalizado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Mensagem personalizada -->
+    <div style="margin-bottom:12px;">
+      <label style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;display:block;margin-bottom:8px;">MENSAGEM GERADA</label>
+      <div class="msg-preview" id="msgPreview">Configure seus dados acima para gerar a mensagem...</div>
+    </div>
+
+    <!-- Ações -->
+    <div class="msg-actions">
+      <button class="btn-copy" onclick="copiarMensagem()">📋 COPIAR MENSAGEM</button>
+      <a class="btn-whatsapp" id="btnWhatsappMsg" href="#" target="_blank">📱 ABRIR NO WHATSAPP</a>
+    </div>
+
+    <!-- Navegação entre empresas -->
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;color:var(--gray);">Empresa <span id="empresaAtual">1</span> de <span id="empresaTotal">1</span></span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="navegarEmpresa(-1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 16px;cursor:pointer;">← Anterior</button>
+        <button onclick="navegarEmpresa(1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 16px;cursor:pointer;">Próxima →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="modalMsg">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modalMsg').classList.remove('show')">✕</button>
+    <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:6px;">💬 Gerador de Mensagem</div>
+    <div style="font-size:12px;color:var(--gray);margin-bottom:20px;">Configure seus dados e gere mensagens personalizadas</div>
+    <div class="empresa-sel">
+      <div class="es-nome" id="esNome">-</div>
+      <div class="es-info" id="esInfo">-</div>
+      <div style="font-size:11px;color:var(--gray);margin-top:6px;">Empresa <span id="esAtual">1</span> de <span id="esTotal">1</span></div>
+    </div>
+    <div class="cfg-grid">
+      <div class="cfg-field"><label>SEU NOME</label><input id="cfgNome" placeholder="Ex: João Silva" oninput="gerarMsg()"></div>
+      <div class="cfg-field"><label>SEU PRODUTO/SERVIÇO</label><input id="cfgProduto" placeholder="Ex: Plano de saúde" oninput="gerarMsg()"></div>
+      <div class="cfg-field"><label>SEU WHATSAPP</label><input id="cfgTel" placeholder="Ex: 21999999999" oninput="gerarMsg()"></div>
+      <div class="cfg-field">
+        <label>TEMPLATE</label>
+        <select id="cfgTemplate" onchange="gerarMsg()">
+          <option value="geral">Apresentação geral</option>
+          <option value="saude">Plano de saúde</option>
+          <option value="seguros">Corretor de seguros</option>
+          <option value="tech">Tecnologia/Software</option>
+          <option value="contabil">Contabilidade</option>
+        </select>
+      </div>
+    </div>
+    <label style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;display:block;margin-bottom:8px;">MENSAGEM GERADA</label>
+    <div class="msg-box" id="msgBox">Configure seus dados acima...</div>
+    <div class="msg-btns">
+      <button class="btn-copiar" onclick="copiarMsg()">📋 COPIAR</button>
+      <a class="btn-wa" id="btnWaMsg" href="#" target="_blank">📱 ABRIR NO WHATSAPP</a>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <span style="font-size:12px;color:var(--gray);">Navegar entre empresas</span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="navEmpresa(-1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 14px;cursor:pointer;font-size:13px;">← Anterior</button>
+        <button onclick="navEmpresa(1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 14px;cursor:pointer;font-size:13px;">Próxima →</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
