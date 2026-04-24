@@ -399,6 +399,13 @@ body {
     </div>
   </div>
 
+  <!-- ABAS DO PAINEL -->
+  <div style="display:flex;gap:2px;margin-bottom:24px;border-bottom:1px solid var(--border);">
+    <button type="button" id="tabBusca" onclick="mostrarAba('busca')" style="background:rgba(0,212,255,0.1);border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">⚡ NOVA BUSCA</button>
+    <button type="button" id="tabHistorico" onclick="mostrarAba('historico')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:var(--gray);font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">📋 HISTÓRICO</button>
+  </div>
+
+  <div id="abaBusca">
   <div class="stats-row">
     <div class="stat-card">
       <div class="sc-label">CRÉDITOS DISPONÍVEIS</div>
@@ -578,6 +585,18 @@ body {
           </select>
         </div>
         <div>
+          <label class="filter-label">TEMPO DA EMPRESA</label>
+          <select class="filter-select" id="fTempo">
+            <option value="">Qualquer tempo</option>
+            <option value="3m">Últimos 3 meses</option>
+            <option value="6m">Últimos 6 meses</option>
+            <option value="1a">Último ano</option>
+            <option value="2a">Últimos 2 anos</option>
+            <option value="5a">Últimos 5 anos</option>
+            <option value="5a+">Mais de 5 anos</option>
+          </select>
+        </div>
+        <div>
           <label class="filter-label">SITUAÇÃO CADASTRAL</label>
           <select class="filter-select" id="fSituacao">
             <option value="ATIVA">Ativa</option>
@@ -585,6 +604,17 @@ body {
             <option value="INAPTA">Inapta</option>
             <option value="">Todas</option>
           </select>
+        </div>
+      </div>
+
+      <!-- ROW 3B -->
+      <div class="filters-grid" style="margin-top:16px;">
+        <div>
+          <label class="filter-label">BUSCAR SEGMENTO POR NOME</label>
+          <div style="position:relative;">
+            <input class="filter-input" type="text" id="fCnaeSearch" placeholder="Ex: farmácia, academia, clínica..." oninput="buscarCnae(this.value)" autocomplete="off">
+            <div id="cnaeDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0D1530;border:1px solid rgba(0,212,255,0.3);z-index:100;max-height:200px;overflow-y:auto;"></div>
+          </div>
         </div>
         <div>
           <label class="filter-label">QUANTIDADE</label>
@@ -595,6 +625,13 @@ body {
             <option value="200">200 empresas</option>
             <option value="500">500 empresas</option>
           </select>
+        </div>
+        <div>
+          <label class="filter-label">CIDADE (AUTOCOMPLETE)</label>
+          <div style="position:relative;">
+            <input class="filter-input" type="text" id="fCidade" placeholder="Digite a cidade..." oninput="buscarCidade(this.value)" autocomplete="off">
+            <div id="cidadeDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0D1530;border:1px solid rgba(0,212,255,0.3);z-index:100;max-height:200px;overflow-y:auto;"></div>
+          </div>
         </div>
       </div>
 
@@ -631,6 +668,10 @@ body {
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gray);">
           <input type="checkbox" id="fSomenteMatriz" style="accent-color:var(--cyan);width:16px;height:16px;">
           Somente matriz
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#FFB800;">
+          <input type="checkbox" id="fNaoRepetir" style="accent-color:#FFB800;width:16px;height:16px;">
+          🔄 Não repetir empresas já vistas
         </label>
       </div>
       <div class="search-actions">
@@ -1004,6 +1045,28 @@ async function buscar() {
       pagina: 1
     };
 
+    // Filtro de tempo da empresa
+    const tempo = document.getElementById('fTempo') ? document.getElementById('fTempo').value : '';
+    if (tempo) {
+      const hoje = new Date();
+      const fim = hoje.toISOString().split('T')[0];
+      let inicio = '';
+      if (tempo === '3m') { const d = new Date(); d.setMonth(d.getMonth()-3); inicio = d.toISOString().split('T')[0]; }
+      else if (tempo === '6m') { const d = new Date(); d.setMonth(d.getMonth()-6); inicio = d.toISOString().split('T')[0]; }
+      else if (tempo === '1a') { const d = new Date(); d.setFullYear(d.getFullYear()-1); inicio = d.toISOString().split('T')[0]; }
+      else if (tempo === '2a') { const d = new Date(); d.setFullYear(d.getFullYear()-2); inicio = d.toISOString().split('T')[0]; }
+      else if (tempo === '5a') { const d = new Date(); d.setFullYear(d.getFullYear()-5); inicio = d.toISOString().split('T')[0]; }
+      else if (tempo === '5a+') { const d = new Date(2000,0,1); inicio = '2000-01-01'; }
+      if (tempo === '5a+') { payload.data_abertura = { inicio: '2000-01-01', fim: new Date(new Date().setFullYear(new Date().getFullYear()-5)).toISOString().split('T')[0] }; }
+      else if (inicio) { payload.data_abertura = { inicio, fim }; }
+    }
+
+    // Não repetir empresas já vistas
+    const naoRepetir = document.getElementById('fNaoRepetir') && document.getElementById('fNaoRepetir').checked;
+    if (naoRepetir) {
+      payload.mais_filtros.excluir_empresas_visualizadas = true;
+    }
+
     console.log('Chamando proxy /.netlify/functions/buscar...', JSON.stringify(payload));
     const res = await fetch('/api/buscar', {
       method: 'POST',
@@ -1025,6 +1088,7 @@ async function buscar() {
     currentResults = empresasFinal;
 
     renderResults(empresasFinal);
+    salvarNoHistorico(empresasFinal);
 
     // Atualizar créditos usados
     if (currentProfile) {
@@ -1296,6 +1360,156 @@ async function buscarCnpj() {
   btn.disabled = false; btn.textContent = '🔎 CONSULTAR CNPJ';
 }
 
+
+
+// ── ABAS ──
+function mostrarAba(aba) {
+  document.getElementById('abaBusca').style.display = aba === 'busca' ? 'block' : 'none';
+  document.getElementById('abaHistorico').style.display = aba === 'historico' ? 'block' : 'none';
+  document.getElementById('tabBusca').style.borderBottomColor = aba === 'busca' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('tabBusca').style.color = aba === 'busca' ? 'var(--cyan)' : 'var(--gray)';
+  document.getElementById('tabBusca').style.background = aba === 'busca' ? 'rgba(0,212,255,0.1)' : 'transparent';
+  document.getElementById('tabHistorico').style.borderBottomColor = aba === 'historico' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('tabHistorico').style.color = aba === 'historico' ? 'var(--cyan)' : 'var(--gray)';
+  document.getElementById('tabHistorico').style.background = aba === 'historico' ? 'rgba(0,212,255,0.1)' : 'transparent';
+  if (aba === 'historico') renderHistorico();
+}
+
+// ── HISTÓRICO DE EMPRESAS ──
+function getHistorico() {
+  try { return JSON.parse(localStorage.getItem('hist_empresas') || '[]'); } catch(e) { return []; }
+}
+
+function salvarNoHistorico(empresas) {
+  try {
+    let hist = getHistorico();
+    const novos = empresas.map(e => ({
+      cnpj: e.cnpj,
+      nome: e.razao_social,
+      cidade: (e.endereco && e.endereco.municipio) || '',
+      uf: (e.endereco && e.endereco.uf) || '',
+      email: (e.contato_email && e.contato_email[0] && e.contato_email[0].email) || '',
+      data: new Date().toLocaleDateString('pt-BR')
+    }));
+    // Adiciona só os que não existem ainda
+    novos.forEach(n => {
+      if (!hist.find(h => h.cnpj === n.cnpj)) hist.unshift(n);
+    });
+    // Mantém máximo 500
+    hist = hist.slice(0, 500);
+    localStorage.setItem('hist_empresas', JSON.stringify(hist));
+  } catch(e) {}
+}
+
+function renderHistorico() {
+  const hist = getHistorico();
+  const div = document.getElementById('historicoLista');
+  if (!hist.length) {
+    div.innerHTML = '<div style="text-align:center;padding:40px;"><div style="font-size:36px;opacity:0.3;margin-bottom:12px;">📋</div><div>Nenhuma empresa consultada ainda.</div></div>';
+    return;
+  }
+  let html = '<div style="margin-bottom:12px;font-size:12px;color:var(--gray);">' + hist.length + ' empresas no histórico</div>';
+  html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">';
+  html += '<tr><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">EMPRESA</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">CNPJ</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">CIDADE</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">DATA</th></tr>';
+  hist.slice(0, 100).forEach(h => {
+    const cidade = h.cidade ? h.cidade.split(' ').map(w => w[0].toUpperCase()+w.slice(1).toLowerCase()).join(' ') : '';
+    html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">';
+    html += '<td style="padding:10px 12px;font-size:12px;color:var(--white);font-weight:600;">' + (h.nome || '-') + '</td>';
+    html += '<td style="padding:10px 12px;font-size:11px;font-family:monospace;color:var(--gray);">' + (h.cnpj || '-') + '</td>';
+    html += '<td style="padding:10px 12px;font-size:12px;color:var(--gray);">' + cidade + (h.uf ? ' · '+h.uf.toUpperCase() : '') + '</td>';
+    html += '<td style="padding:10px 12px;font-size:11px;color:var(--gray);">' + (h.data || '-') + '</td>';
+    html += '</tr>';
+  });
+  html += '</table></div>';
+  if (hist.length > 100) html += '<div style="text-align:center;padding:12px;font-size:12px;color:var(--gray);">Mostrando 100 de ' + hist.length + '</div>';
+  div.innerHTML = html;
+}
+
+function limparHistorico() {
+  if (confirm('Limpar todo o histórico de empresas consultadas?')) {
+    localStorage.removeItem('hist_empresas');
+    renderHistorico();
+  }
+}
+
+// ── AUTOCOMPLETE CNAE ──
+const CNAES = [
+  {cod:'8630501',nome:'Clínicas Médicas'},{cod:'8630502',nome:'Consultórios Médicos'},
+  {cod:'8640202',nome:'Laboratórios de Análises Clínicas'},{cod:'8650001',nome:'Fisioterapia'},
+  {cod:'8650004',nome:'Odontologia'},{cod:'8660700',nome:'Veterinários'},
+  {cod:'4771701',nome:'Farmácias e Drogarias'},{cod:'4771702',nome:'Manipulação de Fórmulas'},
+  {cod:'5611201',nome:'Restaurantes e Similares'},{cod:'5611202',nome:'Bares e Estabelecimentos'},
+  {cod:'5611203',nome:'Lanchonetes e Fast Food'},{cod:'4721102',nome:'Padarias e Confeitarias'},
+  {cod:'9313100',nome:'Academias de Ginástica'},{cod:'9602501',nome:'Cabeleireiros'},
+  {cod:'9602502',nome:'Barbearias'},{cod:'9609202',nome:'Manicure e Pedicure'},
+  {cod:'8621601',nome:'Clínicas de Estética'},{cod:'6201501',nome:'Desenvolvimento de Software'},
+  {cod:'6202300',nome:'Consultoria em TI'},{cod:'6319400',nome:'Portais e Plataformas'},
+  {cod:'4120400',nome:'Construção de Edifícios'},{cod:'4321500',nome:'Instalações Elétricas'},
+  {cod:'4322301',nome:'Hidráulica e Encanamento'},{cod:'8511200',nome:'Educação Infantil'},
+  {cod:'8550301',nome:'Cursos Livres'},{cod:'8550302',nome:'Cursos de Idiomas'},
+  {cod:'4921301',nome:'Transporte Urbano'},{cod:'4923001',nome:'Transporte de Cargas'},
+  {cod:'6810202',nome:'Venda de Imóveis'},{cod:'6821801',nome:'Corretores de Imóveis'},
+  {cod:'4711301',nome:'Supermercados'},{cod:'4712100',nome:'Mercearias e Minimercados'},
+  {cod:'6911701',nome:'Escritórios de Advocacia'},{cod:'6621500',nome:'Corretoras de Seguros'},
+  {cod:'6622300',nome:'Operadoras de Planos de Saúde'},{cod:'4744001',nome:'Material de Construção'},
+  {cod:'4755501',nome:'Móveis e Decoração'},{cod:'4751201',nome:'Informática e Eletrônicos'},
+  {cod:'8599603',nome:'Autoescolas'},{cod:'7711000',nome:'Locação de Automóveis'},
+  {cod:'4530703',nome:'Concessionárias de Veículos'},{cod:'4520001',nome:'Oficinas Mecânicas'},
+  {cod:'5620101',nome:'Fornecimento de Refeições (Catering)'},{cod:'8599602',nome:'Cursos Profissionalizantes'},
+  {cod:'4312600',nome:'Escavações e Terraplanagem'},{cod:'4330401',nome:'Pintura e Acabamento'},
+  {cod:'9001901',nome:'Produção Teatral e Musical'},{cod:'9329801',nome:'Parques de Diversões'},
+  {cod:'4781400',nome:'Artigos do Vestuário'},{cod:'4782201',nome:'Calçados'},
+];
+
+function buscarCnae(termo) {
+  const dd = document.getElementById('cnaeDropdown');
+  if (!termo || termo.length < 2) { dd.style.display = 'none'; return; }
+  const t = termo.toLowerCase();
+  const found = CNAES.filter(c => c.nome.toLowerCase().includes(t) || c.cod.includes(t)).slice(0, 8);
+  if (!found.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = found.map(c =>
+    '<div onclick="selecionarCnae(''+c.cod+'',''+c.nome+'')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:var(--white);border-bottom:1px solid rgba(255,255,255,0.05);" onmouseover="this.style.background='rgba(0,212,255,0.1)'" onmouseout="this.style.background=''"><span style="color:var(--cyan);font-size:11px;margin-right:8px;">'+c.cod+'</span>'+c.nome+'</div>'
+  ).join('');
+  dd.style.display = 'block';
+}
+
+function selecionarCnae(cod, nome) {
+  document.getElementById('fCnaeSearch').value = nome;
+  document.getElementById('fSegmento').value = cod;
+  document.getElementById('cnaeDropdown').style.display = 'none';
+}
+
+// ── AUTOCOMPLETE CIDADE ──
+const CIDADES_BR = ['Abreu e Lima','Acaraú','Açailândia','Alagoinhas','Altamira','Americana','Ananindeua','Anápolis','Aparecida de Goiânia','Apucarana','Aracaju','Araçatuba','Aracruz','Araguaína','Araucária','Araxá','Bacarena','Bagé','Barueri','Belém','Belford Roxo','Belo Horizonte','Blumenau','Boa Vista','Botucatu','Bragança Paulista','Brumado','Caçador','Camaçari','Campina Grande','Campinas','Campo Grande','Campo Largo','Campo Mourão','Campos dos Goytacazes','Caxias do Sul','Caucaia','Chapecó','Cianorte','Colombo','Contagem','Corumbá','Criciúma','Cuiabá','Curitiba','Diadema','Dourados','Duque de Caxias','Embu das Artes','Feira de Santana','Florianópolis','Fortaleza','Foz do Iguaçu','Franca','Garanhuns','Goiânia','Governador Valadares','Guarapuava','Guarujá','Guarulhos','Ilhéus','Imperatriz','Indaiatuba','Ipatinga','Itabuna','Itajaí','Itapecerica da Serra','Itapetininga','Itaquaquecetuba','Jacareí','Jequié','João Pessoa','Joinville','Juazeiro do Norte','Juiz de Fora','Jundiaí','Lauro de Freitas','Limeira','Londrina','Luziânia','Macaé','Macapá','Maceió','Manaus','Marabá','Maracanaú','Marília','Maringá','Mauá','Mogi das Cruzes','Montes Claros','Mossoró','Natal','Niterói','Nova Friburgo','Nova Iguaçu','Novo Hamburgo','Olinda','Osasco','Palmas','Parauapebas','Parnamirim','Paulista','Pelotas','Petrolina','Petrópolis','Pindamonhangaba','Piracicaba','Porto Alegre','Porto Velho','Praia Grande','Recife','Ribeirão das Neves','Ribeirão Preto','Rio Branco','Rio de Janeiro','Rio Verde','Rondonópolis','Salvador','Santa Luzia','Santa Maria','Santarém','Santo André','Santos','São Bernardo do Campo','São Caetano do Sul','São Carlos','São Gonçalo','São João de Meriti','São José','São José do Rio Preto','São José dos Campos','São José dos Pinhais','São Luís','São Paulo','Serra','Sete Lagoas','Sinop','Sorocaba','Sumaré','Suzano','Taboão da Serra','Taubaté','Teresina','Teresópolis','Uberlândia','Uberaba','Umuarama','Várzea Grande','Vila Velha','Vitória','Vitória da Conquista','Volta Redonda'];
+
+function buscarCidade(termo) {
+  const dd = document.getElementById('cidadeDropdown');
+  if (!termo || termo.length < 2) { dd.style.display = 'none'; return; }
+  const t = termo.toLowerCase();
+  const found = CIDADES_BR.filter(c => c.toLowerCase().includes(t)).slice(0, 8);
+  if (!found.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = found.map(c =>
+    '<div onclick="selecionarCidade(''+c+'')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:var(--white);border-bottom:1px solid rgba(255,255,255,0.05);" onmouseover="this.style.background='rgba(0,212,255,0.1)'" onmouseout="this.style.background=''">'+c+'</div>'
+  ).join('');
+  dd.style.display = 'block';
+}
+
+function selecionarCidade(cidade) {
+  document.getElementById('fCidade').value = cidade;
+  document.getElementById('cidadeDropdown').style.display = 'none';
+}
+
+// Fecha dropdowns ao clicar fora
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#fCnaeSearch') && !e.target.closest('#cnaeDropdown')) {
+    const dd = document.getElementById('cnaeDropdown');
+    if(dd) dd.style.display = 'none';
+  }
+  if (!e.target.closest('#fCidade') && !e.target.closest('#cidadeDropdown')) {
+    const dd = document.getElementById('cidadeDropdown');
+    if(dd) dd.style.display = 'none';
+  }
+});
 
 // ── VERIFICAR SESSION ATIVA ──
 async function init() {
