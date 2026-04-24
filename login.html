@@ -884,8 +884,34 @@ async function register() {
     }
   }
 
+  // 30 créditos grátis no cadastro
+  if (data.user) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          id: data.user.id,
+          email,
+          name,
+          plan: 'trial',
+          phone,
+          credits_total: 30,
+          credits_used: 0,
+          exports: 0,
+          created_at: new Date().toISOString()
+        })
+      });
+    } catch(e) { console.error('Erro ao criar perfil trial:', e); }
+  }
+
   showAlert(
-    `✅ Conta criada! Verifique seu e-mail <strong>${email}</strong> para confirmar o acesso.`,
+    `✅ Conta criada! Verifique seu e-mail <strong>${email}</strong> para confirmar o acesso. Você ganhou <strong>30 créditos grátis</strong> para explorar a plataforma! 🎉`,
     'success'
   );
   btn.disabled = false; btn.textContent = 'CRIAR MINHA CONTA';
