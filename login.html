@@ -1467,13 +1467,16 @@ function buscarCnae(termo) {
   const t = termo.toLowerCase();
   const found = CNAES.filter(c => c.nome.toLowerCase().includes(t) || c.cod.includes(t)).slice(0, 8);
   if (!found.length) { dd.style.display = 'none'; return; }
-  dd.innerHTML = found.map(c =>
-    '<div onclick="selecionarCnae(''+c.cod+'',''+c.nome+'')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:var(--white);border-bottom:1px solid rgba(255,255,255,0.05);" onmouseover="this.style.background='rgba(0,212,255,0.1)'" onmouseout="this.style.background=''"><span style="color:var(--cyan);font-size:11px;margin-right:8px;">'+c.cod+'</span>'+c.nome+'</div>'
-  ).join('');
+  dd.innerHTML = found.map(function(item) {
+    return '<div onclick="selecionarCnae(this)" data-cod="' + item.cod + '" data-nome="' + item.nome.replace(/"/g,"&quot;") + '" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.05);">' +
+      '<span style="color:#00D4FF;font-size:11px;margin-right:8px;">' + item.cod + '</span>' + item.nome + '</div>';
+  }).join('');
   dd.style.display = 'block';
 }
 
-function selecionarCnae(cod, nome) {
+function selecionarCnae(el) {
+  const cod = el.dataset.cod;
+  const nome = el.dataset.nome;
   document.getElementById('fCnaeSearch').value = nome;
   document.getElementById('fSegmento').value = cod;
   document.getElementById('cnaeDropdown').style.display = 'none';
@@ -1488,14 +1491,14 @@ function buscarCidade(termo) {
   const t = termo.toLowerCase();
   const found = CIDADES_BR.filter(c => c.toLowerCase().includes(t)).slice(0, 8);
   if (!found.length) { dd.style.display = 'none'; return; }
-  dd.innerHTML = found.map(c =>
-    '<div onclick="selecionarCidade(''+c+'')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:var(--white);border-bottom:1px solid rgba(255,255,255,0.05);" onmouseover="this.style.background='rgba(0,212,255,0.1)'" onmouseout="this.style.background=''">'+c+'</div>'
-  ).join('');
+  dd.innerHTML = found.map(function(cidade) {
+    return '<div onclick="selecionarCidade(this)" data-cidade="' + cidade + '" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.05);">' + cidade + '</div>';
+  }).join('');
   dd.style.display = 'block';
 }
 
-function selecionarCidade(cidade) {
-  document.getElementById('fCidade').value = cidade;
+function selecionarCidade(el) {
+  document.getElementById('fCidade').value = el.dataset.cidade;
   document.getElementById('cidadeDropdown').style.display = 'none';
 }
 
