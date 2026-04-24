@@ -1628,10 +1628,18 @@ function gerarMsg() {
 function copiarMsg() {
   const msg = document.getElementById('msgBox').textContent;
   navigator.clipboard.writeText(msg).then(() => {
-    const btn = event.target;
-    const orig = btn.textContent;
+    const btn = document.querySelector('.btn-copiar');
     btn.textContent = '✅ COPIADO!';
-    setTimeout(() => btn.textContent = orig, 2000);
+    setTimeout(() => btn.textContent = '📋 COPIAR', 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = msg; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.querySelector('.btn-copiar');
+    btn.textContent = '✅ COPIADO!';
+    setTimeout(() => btn.textContent = '📋 COPIAR', 2000);
   });
 }
 
@@ -1650,7 +1658,7 @@ init();
 </script>
 
 <!-- MODAL GERADOR DE MENSAGEM -->
-<div class="modal-overlay" id="modalMsg">
+<div class="modal-overlay" id="modalMsg" onclick="if(event.target===this)document.getElementById('modalMsg').classList.remove('show')">
   <div class="modal">
     <button class="modal-close" onclick="fecharModal()">✕</button>
     <div class="modal-title">💬 Gerador de Mensagem</div>
@@ -1715,8 +1723,8 @@ init();
 </div>
 
 
-<div class="modal-overlay" id="modalMsg">
-  <div class="modal">
+<div class="modal-overlay" id="modalMsg" onclick="if(event.target===this)document.getElementById('modalMsg').classList.remove('show')">
+  <div class="modal" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="document.getElementById('modalMsg').classList.remove('show')">✕</button>
     <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:6px;">💬 Gerador de Mensagem</div>
     <div style="font-size:12px;color:var(--gray);margin-bottom:20px;">Configure seus dados e gere mensagens personalizadas</div>
