@@ -1647,7 +1647,8 @@ function gerarMsg2() {
   try { localStorage.setItem('g_nome',nome); localStorage.setItem('g_prod',prod); localStorage.setItem('g_tel',tel); } catch(e){}
   
   const empresa = e.razao_social || '';
-const telStr = tel ? '\\n\\n📞 ' + tel : '';  
+  const telStr = tel ? '\n\n📞 ' + tel : '';
+  
   let msg = '';
   if (tmpl === 'saude') {
     msg = 'Olá! Tudo bem? 😊\n\nAqui é o ' + nome + ', especialista em planos de saúde empresariais.\n\nVi que a *' + empresa + '* está em *' + cidade + '* e quero apresentar uma solução de saúde com o melhor custo-benefício para sua equipe.\n\nPosso te apresentar as opções? É rápido e sem compromisso! 💙' + telStr;
