@@ -1022,13 +1022,48 @@ function showDashboard() {
 
   document.getElementById('dashName').textContent = p.name || currentUser.email;
   document.getElementById('dashAvatar').textContent = (p.name || 'U')[0].toUpperCase();
-  document.getElementById('dashPlan').textContent = `PLANO ${plan.nome}`;
+
+  // Nome do plano
+  const planLabels = { trial: 'TRIAL GRATUITO', starter: 'STARTER', growth: 'GROWTH', scale: 'SCALE', enterprise: 'ENTERPRISE' };
+  document.getElementById('dashPlan').textContent = `PLANO ${planLabels[p.plan] || p.plan.toUpperCase()}`;
+
   document.getElementById('statCredits').textContent = avail.toLocaleString('pt-BR');
   document.getElementById('statCreditsTotal').textContent = `de ${total.toLocaleString('pt-BR')} do plano`;
   document.getElementById('statExports').textContent = p.exports || 0;
   document.getElementById('statSince').textContent = since.toUpperCase();
   document.getElementById('creditsFill').style.width = pct + '%';
   document.getElementById('creditsNums').textContent = `${avail.toLocaleString('pt-BR')} de ${total.toLocaleString('pt-BR')} créditos`;
+
+  // Banner trial
+  if (p.plan === 'trial') {
+    // Calcula dias restantes
+    const criado = new Date(p.created_at);
+    const hoje = new Date();
+    const diasPassados = Math.floor((hoje - criado) / (1000 * 60 * 60 * 24));
+    const diasRestantes = Math.max(0, 7 - diasPassados);
+
+    // Cria ou atualiza banner
+    let banner = document.getElementById('bannerTrial');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'bannerTrial';
+      banner.style.cssText = 'background:linear-gradient(135deg,rgba(18,64,171,0.3),rgba(0,212,255,0.1));border:1px solid rgba(0,212,255,0.3);padding:16px 24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;';
+      const statsRow = document.querySelector('.stats-row');
+      if (statsRow) statsRow.parentNode.insertBefore(banner, statsRow.nextSibling);
+    }
+
+    if (diasRestantes <= 0) {
+      banner.innerHTML = '<div><div style="font-size:14px;font-weight:700;color:#FF4D4D;margin-bottom:4px;">⛔ Trial expirado — Assine um plano para continuar</div><div style="font-size:12px;color:#8896B3;">Seu período de teste de 7 dias encerrou.</div></div><a href="https://veracitytech.com.br/#planos" style="background:#FF4D4D;color:#fff;font-size:13px;font-weight:700;padding:10px 24px;text-decoration:none;">ASSINAR AGORA →</a>';
+      // Bloqueia busca
+      const btnBuscar = document.getElementById('btnBuscar');
+      if (btnBuscar) { btnBuscar.disabled = true; btnBuscar.textContent = '⛔ TRIAL EXPIRADO'; }
+    } else {
+      banner.innerHTML = '<div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;">⚡ Plano Trial — ' + diasRestantes + ' dia(s) restante(s) · ' + avail + ' créditos disponíveis</div><div style="font-size:12px;color:#8896B3;">Assine um plano para prospectar sem limites!</div></div><a href="https://veracitytech.com.br/#planos" style="background:var(--cyan);color:var(--navy);font-size:13px;font-weight:700;padding:10px 24px;text-decoration:none;white-space:nowrap;">VER PLANOS →</a>';
+    }
+  } else {
+    const banner = document.getElementById('bannerTrial');
+    if (banner) banner.remove();
+  }
 }
 
 // ── LOGOUT ──
