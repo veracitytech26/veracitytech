@@ -1586,17 +1586,20 @@ function navEmpresa(dir) {
 }
 
 function abrirWhatsAppMsg() {
-  const btn = document.getElementById('btnWaMsg');
-  const href = btn.dataset.href;
-  if (href && href !== 'undefined') {
-    window.open(href, '_blank');
-  } else {
-    // Gera link simples sem número
+  try {
     const msg = document.getElementById('msgBox').textContent;
-    if (msg && msg !== 'Configure seus dados acima...') {
-      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    if (!msg || msg === 'Configure seus dados acima...') {
+      alert('Preencha seus dados primeiro!');
+      return false;
     }
+    const btn = document.getElementById('btnWaMsg');
+    const href = btn.dataset.href;
+    const url = (href && href.length > 10) ? href : 'https://wa.me/?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank', 'noopener');
+  } catch(e) {
+    console.error('Erro WhatsApp:', e);
   }
+  return false;
 }
 
 function gerarMsg() {
@@ -1751,14 +1754,14 @@ init();
     <label style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;display:block;margin-bottom:8px;">MENSAGEM GERADA</label>
     <div class="msg-box" id="msgBox">Configure seus dados acima...</div>
     <div class="msg-btns">
-      <button class="btn-copiar" onclick="copiarMsg()">📋 COPIAR</button>
-      <button class="btn-wa" id="btnWaMsg" onclick="abrirWhatsAppMsg()">📱 ABRIR NO WHATSAPP</button>
+      <button class="btn-copiar" onclick="copiarMsg();return false;" type="button">📋 COPIAR</button>
+      <button class="btn-wa" id="btnWaMsg" onclick="abrirWhatsAppMsg();return false;" type="button">📱 ABRIR NO WHATSAPP</button>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
       <span style="font-size:12px;color:var(--gray);">Navegar entre empresas</span>
       <div style="display:flex;gap:8px;">
-        <button onclick="navEmpresa(-1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 14px;cursor:pointer;font-size:13px;">← Anterior</button>
-        <button onclick="navEmpresa(1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 14px;cursor:pointer;font-size:13px;">Próxima →</button>
+        <button onclick="navEmpresa(-1);return false;" type="button" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 14px;cursor:pointer;font-size:13px;">← Anterior</button>
+        <button onclick="navEmpresa(1);return false;" type="button" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 14px;cursor:pointer;font-size:13px;">Próxima →</button>
       </div>
     </div>
   </div>
