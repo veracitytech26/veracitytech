@@ -702,10 +702,10 @@ body {
 
       <!-- BUSCA POR CNPJ -->
       <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
-        <label class="filter-label">🔍 BUSCA AVULSA POR CNPJ</label>
+        <label class="filter-label">🔍 CONSULTA DE EMPRESA</label>
         <div style="display:flex;gap:12px;align-items:center;">
-          <input class="filter-input" type="text" id="fCnpj" placeholder="Digite o CNPJ — ex: 12.345.678/0001-90" style="flex:1;max-width:360px;">
-          <button class="btn-search" onclick="buscarCnpj()" style="padding:10px 24px;white-space:nowrap;">🔎 CONSULTAR CNPJ</button>
+          <input class="filter-input" type="text" id="fCnpj" placeholder="Digite o CNPJ da empresa — ex: 12.345.678/0001-90" style="flex:1;max-width:360px;">
+          <button class="btn-search" onclick="buscarCnpj()" style="padding:10px 24px;white-space:nowrap;">🔎 CONSULTAR</button>
         </div>
         <div id="cnpjResult" style="display:none;margin-top:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:20px;"></div>
       </div>
@@ -1367,7 +1367,7 @@ async function buscarCnpj() {
 
     if (!e) {
       resultDiv.innerHTML = '<div style="color:#FF4D4D;text-align:center;">CNPJ não encontrado.</div>';
-      btn.disabled = false; btn.textContent = '🔎 CONSULTAR CNPJ';
+      btn.disabled = false; btn.textContent = '🔎 CONSULTAR';
       return;
     }
 
@@ -1437,7 +1437,7 @@ async function buscarCnpj() {
     resultDiv.innerHTML = `<div style="color:#FF4D4D;">Erro ao consultar: ${e.message}</div>`;
   }
 
-  btn.disabled = false; btn.textContent = '🔎 CONSULTAR CNPJ';
+  btn.disabled = false; btn.textContent = '🔎 CONSULTAR';
 }
 
 
