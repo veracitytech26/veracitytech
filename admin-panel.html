@@ -5,538 +5,546 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Veracity Intelligence — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --navy:   #080E1E;
-  --dark:   #0D1530;
-  --card:   #111827;
-  --blue:   #1240AB;
-  --cyan:   #00D4FF;
-  --white:  #FFFFFF;
-  --gray:   #8896B3;
-  --border: rgba(255,255,255,0.07);
-  --green:  #00E676;
-  --red:    #FF4D4D;
-  --yellow: #FFB800;
+  --navy:#080E1E; --dark:#0D1530; --blue:#1240AB; --cyan:#00D4FF;
+  --white:#FFFFFF; --gray:#8896B3; --border:rgba(255,255,255,0.07);
+  --green:#00E676; --red:#FF4D4D; --yellow:#FFB800;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  background: var(--navy); color: var(--white);
-  font-family: 'DM Sans', sans-serif;
-  display: flex; min-height: 100vh;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--navy); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; }
 
-/* ── SIDEBAR ── */
-.sidebar {
-  width: 240px; flex-shrink: 0;
-  background: var(--dark);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
+/* LOGIN */
+#loginScreen {
+  display:flex; justify-content:center; align-items:center; min-height:100vh;
+  background:var(--navy);
 }
-.sidebar-logo {
-  padding: 28px 24px 20px;
-  border-bottom: 1px solid var(--border);
+.login-box {
+  background:var(--dark); border:1px solid var(--border);
+  padding:48px; width:400px; position:relative;
 }
-.sidebar-logo-main { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; }
-.sidebar-logo-sub { font-size: 9px; letter-spacing: 5px; color: var(--red); font-weight: 700; margin-top: -1px; }
-.sidebar-badge {
-  margin: 12px 16px 0;
-  background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.2);
-  padding: 8px 14px; font-size: 10px; font-weight: 700;
-  color: var(--red); letter-spacing: 3px; text-align: center;
+.login-box::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--blue),var(--cyan));
 }
-.sidebar-nav { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 2px; }
-.nav-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 14px; cursor: pointer;
-  font-size: 14px; font-weight: 500; color: var(--gray);
-  transition: all 0.15s; border-radius: 4px; text-decoration: none;
+.login-logo { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:4px; color:var(--white); margin-bottom:4px; }
+.login-sub { font-size:10px; letter-spacing:5px; color:var(--red); font-weight:700; margin-bottom:32px; }
+.login-label { font-size:10px; font-weight:700; color:var(--gray); letter-spacing:2px; display:block; margin-bottom:8px; }
+.login-input {
+  width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border);
+  color:var(--white); padding:12px 16px; font-size:14px; font-family:'DM Sans',sans-serif;
+  outline:none; margin-bottom:16px;
 }
-.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--white); }
-.nav-item.active { background: rgba(255,77,77,0.08); color: var(--red); border-left: 2px solid var(--red); }
-.nav-item-icon { font-size: 16px; width: 20px; text-align: center; }
-.nav-badge {
-  margin-left: auto; background: var(--red); color: #fff;
-  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 10px;
+.login-btn {
+  width:100%; background:var(--cyan); color:var(--navy); font-size:14px;
+  font-weight:700; letter-spacing:2px; padding:14px; border:none; cursor:pointer;
+  margin-top:8px;
 }
-.sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
-.admin-info { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
-.admin-avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: var(--red); display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; flex-shrink: 0;
-}
-.admin-name { font-size: 13px; font-weight: 600; }
-.admin-role { font-size: 11px; color: var(--red); font-weight: 700; letter-spacing: 1px; }
+.login-error { color:var(--red); font-size:13px; text-align:center; margin-top:12px; display:none; }
 
-/* ── MAIN ── */
-.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+/* DASHBOARD */
+#dashboard { display:none; }
 .topbar {
-  background: var(--dark); border-bottom: 1px solid var(--border);
-  padding: 0 36px; height: 64px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 5;
+  background:var(--dark); border-bottom:1px solid var(--border);
+  padding:16px 32px; display:flex; justify-content:space-between; align-items:center;
+  position:sticky; top:0; z-index:100;
 }
-.topbar-title { font-size: 16px; font-weight: 700; }
-.topbar-sub { font-size: 12px; color: var(--gray); margin-top: 1px; }
-.topbar-right { display: flex; gap: 12px; align-items: center; }
-.api-status {
-  display: flex; align-items: center; gap: 8px;
-  background: rgba(0,230,118,0.07); border: 1px solid rgba(0,230,118,0.2);
-  padding: 8px 14px; font-size: 12px; color: var(--green); font-weight: 600;
+.topbar-logo { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:3px; }
+.topbar-logo span { color:var(--red); font-size:9px; letter-spacing:4px; display:block; font-family:'DM Sans',sans-serif; font-weight:700; }
+.topbar-right { display:flex; gap:12px; align-items:center; }
+.topbar-badge { background:rgba(255,77,77,0.1); border:1px solid rgba(255,77,77,0.2); color:var(--red); font-size:10px; font-weight:700; padding:4px 12px; letter-spacing:2px; }
+.logout-btn { background:transparent; border:1px solid var(--border); color:var(--gray); font-size:12px; padding:6px 14px; cursor:pointer; }
+.logout-btn:hover { color:var(--white); }
+
+.container { max-width:1200px; margin:0 auto; padding:32px; }
+
+/* TABS */
+.tabs { display:flex; gap:2px; margin-bottom:32px; border-bottom:1px solid var(--border); }
+.tab-btn {
+  background:transparent; border:none; border-bottom:2px solid transparent;
+  color:var(--gray); font-size:13px; font-weight:700; letter-spacing:1px;
+  padding:12px 20px; cursor:pointer; transition:all 0.2s;
 }
-.api-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.tab-btn.active { color:var(--cyan); border-bottom-color:var(--cyan); background:rgba(0,212,255,0.06); }
 
-.content { padding: 32px 36px; flex: 1; }
-
-/* ── STATS ── */
-.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 32px; }
+/* STATS */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
 .stat-card {
-  background: var(--card); border: 1px solid var(--border); padding: 24px;
-  position: relative; overflow: hidden;
+  background:var(--dark); border:1px solid var(--border); padding:24px;
+  position:relative; overflow:hidden;
 }
-.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
-.stat-card.cyan::before  { background: var(--cyan); }
-.stat-card.green::before { background: var(--green); }
-.stat-card.yellow::before{ background: var(--yellow); }
-.stat-card.red::before   { background: var(--red); }
-.sc-label { font-size: 11px; color: var(--gray); letter-spacing: 2px; font-weight: 600; }
-.sc-val { font-family: 'Bebas Neue', sans-serif; font-size: 44px; line-height:1; margin: 8px 0 4px; letter-spacing:1px; }
-.sc-val.cyan   { color: var(--cyan); }
-.sc-val.green  { color: var(--green); }
-.sc-val.yellow { color: var(--yellow); }
-.sc-val.red    { color: var(--red); }
-.sc-sub { font-size: 12px; color: var(--gray); }
-.sc-trend { font-size: 12px; margin-top: 6px; }
-.trend-up   { color: var(--green); }
-.trend-down { color: var(--red); }
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--blue),var(--cyan)); }
+.stat-label { font-size:10px; font-weight:700; color:var(--gray); letter-spacing:3px; margin-bottom:12px; }
+.stat-val { font-size:28px; font-weight:700; color:var(--white); }
+.stat-sub { font-size:12px; color:var(--gray); margin-top:6px; }
+.stat-badge { font-size:11px; font-weight:700; color:var(--green); margin-top:4px; }
 
-/* ── REVENUE ── */
-.revenue-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+/* TABLE */
+.section-card { background:var(--dark); border:1px solid var(--border); padding:24px; margin-bottom:24px; }
+.section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.section-title { font-size:15px; font-weight:700; }
+.section-sub { font-size:12px; color:var(--gray); margin-top:2px; }
+.btn-primary { background:var(--cyan); color:var(--navy); font-size:12px; font-weight:700; letter-spacing:1px; padding:10px 20px; border:none; cursor:pointer; }
+.btn-danger { background:rgba(255,77,77,0.1); border:1px solid rgba(255,77,77,0.3); color:var(--red); font-size:12px; font-weight:700; padding:6px 14px; cursor:pointer; }
+.btn-success { background:rgba(0,230,118,0.1); border:1px solid rgba(0,230,118,0.3); color:var(--green); font-size:12px; font-weight:700; padding:6px 14px; cursor:pointer; }
+.btn-sm { padding:6px 14px; font-size:11px; }
 
-.chart-section { background: var(--card); border: 1px solid var(--border); padding: 24px; }
-.cs-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
-.cs-title { font-size: 15px; font-weight: 700; }
-.cs-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
-.cs-total { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--green); letter-spacing: 1px; }
-.cs-total-label { font-size: 11px; color: var(--gray); letter-spacing: 2px; }
+table { width:100%; border-collapse:collapse; }
+th { text-align:left; padding:10px 14px; font-size:10px; font-weight:700; color:var(--gray); letter-spacing:2px; border-bottom:1px solid var(--border); }
+td { padding:14px; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+tr:hover td { background:rgba(255,255,255,0.02); }
+.badge { font-size:10px; font-weight:700; padding:3px 10px; letter-spacing:1px; }
+.badge-active { background:rgba(0,230,118,0.1); color:var(--green); border:1px solid rgba(0,230,118,0.2); }
+.badge-trial { background:rgba(136,150,179,0.1); color:var(--gray); border:1px solid rgba(136,150,179,0.2); }
+.badge-growth { background:rgba(0,212,255,0.1); color:var(--cyan); border:1px solid rgba(0,212,255,0.2); }
+.badge-starter { background:rgba(18,64,171,0.2); color:#6B8EFF; border:1px solid rgba(18,64,171,0.3); }
+.badge-scale { background:rgba(255,184,0,0.1); color:var(--yellow); border:1px solid rgba(255,184,0,0.2); }
+.badge-enterprise { background:rgba(255,77,77,0.1); color:var(--red); border:1px solid rgba(255,77,77,0.2); }
 
-.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
-.bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.bar {
-  width: 100%; background: rgba(0,212,255,0.15); border-top: 2px solid var(--cyan);
-  transition: all 0.3s; cursor: pointer;
+/* MODAL */
+.modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; justify-content:center; align-items:center; }
+.modal-bg.show { display:flex; }
+.modal { background:var(--dark); border:1px solid var(--border); padding:32px; width:480px; position:relative; }
+.modal::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--blue),var(--cyan)); }
+.modal h3 { font-size:16px; margin-bottom:20px; }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:10px; font-weight:700; color:var(--gray); letter-spacing:2px; display:block; margin-bottom:6px; }
+.form-input, .form-select {
+  width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border);
+  color:var(--white); padding:10px 14px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none;
 }
-.bar:hover { background: rgba(0,212,255,0.25); }
-.bar.current { background: rgba(0,230,118,0.15); border-top-color: var(--green); }
-.bar-label { font-size: 10px; color: var(--gray); }
+.form-select option { background:#0D1530; }
+.modal-btns { display:flex; gap:10px; margin-top:20px; }
+.modal-close { position:absolute; top:14px; right:16px; background:none; border:none; color:var(--gray); font-size:20px; cursor:pointer; }
 
-.plan-dist { background: var(--card); border: 1px solid var(--border); padding: 24px; }
-.pd-header { margin-bottom: 24px; }
-.pd-title { font-size: 15px; font-weight: 700; }
-.pd-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
-.pd-item { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
-.pd-item-top { display: flex; justify-content: space-between; font-size: 13px; }
-.pd-item-name { color: var(--white); font-weight: 600; }
-.pd-item-val { color: var(--gray); }
-.pd-bar-track { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
-.pd-bar-fill { height: 100%; border-radius: 2px; }
-
-/* ── CLIENTS TABLE ── */
-.clients-section { background: var(--card); border: 1px solid var(--border); margin-bottom: 24px; }
-.clients-header {
-  padding: 18px 24px; border-bottom: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: center;
-}
-.ch-title { font-size: 15px; font-weight: 700; }
-.ch-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
-.ch-right { display: flex; gap: 10px; }
-.btn-sm {
-  font-size: 12px; font-weight: 700; letter-spacing: 1px;
-  padding: 8px 18px; border: none; cursor: pointer; transition: all 0.2s;
-}
-.btn-sm-cyan { background: var(--cyan); color: var(--navy); }
-.btn-sm-ghost { background: transparent; color: var(--gray); border: 1px solid var(--border); }
-.btn-sm-ghost:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
-
-.search-bar {
-  padding: 14px 24px; border-bottom: 1px solid var(--border);
-}
-.search-input {
-  width: 320px; background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border); color: var(--white);
-  padding: 9px 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none;
-}
-.search-input:focus { border-color: rgba(0,212,255,0.3); }
-.search-input::placeholder { color: var(--gray); }
-
-.clients-table { width: 100%; border-collapse: collapse; }
-.clients-table th {
-  padding: 11px 20px; font-size: 11px; font-weight: 700;
-  color: var(--gray); letter-spacing: 2px; text-align: left;
-  border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);
-}
-.clients-table td {
-  padding: 15px 20px; font-size: 13px; color: var(--gray);
-  border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle;
-}
-.clients-table tr:hover td { background: rgba(255,255,255,0.015); }
-.clients-table td.name { color: var(--white); font-weight: 600; }
-
-.plan-tag {
-  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 2px;
-  padding: 3px 10px;
-}
-.plan-starter  { background: rgba(136,150,179,0.1); color: var(--gray); border: 1px solid rgba(136,150,179,0.2); }
-.plan-growth   { background: rgba(0,212,255,0.1); color: var(--cyan); border: 1px solid rgba(0,212,255,0.2); }
-.plan-scale    { background: rgba(255,184,0,0.1); color: var(--yellow); border: 1px solid rgba(255,184,0,0.2); }
-.plan-enterprise{ background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
-
-.status-active {
-  display: inline-flex; align-items: center; gap: 5px;
-  color: var(--green); font-size: 11px; font-weight: 700;
-}
-.status-active::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); }
-.status-inactive { color: var(--red); }
-.status-inactive::before { background: var(--red); }
-
-.credits-cell { font-family: monospace; font-size: 12px; }
-.credits-low { color: var(--yellow); }
-.credits-ok  { color: var(--green); }
-
-.action-btn {
-  background: transparent; color: var(--gray);
-  font-size: 11px; font-weight: 700; letter-spacing: 1px;
-  padding: 5px 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
-}
-.action-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
-
-/* ── BOTTOM ROW ── */
-.bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-.mini-section { background: var(--card); border: 1px solid var(--border); padding: 20px 24px; }
-.ms-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
-.ms-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px;
-}
-.ms-item:last-child { border-bottom: none; }
-.ms-label { color: var(--gray); }
-.ms-val { font-weight: 700; color: var(--white); }
-.ms-val.green { color: var(--green); }
-.ms-val.yellow { color: var(--yellow); }
-.ms-val.red { color: var(--red); }
-
-.activity-item {
-  display: flex; gap: 14px; align-items: flex-start;
-  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.activity-item:last-child { border-bottom: none; }
-.act-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-.act-text { font-size: 13px; color: var(--gray); line-height: 1.5; }
-.act-text strong { color: var(--white); }
-.act-time { font-size: 11px; color: rgba(136,150,179,0.5); margin-top: 2px; }
+.loading { text-align:center; padding:40px; color:var(--gray); }
+.empty { text-align:center; padding:40px; color:var(--gray); }
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="sidebar-logo-main">VERACITY</div>
-    <div class="sidebar-logo-sub">ADMIN PANEL</div>
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">VERACITY</div>
+    <div class="login-sub">ADMIN PANEL · ACESSO RESTRITO</div>
+    <label class="login-label">SENHA DE ADMINISTRADOR</label>
+    <input type="password" id="adminPass" class="login-input" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')fazerLogin()">
+    <button class="login-btn" onclick="fazerLogin()">ENTRAR NO PAINEL</button>
+    <div class="login-error" id="loginError">Senha incorreta. Tente novamente.</div>
   </div>
-  <div class="sidebar-badge">ACESSO RESTRITO</div>
-  <nav class="sidebar-nav">
-    <a class="nav-item active" href="#"><span class="nav-item-icon">📊</span> Dashboard</a>
-    <a class="nav-item" href="#"><span class="nav-item-icon">👥</span> Clientes <span class="nav-badge">48</span></a>
-    <a class="nav-item" href="#"><span class="nav-item-icon">💳</span> Pagamentos</a>
-    <a class="nav-item" href="#"><span class="nav-item-icon">⚡</span> Uso da API</a>
-    <a class="nav-item" href="#"><span class="nav-item-icon">📦</span> Planos</a>
-    <a class="nav-item" href="#"><span class="nav-item-icon">🔔</span> Alertas <span class="nav-badge" style="background:var(--yellow);color:#000;">2</span></a>
-    <a class="nav-item" href="#"><span class="nav-item-icon">⚙️</span> Configurações</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="admin-info">
-      <div class="admin-avatar">VT</div>
-      <div>
-        <div class="admin-name">Veracity Tech</div>
-        <div class="admin-role">ADMINISTRADOR</div>
-      </div>
-    </div>
-  </div>
-</aside>
+</div>
 
-<!-- MAIN -->
-<main class="main">
+<!-- DASHBOARD -->
+<div id="dashboard">
   <div class="topbar">
     <div>
-      <div class="topbar-title">Dashboard Administrativo</div>
-      <div class="topbar-sub">Visão geral da plataforma · Atualizado agora</div>
+      <div class="topbar-logo">VERACITY <span>ADMIN PANEL</span></div>
     </div>
     <div class="topbar-right">
-      <div class="api-status">
-        <div class="api-dot"></div>
-        API Casa dos Dados: Online
-      </div>
+      <div class="topbar-badge">ADMINISTRADOR</div>
+      <button class="logout-btn" onclick="logout()">SAIR</button>
     </div>
   </div>
 
-  <div class="content">
+  <div class="container">
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="mostrarAba('clientes')">👥 CLIENTES</button>
+      <button class="tab-btn" onclick="mostrarAba('stats')">📊 ESTATÍSTICAS</button>
+      <button class="tab-btn" onclick="mostrarAba('addCliente')">➕ NOVO CLIENTE</button>
+    </div>
 
-    <!-- STATS -->
-    <div class="stats-grid">
-      <div class="stat-card green">
-        <div class="sc-label">RECEITA DO MÊS</div>
-        <div class="sc-val green">38.265</div>
-        <div class="sc-sub">R$ 38.265,00 em abril</div>
-        <div class="sc-trend trend-up">↑ +23% vs março</div>
-      </div>
-      <div class="stat-card cyan">
-        <div class="sc-label">CLIENTES ATIVOS</div>
-        <div class="sc-val cyan">48</div>
-        <div class="sc-sub">3 novos esta semana</div>
-        <div class="sc-trend trend-up">↑ +6 vs mês anterior</div>
-      </div>
-      <div class="stat-card yellow">
-        <div class="sc-label">CONSULTAS API (MÊS)</div>
-        <div class="sc-val yellow">24.8K</div>
-        <div class="sc-sub">24.812 consultas realizadas</div>
-        <div class="sc-trend" style="color:var(--gray);">Saldo: 75.188 restantes</div>
-      </div>
-      <div class="stat-card red">
-        <div class="sc-label">CUSTO CASA DOS DADOS</div>
-        <div class="sc-val red">1.240</div>
-        <div class="sc-sub">R$ 1.240,00 no mês</div>
-        <div class="sc-trend trend-up" style="color:var(--green);">Margem: R$ 37.025</div>
+    <!-- ABA CLIENTES -->
+    <div id="abaClientes">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Clientes da Plataforma</div>
+            <div class="section-sub" id="totalClientes">Carregando...</div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <input type="text" id="searchCliente" placeholder="Buscar por e-mail ou nome..." 
+              style="background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--white);padding:8px 14px;font-size:13px;width:250px;outline:none;"
+              oninput="filtrarClientes()">
+            <button class="btn-primary" onclick="carregarClientes()">↻ ATUALIZAR</button>
+          </div>
+        </div>
+        <div id="tabelaClientes"><div class="loading">Carregando clientes...</div></div>
       </div>
     </div>
 
-    <!-- REVENUE ROW -->
-    <div class="revenue-row">
-      <div class="chart-section">
-        <div class="cs-header">
-          <div>
-            <div class="cs-title">Receita Mensal</div>
-            <div class="cs-sub">Últimos 6 meses</div>
-          </div>
-          <div style="text-align:right;">
-            <div class="cs-total-label">TOTAL ACUMULADO</div>
-            <div class="cs-total">R$ 142.890</div>
-          </div>
+    <!-- ABA STATS -->
+    <div id="abaStats" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">TOTAL CLIENTES</div>
+          <div class="stat-val" id="statTotal">-</div>
+          <div class="stat-sub">cadastros na plataforma</div>
         </div>
-        <div class="bar-chart">
-          <div class="bar-wrap">
-            <div class="bar" style="height:35%"></div>
-            <div class="bar-label">NOV</div>
-          </div>
-          <div class="bar-wrap">
-            <div class="bar" style="height:45%"></div>
-            <div class="bar-label">DEZ</div>
-          </div>
-          <div class="bar-wrap">
-            <div class="bar" style="height:52%"></div>
-            <div class="bar-label">JAN</div>
-          </div>
-          <div class="bar-wrap">
-            <div class="bar" style="height:68%"></div>
-            <div class="bar-label">FEV</div>
-          </div>
-          <div class="bar-wrap">
-            <div class="bar" style="height:80%"></div>
-            <div class="bar-label">MAR</div>
-          </div>
-          <div class="bar-wrap">
-            <div class="bar current" style="height:100%"></div>
-            <div class="bar-label" style="color:var(--green);">ABR</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-label">PLANOS PAGOS</div>
+          <div class="stat-val" id="statPagos">-</div>
+          <div class="stat-sub">clientes ativos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">TRIALS ATIVOS</div>
+          <div class="stat-val" id="statTrials">-</div>
+          <div class="stat-sub">em período de teste</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">CONSULTAS TOTAIS</div>
+          <div class="stat-val" id="statConsultas">-</div>
+          <div class="stat-sub">empresas buscadas</div>
         </div>
       </div>
 
-      <div class="plan-dist">
-        <div class="pd-header">
-          <div class="pd-title">Distribuição de Planos</div>
-          <div class="pd-sub">48 clientes ativos</div>
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-title">Distribuição por Plano</div>
         </div>
-        <div class="pd-item">
-          <div class="pd-item-top">
-            <span class="pd-item-name">Growth</span>
-            <span class="pd-item-val">22 clientes · R$ 17.534</span>
-          </div>
-          <div class="pd-bar-track">
-            <div class="pd-bar-fill" style="width:46%;background:var(--cyan);"></div>
-          </div>
-        </div>
-        <div class="pd-item">
-          <div class="pd-item-top">
-            <span class="pd-item-name">Scale</span>
-            <span class="pd-item-val">14 clientes · R$ 20.958</span>
-          </div>
-          <div class="pd-bar-track">
-            <div class="pd-bar-fill" style="width:29%;background:var(--yellow);"></div>
-          </div>
-        </div>
-        <div class="pd-item">
-          <div class="pd-item-top">
-            <span class="pd-item-name">Starter</span>
-            <span class="pd-item-val">8 clientes · R$ 3.176</span>
-          </div>
-          <div class="pd-bar-track">
-            <div class="pd-bar-fill" style="width:17%;background:var(--gray);"></div>
-          </div>
-        </div>
-        <div class="pd-item">
-          <div class="pd-item-top">
-            <span class="pd-item-name">Enterprise</span>
-            <span class="pd-item-val">4 clientes · R$ 11.988</span>
-          </div>
-          <div class="pd-bar-track">
-            <div class="pd-bar-fill" style="width:8%;background:var(--green);"></div>
-          </div>
-        </div>
+        <div id="distPlanos"></div>
       </div>
     </div>
 
-    <!-- CLIENTS TABLE -->
-    <div class="clients-section">
-      <div class="clients-header">
-        <div>
-          <div class="ch-title">Clientes</div>
-          <div class="ch-sub">48 clientes ativos na plataforma</div>
+    <!-- ABA NOVO CLIENTE -->
+    <div id="abaAddCliente" style="display:none;">
+      <div class="section-card" style="max-width:500px;">
+        <div class="section-title" style="margin-bottom:24px;">Ativar Plano Manualmente</div>
+        <div class="form-group">
+          <label class="form-label">E-MAIL DO CLIENTE</label>
+          <input type="email" id="newEmail" class="form-input" placeholder="email@empresa.com.br">
         </div>
-        <div class="ch-right">
-          <button class="btn-sm btn-sm-ghost">↓ EXPORTAR</button>
-          <button class="btn-sm btn-sm-cyan">+ NOVO CLIENTE</button>
+        <div class="form-group">
+          <label class="form-label">PLANO</label>
+          <select id="newPlano" class="form-select">
+            <option value="trial">Trial — 30 créditos</option>
+            <option value="starter">Starter — 500 créditos</option>
+            <option value="growth">Growth — 2.000 créditos</option>
+            <option value="scale">Scale — 5.000 créditos</option>
+            <option value="enterprise">Enterprise — 20.000 créditos</option>
+          </select>
         </div>
-      </div>
-      <div class="search-bar">
-        <input class="search-input" type="text" placeholder="Buscar cliente por nome ou e-mail...">
-      </div>
-      <table class="clients-table">
-        <thead>
-          <tr>
-            <th>CLIENTE</th>
-            <th>PLANO</th>
-            <th>CRÉDITOS</th>
-            <th>RECEITA/MÊS</th>
-            <th>MEMBRO DESDE</th>
-            <th>STATUS</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="name">Agência Impulso Digital<br><span style="font-size:11px;font-weight:400;color:var(--gray);">contato@impulsodigital.com</span></td>
-            <td><span class="plan-tag plan-enterprise">ENTERPRISE</span></td>
-            <td class="credits-cell"><span class="credits-ok">18.240 / 20.000</span></td>
-            <td style="color:var(--green);font-weight:700;">R$ 2.997</td>
-            <td>Jan 2025</td>
-            <td><span class="status-active">ATIVO</span></td>
-            <td><button class="action-btn">VER</button></td>
-          </tr>
-          <tr>
-            <td class="name">Consultoria Vendas Pro<br><span style="font-size:11px;font-weight:400;color:var(--gray);">admin@vendaspro.com.br</span></td>
-            <td><span class="plan-tag plan-scale">SCALE</span></td>
-            <td class="credits-cell"><span class="credits-ok">3.820 / 5.000</span></td>
-            <td style="color:var(--yellow);font-weight:700;">R$ 1.497</td>
-            <td>Fev 2025</td>
-            <td><span class="status-active">ATIVO</span></td>
-            <td><button class="action-btn">VER</button></td>
-          </tr>
-          <tr>
-            <td class="name">João Ferreira MEI<br><span style="font-size:11px;font-weight:400;color:var(--gray);">joao@ferreira.com</span></td>
-            <td><span class="plan-tag plan-growth">GROWTH</span></td>
-            <td class="credits-cell"><span class="credits-ok">1.847 / 2.000</span></td>
-            <td style="color:var(--cyan);font-weight:700;">R$ 797</td>
-            <td>Abr 2025</td>
-            <td><span class="status-active">ATIVO</span></td>
-            <td><button class="action-btn">VER</button></td>
-          </tr>
-          <tr>
-            <td class="name">MKT Solutions LTDA<br><span style="font-size:11px;font-weight:400;color:var(--gray);">oi@mktsolutions.com</span></td>
-            <td><span class="plan-tag plan-growth">GROWTH</span></td>
-            <td class="credits-cell"><span class="credits-low">120 / 2.000</span></td>
-            <td style="color:var(--cyan);font-weight:700;">R$ 797</td>
-            <td>Mar 2025</td>
-            <td><span class="status-active">ATIVO</span></td>
-            <td><button class="action-btn">VER</button></td>
-          </tr>
-          <tr>
-            <td class="name">Carlos Mendes Autônomo<br><span style="font-size:11px;font-weight:400;color:var(--gray);">carlos@email.com</span></td>
-            <td><span class="plan-tag plan-starter">STARTER</span></td>
-            <td class="credits-cell"><span class="credits-ok">380 / 500</span></td>
-            <td style="color:var(--gray);font-weight:700;">R$ 397</td>
-            <td>Mar 2025</td>
-            <td><span class="status-active">ATIVO</span></td>
-            <td><button class="action-btn">VER</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- BOTTOM ROW -->
-    <div class="bottom-row">
-      <div class="mini-section">
-        <div class="ms-title">Saldo API · Casa dos Dados</div>
-        <div class="ms-item">
-          <span class="ms-label">Saldo disponível</span>
-          <span class="ms-val green">75.188 consultas</span>
+        <div class="form-group">
+          <label class="form-label">CRÉDITOS EXTRAS (opcional)</label>
+          <input type="number" id="newCreditos" class="form-input" placeholder="0">
         </div>
-        <div class="ms-item">
-          <span class="ms-label">Consumido este mês</span>
-          <span class="ms-val">24.812 consultas</span>
-        </div>
-        <div class="ms-item">
-          <span class="ms-label">Custo acumulado</span>
-          <span class="ms-val red">R$ 1.240,00</span>
-        </div>
-        <div class="ms-item">
-          <span class="ms-label">Previsão de uso</span>
-          <span class="ms-val yellow">~32.000 até o fim do mês</span>
-        </div>
-        <div class="ms-item">
-          <span class="ms-label">Recomendação de recarga</span>
-          <span class="ms-val green">Saldo suficiente</span>
-        </div>
-      </div>
-
-      <div class="mini-section">
-        <div class="ms-title">Atividade Recente</div>
-        <div class="activity-item">
-          <div class="act-dot" style="background:var(--green);"></div>
-          <div>
-            <div class="act-text"><strong>Agência Impulso Digital</strong> exportou 500 empresas · SP</div>
-            <div class="act-time">há 12 minutos</div>
-          </div>
-        </div>
-        <div class="activity-item">
-          <div class="act-dot" style="background:var(--cyan);"></div>
-          <div>
-            <div class="act-text"><strong>Novo cliente</strong> ativou plano Growth · João Ferreira</div>
-            <div class="act-time">há 2 horas</div>
-          </div>
-        </div>
-        <div class="activity-item">
-          <div class="act-dot" style="background:var(--yellow);"></div>
-          <div>
-            <div class="act-text"><strong>MKT Solutions</strong> com créditos baixos · 120 restantes</div>
-            <div class="act-time">há 3 horas</div>
-          </div>
-        </div>
-        <div class="activity-item">
-          <div class="act-dot" style="background:var(--green);"></div>
-          <div>
-            <div class="act-text"><strong>Pagamento recebido</strong> R$ 2.997 · Impulso Digital</div>
-            <div class="act-time">Hoje 09:14</div>
-          </div>
-        </div>
+        <button class="btn-primary" style="width:100%;padding:14px;" onclick="ativarPlano()">ATIVAR PLANO</button>
+        <div id="ativarMsg" style="margin-top:12px;font-size:13px;text-align:center;display:none;"></div>
       </div>
     </div>
-
   </div>
-</main>
+</div>
 
+<!-- MODAL EDITAR CLIENTE -->
+<div class="modal-bg" id="modalEditar">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="fecharModal()">✕</button>
+    <h3>Editar Cliente</h3>
+    <input type="hidden" id="editId">
+    <div class="form-group">
+      <label class="form-label">NOME</label>
+      <input type="text" id="editNome" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">PLANO</label>
+      <select id="editPlano" class="form-select">
+        <option value="trial">Trial</option>
+        <option value="starter">Starter</option>
+        <option value="growth">Growth</option>
+        <option value="scale">Scale</option>
+        <option value="enterprise">Enterprise</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">CRÉDITOS TOTAIS</label>
+      <input type="number" id="editCreditos" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">CRÉDITOS USADOS</label>
+      <input type="number" id="editUsados" class="form-input">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-primary" style="flex:1;padding:12px;" onclick="salvarEdicao()">SALVAR</button>
+      <button class="btn-danger" onclick="fecharModal()">CANCELAR</button>
+    </div>
+    <div id="editMsg" style="margin-top:12px;font-size:13px;text-align:center;display:none;"></div>
+  </div>
+</div>
+
+<script>
+const ADMIN_PASS = 'veracitytech26';
+const SUPABASE_URL = 'https://nfusabwpxpdcqedrehrc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MTEyOTUsImV4cCI6MjA5MjM4NzI5NX0.sUmFeXhXsx7D7BKPrKrXFHSVuqhFdIKgOCdfUQumECY';
+const SERVICE_KEY = 'sb_secret_lMyRbUf84uDjmOBCJR1z_A_WNuKYotN';
+
+const PLANOS = {
+  trial: { label:'Trial', creditos:30 },
+  starter: { label:'Starter', creditos:500 },
+  growth: { label:'Growth', creditos:2000 },
+  scale: { label:'Scale', creditos:5000 },
+  enterprise: { label:'Enterprise', creditos:20000 }
+};
+
+let todosClientes = [];
+
+// ── LOGIN ──
+function fazerLogin() {
+  const pass = document.getElementById('adminPass').value;
+  if (pass === ADMIN_PASS) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    sessionStorage.setItem('adminAuth', '1');
+    carregarClientes();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('adminAuth');
+  location.reload();
+}
+
+// Verifica se já está logado
+if (sessionStorage.getItem('adminAuth') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  carregarClientes();
+}
+
+// ── ABAS ──
+function mostrarAba(aba) {
+  ['Clientes','Stats','AddCliente'].forEach(a => {
+    document.getElementById('aba'+a).style.display = 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('aba'+aba.charAt(0).toUpperCase()+aba.slice(1)).style.display = 'block';
+  event.target.classList.add('active');
+  if (aba === 'stats') carregarStats();
+}
+
+// ── CARREGAR CLIENTES ──
+async function carregarClientes() {
+  document.getElementById('tabelaClientes').innerHTML = '<div class="loading">Carregando...</div>';
+  
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?select=*&order=created_at.desc`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Accept': 'application/json'
+      }
+    });
+    
+    todosClientes = await res.json();
+    document.getElementById('totalClientes').textContent = `${todosClientes.length} clientes cadastrados`;
+    renderClientes(todosClientes);
+  } catch(e) {
+    document.getElementById('tabelaClientes').innerHTML = '<div class="empty">Erro ao carregar: ' + e.message + '</div>';
+  }
+}
+
+function renderClientes(clientes) {
+  if (!clientes.length) {
+    document.getElementById('tabelaClientes').innerHTML = '<div class="empty">Nenhum cliente encontrado.</div>';
+    return;
+  }
+
+  let html = '<table><thead><tr><th>CLIENTE</th><th>PLANO</th><th>CRÉDITOS</th><th>CADASTRO</th><th>AÇÕES</th></tr></thead><tbody>';
+  
+  clientes.forEach(c => {
+    const plano = c.plan || 'trial';
+    const total = c.credits_total || 0;
+    const usado = c.credits_used || 0;
+    const disp = total - usado;
+    const pct = total > 0 ? Math.round((usado/total)*100) : 0;
+    const data = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '-';
+    const badgeClass = `badge-${plano}`;
+    const planLabel = PLANOS[plano]?.label || plano;
+
+    html += `<tr>
+      <td>
+        <div style="font-weight:700;color:var(--white);font-size:13px;">${c.name || '-'}</div>
+        <div style="font-size:11px;color:var(--gray);margin-top:2px;">${c.email || '-'}</div>
+        ${c.phone ? '<div style="font-size:11px;color:var(--gray);">📱 '+c.phone+'</div>' : ''}
+      </td>
+      <td><span class="badge ${badgeClass}">${planLabel.toUpperCase()}</span></td>
+      <td>
+        <div style="font-size:13px;color:var(--white);">${disp.toLocaleString('pt-BR')} disponíveis</div>
+        <div style="font-size:11px;color:var(--gray);">${usado.toLocaleString('pt-BR')} / ${total.toLocaleString('pt-BR')} usados (${pct}%)</div>
+        <div style="background:rgba(255,255,255,0.06);height:4px;margin-top:6px;border-radius:2px;">
+          <div style="background:var(--cyan);height:4px;width:${pct}%;border-radius:2px;"></div>
+        </div>
+      </td>
+      <td style="font-size:12px;color:var(--gray);">${data}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-primary btn-sm" onclick='abrirEditar(${JSON.stringify(c)})'>✏️ EDITAR</button>
+          <button class="btn-danger btn-sm" onclick="zerarCreditos('${c.id}')">🔄 ZERAR</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table>';
+  document.getElementById('tabelaClientes').innerHTML = html;
+}
+
+function filtrarClientes() {
+  const termo = document.getElementById('searchCliente').value.toLowerCase();
+  const filtrados = todosClientes.filter(c => 
+    (c.email || '').toLowerCase().includes(termo) || 
+    (c.name || '').toLowerCase().includes(termo)
+  );
+  renderClientes(filtrados);
+}
+
+// ── EDITAR CLIENTE ──
+function abrirEditar(c) {
+  document.getElementById('editId').value = c.id;
+  document.getElementById('editNome').value = c.name || '';
+  document.getElementById('editPlano').value = c.plan || 'trial';
+  document.getElementById('editCreditos').value = c.credits_total || 0;
+  document.getElementById('editUsados').value = c.credits_used || 0;
+  document.getElementById('editMsg').style.display = 'none';
+  document.getElementById('modalEditar').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modalEditar').classList.remove('show');
+}
+
+async function salvarEdicao() {
+  const id = document.getElementById('editId').value;
+  const plano = document.getElementById('editPlano').value;
+  const creditos = parseInt(document.getElementById('editCreditos').value);
+  const usados = parseInt(document.getElementById('editUsados').value);
+  const nome = document.getElementById('editNome').value;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name: nome, plan: plano, credits_total: creditos, credits_used: usados })
+    });
+
+    if (res.ok) {
+      const msg = document.getElementById('editMsg');
+      msg.style.display = 'block';
+      msg.style.color = '#00E676';
+      msg.textContent = '✅ Salvo com sucesso!';
+      setTimeout(() => { fecharModal(); carregarClientes(); }, 1500);
+    } else {
+      throw new Error('Erro ao salvar');
+    }
+  } catch(e) {
+    const msg = document.getElementById('editMsg');
+    msg.style.display = 'block';
+    msg.style.color = '#FF4D4D';
+    msg.textContent = '❌ Erro: ' + e.message;
+  }
+}
+
+async function zerarCreditos(id) {
+  if (!confirm('Zerar créditos usados deste cliente?')) return;
+  
+  await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ credits_used: 0 })
+  });
+  carregarClientes();
+}
+
+// ── ATIVAR PLANO MANUAL ──
+async function ativarPlano() {
+  const email = document.getElementById('newEmail').value.trim();
+  const plano = document.getElementById('newPlano').value;
+  const extras = parseInt(document.getElementById('newCreditos').value) || 0;
+  const msg = document.getElementById('ativarMsg');
+
+  if (!email) { 
+    msg.style.display = 'block'; msg.style.color = '#FF4D4D';
+    msg.textContent = 'Digite o e-mail do cliente!'; return; 
+  }
+
+  const creditos = (PLANOS[plano]?.creditos || 30) + extras;
+  
+  try {
+    // Busca cliente pelo email
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?email=eq.${email}`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Accept': 'application/json' }
+    });
+    const clientes = await res.json();
+
+    if (clientes && clientes.length > 0) {
+      // Atualiza plano existente
+      await fetch(`${SUPABASE_URL}/rest/v1/profiles?email=eq.${email}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: plano, credits_total: creditos, credits_used: 0 })
+      });
+      msg.style.display = 'block'; msg.style.color = '#00E676';
+      msg.textContent = `✅ Plano ${plano.toUpperCase()} ativado para ${email}!`;
+    } else {
+      msg.style.display = 'block'; msg.style.color = '#FF4D4D';
+      msg.textContent = '❌ Cliente não encontrado. Peça para ele se cadastrar primeiro.';
+    }
+  } catch(e) {
+    msg.style.display = 'block'; msg.style.color = '#FF4D4D';
+    msg.textContent = '❌ Erro: ' + e.message;
+  }
+}
+
+// ── STATS ──
+async function carregarStats() {
+  if (!todosClientes.length) await carregarClientes();
+  
+  const total = todosClientes.length;
+  const pagos = todosClientes.filter(c => c.plan && c.plan !== 'trial').length;
+  const trials = todosClientes.filter(c => !c.plan || c.plan === 'trial').length;
+  const consultas = todosClientes.reduce((s, c) => s + (c.credits_used || 0), 0);
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPagos').textContent = pagos;
+  document.getElementById('statTrials').textContent = trials;
+  document.getElementById('statConsultas').textContent = consultas.toLocaleString('pt-BR');
+
+  // Distribuição por plano
+  const dist = {};
+  todosClientes.forEach(c => {
+    const p = c.plan || 'trial';
+    dist[p] = (dist[p] || 0) + 1;
+  });
+
+  let distHtml = '<div style="display:flex;flex-direction:column;gap:12px;">';
+  Object.entries(dist).sort((a,b) => b[1]-a[1]).forEach(([plano, qtd]) => {
+    const pct = total > 0 ? Math.round((qtd/total)*100) : 0;
+    const planLabel = PLANOS[plano]?.label || plano;
+    distHtml += `
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:13px;color:var(--white);font-weight:700;">${planLabel}</span>
+          <span style="font-size:13px;color:var(--gray);">${qtd} cliente(s) · ${pct}%</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.06);height:8px;border-radius:4px;">
+          <div style="background:var(--cyan);height:8px;width:${pct}%;border-radius:4px;transition:width 0.5s;"></div>
+        </div>
+      </div>`;
+  });
+  distHtml += '</div>';
+  document.getElementById('distPlanos').innerHTML = distHtml;
+}
+</script>
 </body>
 </html>
