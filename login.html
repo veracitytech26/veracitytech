@@ -305,6 +305,53 @@ body {
   .empresa-sel { background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.15); padding:12px 16px; margin-bottom:20px; }
   .es-nome { font-size:14px; font-weight:700; color:var(--white); }
   .es-info { font-size:11px; color:var(--cyan); margin-top:2px; }
+
+  /* ── SCORE ── */
+  .score-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:700; padding:4px 10px;
+    border-radius:2px; white-space:nowrap;
+  }
+  .score-hot { background:rgba(255,77,77,0.15); color:#FF4D4D; border:1px solid rgba(255,77,77,0.3); }
+  .score-warm { background:rgba(255,184,0,0.15); color:#FFB800; border:1px solid rgba(255,184,0,0.3); }
+  .score-cold { background:rgba(0,212,255,0.1); color:#00D4FF; border:1px solid rgba(0,212,255,0.2); }
+  .score-low { background:rgba(136,150,179,0.1); color:#8896B3; border:1px solid rgba(136,150,179,0.2); }
+  
+  /* ONBOARDING MODAL */
+  .onboard-overlay {
+    display:none; position:fixed; inset:0; z-index:2000;
+    background:rgba(0,0,0,0.9); justify-content:center; align-items:center;
+  }
+  .onboard-overlay.show { display:flex; }
+  .onboard-box {
+    background:#0D1530; border:1px solid rgba(0,212,255,0.3);
+    padding:40px; max-width:520px; width:92%; position:relative;
+  }
+  .onboard-box::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,#1240AB,#00D4FF);
+  }
+  .onboard-title { font-size:22px; font-weight:700; color:#fff; margin-bottom:8px; }
+  .onboard-sub { font-size:14px; color:#8896B3; margin-bottom:28px; line-height:1.6; }
+  .onboard-options { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+  .onboard-opt {
+    background:rgba(255,255,255,0.04); border:2px solid rgba(255,255,255,0.08);
+    padding:16px; cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .onboard-opt:hover, .onboard-opt.selected {
+    border-color:#00D4FF; background:rgba(0,212,255,0.08);
+  }
+  .onboard-opt-icon { font-size:28px; margin-bottom:8px; }
+  .onboard-opt-label { font-size:13px; font-weight:700; color:#fff; }
+  .onboard-opt-sub { font-size:11px; color:#8896B3; margin-top:4px; }
+  .onboard-btn {
+    width:100%; background:#00D4FF; color:#080E1E;
+    font-size:14px; font-weight:700; letter-spacing:2px;
+    padding:14px; border:none; cursor:pointer;
+  }
+  .onboard-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .onboard-skip { text-align:center; margin-top:12px; }
+  .onboard-skip a { color:#8896B3; font-size:12px; cursor:pointer; text-decoration:none; }
 </style>
 </head>
 <body>
@@ -694,6 +741,7 @@ body {
       </div>
       <div class="search-actions">
         <button class="btn-search" id="btnBuscar" onclick="buscar()">⚡ BUSCAR EMPRESAS</button>
+        <button type="button" onclick="document.getElementById('onboardModal').classList.add('show')" style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--cyan);font-size:11px;font-weight:700;padding:10px 16px;cursor:pointer;letter-spacing:1px;" title="Alterar meu segmento">🎯 MEU SCORE</button>
         <button class="btn-clear" onclick="limpar()">LIMPAR</button>
         <span id="searchCount" style="font-size:13px;color:var(--gray);margin-left:auto;display:none;">
           Encontradas: <strong id="countNum" style="color:var(--cyan);">0</strong> empresas
@@ -996,6 +1044,7 @@ async function loadProfile() {
 
 // ── MOSTRAR DASHBOARD ──
 function showDashboard() {
+  verificarOnboarding();
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
@@ -1252,9 +1301,11 @@ function renderResults(data) {
     const waLink = celNum ? `https://wa.me/55${celNum}` : '';
     const emailLink = email ? `mailto:${email}` : '';
 
+    const score = calcularScore(e);
+    const scoreBadge = getScoreBadge(score);
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input type="checkbox" id="cb_${i}" style="accent-color:var(--cyan);width:14px;height:14px;"></td>
+      <td><input type="checkbox" id="cb_${i}" style="accent-color:var(--cyan);width:14px;height:16px;"></td>
       <td style="color:var(--gray);font-size:11px;">${String(i+1).padStart(2,'0')}</td>
       <td class="td-name" style="max-width:200px;">
         ${nome}
@@ -1264,6 +1315,7 @@ function renderResults(data) {
       <td style="font-size:12px;">${cidade}${uf ? ' · ' + uf.toUpperCase() : ''}</td>
       <td style="font-size:11px;">${cnae}</td>
       <td style="min-width:160px;">
+        <div style="margin-bottom:6px;">${scoreBadge}</div>
         ${emailLink ? `<a href="${emailLink}" style="display:block;color:#00E676;font-size:11px;text-decoration:none;margin-bottom:4px;" title="${email}">✉ ${email.length > 22 ? email.slice(0,22)+'...' : email}</a>` : ''}
         ${waLink ? `<a href="${waLink}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;text-decoration:none;border-radius:2px;">WhatsApp</a>` : ''}
         ${hasTel && !hasCel ? `<span style="color:var(--gray);font-size:11px;">${tel}</span>` : ''}
@@ -1594,6 +1646,137 @@ document.addEventListener('click', (e) => {
   }
 });
 
+
+// ── SCORE VERACITY ──
+let userSegmento = 'outros';
+
+// Pesos por segmento do vendedor
+const SCORE_PESOS = {
+  saude:       { maturidade:0.15, financeiro:0.25, porte:0.20, cadastral:0.15, contatos:0.15, momento:0.10 },
+  seguros:     { maturidade:0.10, financeiro:0.30, porte:0.25, cadastral:0.15, contatos:0.10, momento:0.10 },
+  contabil:    { maturidade:0.30, financeiro:0.15, porte:0.15, cadastral:0.20, contatos:0.10, momento:0.10 },
+  tech:        { maturidade:0.10, financeiro:0.20, porte:0.25, cadastral:0.15, contatos:0.15, momento:0.15 },
+  marketing:   { maturidade:0.15, financeiro:0.20, porte:0.20, cadastral:0.15, contatos:0.15, momento:0.15 },
+  distribuicao:{ maturidade:0.10, financeiro:0.25, porte:0.30, cadastral:0.15, contatos:0.10, momento:0.10 },
+  rh:          { maturidade:0.10, financeiro:0.20, porte:0.30, cadastral:0.15, contatos:0.10, momento:0.15 },
+  outros:      { maturidade:0.17, financeiro:0.20, porte:0.20, cadastral:0.16, contatos:0.14, momento:0.13 },
+};
+
+function calcularScore(empresa) {
+  const end = empresa.endereco || {};
+  const pesos = SCORE_PESOS[userSegmento] || SCORE_PESOS.outros;
+
+  // PILAR 1 - Maturidade
+  let scoreMaturidade = 5;
+  if (empresa.data_abertura) {
+    const anos = (new Date() - new Date(empresa.data_abertura)) / (1000*60*60*24*365);
+    if (anos < 0.25) scoreMaturidade = 5;
+    else if (anos < 1) scoreMaturidade = 8;
+    else if (anos < 5) scoreMaturidade = 10;
+    else if (anos < 10) scoreMaturidade = 7;
+    else scoreMaturidade = 5;
+    // Contabil prefere empresas novas
+    if (userSegmento === 'contabil' && anos < 1) scoreMaturidade = 10;
+    if (userSegmento === 'contabil' && anos > 5) scoreMaturidade = 4;
+  }
+
+  // PILAR 2 - Financeiro
+  let scoreFinanceiro = 4;
+  const capital = empresa.capital_social || 0;
+  if (capital >= 500000) scoreFinanceiro = 10;
+  else if (capital >= 100000) scoreFinanceiro = 8;
+  else if (capital >= 50000) scoreFinanceiro = 6;
+  else if (capital >= 10000) scoreFinanceiro = 4;
+  else scoreFinanceiro = 2;
+
+  // PILAR 3 - Porte
+  let scorePorte = 5;
+  const porte = (empresa.porte_empresa && empresa.porte_empresa.codigo) || '';
+  const isMei = empresa.mei && empresa.mei.optante;
+  if (isMei) scorePorte = 2;
+  else if (porte === '01' || porte === '1') scorePorte = 5; // ME
+  else if (porte === '03' || porte === '3') scorePorte = 8; // EPP
+  else if (porte === '05' || porte === '5') scorePorte = 10; // Grande
+  else scorePorte = 6;
+
+  // PILAR 4 - Cadastral
+  let scoreCadastral = 5;
+  const sit = empresa.situacao_cadastral && empresa.situacao_cadastral.situacao_atual;
+  if (sit === 'ATIVA') scoreCadastral = 10;
+  else if (sit === 'SUSPENSA') scoreCadastral = 3;
+  else scoreCadastral = 0;
+
+  // PILAR 5 - Contatos
+  const emails = empresa.contato_email || [];
+  const tels = empresa.contato_telefonico || [];
+  const temEmail = emails.length > 0 && emails[0].email;
+  const temCelular = tels.some(t => t.tipo === 'CELULAR' || t.tipo === 'MOVEL') || tels.length > 0;
+  const temFixo = tels.some(t => t.tipo === 'FIXO');
+  let scoreContatos = 0;
+  if (temEmail && temCelular) scoreContatos = 10;
+  else if (temEmail && temFixo) scoreContatos = 7;
+  else if (temCelular) scoreContatos = 6;
+  else if (temEmail) scoreContatos = 4;
+  else if (temFixo) scoreContatos = 2;
+
+  // PILAR 6 - Momento
+  let scoreMomento = 5;
+  if (empresa.data_abertura) {
+    const meses = (new Date() - new Date(empresa.data_abertura)) / (1000*60*60*24*30);
+    if (meses <= 3) scoreMomento = 10;
+    else if (meses <= 12) scoreMomento = 8;
+    else if (meses <= 24) scoreMomento = 6;
+    else scoreMomento = 4;
+  }
+
+  // SCORE FINAL
+  const total = (
+    scoreMaturidade * pesos.maturidade +
+    scoreFinanceiro * pesos.financeiro +
+    scorePorte * pesos.porte +
+    scoreCadastral * pesos.cadastral +
+    scoreContatos * pesos.contatos +
+    scoreMomento * pesos.momento
+  );
+
+  return Math.round(total * 10) / 10;
+}
+
+function getScoreBadge(score) {
+  if (score >= 8) return '<span class="score-badge score-hot">🔥 ' + score + '</span>';
+  if (score >= 6) return '<span class="score-badge score-warm">⭐ ' + score + '</span>';
+  if (score >= 4) return '<span class="score-badge score-cold">· ' + score + '</span>';
+  return '<span class="score-badge score-low">· ' + score + '</span>';
+}
+
+// ONBOARDING
+let segmentoSelecionado = null;
+
+function selecionarSegmento(seg, el) {
+  document.querySelectorAll('.onboard-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  segmentoSelecionado = seg;
+  document.getElementById('onboardBtn').disabled = false;
+}
+
+function confirmarSegmento(seg) {
+  userSegmento = seg || segmentoSelecionado || 'outros';
+  try { localStorage.setItem('userSegmento', userSegmento); } catch(e) {}
+  document.getElementById('onboardModal').classList.remove('show');
+  if (currentResults.length > 0) renderResults(currentResults);
+}
+
+function verificarOnboarding() {
+  try {
+    const saved = localStorage.getItem('userSegmento');
+    if (saved) { userSegmento = saved; return; }
+  } catch(e) {}
+  // Mostra onboarding na primeira vez
+  setTimeout(() => {
+    document.getElementById('onboardModal').classList.add('show');
+  }, 1500);
+}
+
 // ── VERIFICAR SESSION ATIVA ──
 async function init() {
   await setupDB();
@@ -1777,5 +1960,58 @@ function abrirWa2() {
   window.open(url, '_blank');
 }
 </script>
+
+<!-- ONBOARDING MODAL -->
+<div class="onboard-overlay" id="onboardModal">
+  <div class="onboard-box">
+    <div class="onboard-title">Personalize sua experiência 🎯</div>
+    <div class="onboard-sub">O que você vende? Vamos destacar os melhores leads para o seu negócio automaticamente.</div>
+    <div class="onboard-options" id="onboardOpts">
+      <div class="onboard-opt" onclick="selecionarSegmento('saude', this)">
+        <div class="onboard-opt-icon">💙</div>
+        <div class="onboard-opt-label">Plano de Saúde</div>
+        <div class="onboard-opt-sub">Corretores e operadoras</div>
+      </div>
+      <div class="onboard-opt" onclick="selecionarSegmento('seguros', this)">
+        <div class="onboard-opt-icon">🛡️</div>
+        <div class="onboard-opt-label">Seguros</div>
+        <div class="onboard-opt-sub">Auto, vida, empresarial, frota</div>
+      </div>
+      <div class="onboard-opt" onclick="selecionarSegmento('contabil', this)">
+        <div class="onboard-opt-icon">📊</div>
+        <div class="onboard-opt-label">Contabilidade</div>
+        <div class="onboard-opt-sub">Serviços contábeis e fiscais</div>
+      </div>
+      <div class="onboard-opt" onclick="selecionarSegmento('tech', this)">
+        <div class="onboard-opt-icon">💻</div>
+        <div class="onboard-opt-label">Tecnologia</div>
+        <div class="onboard-opt-sub">Software, SaaS, TI</div>
+      </div>
+      <div class="onboard-opt" onclick="selecionarSegmento('marketing', this)">
+        <div class="onboard-opt-icon">📱</div>
+        <div class="onboard-opt-label">Marketing</div>
+        <div class="onboard-opt-sub">Agências e consultoras</div>
+      </div>
+      <div class="onboard-opt" onclick="selecionarSegmento('distribuicao', this)">
+        <div class="onboard-opt-icon">📦</div>
+        <div class="onboard-opt-label">Distribuição</div>
+        <div class="onboard-opt-sub">Produtos e insumos B2B</div>
+      </div>
+      <div class="onboard-opt" onclick="selecionarSegmento('rh', this)">
+        <div class="onboard-opt-icon">👥</div>
+        <div class="onboard-opt-label">RH e Benefícios</div>
+        <div class="onboard-opt-sub">Treinamento, folha, benefícios</div>
+      </div>
+      <div class="onboard-opt" onclick="selecionarSegmento('outros', this)">
+        <div class="onboard-opt-icon">🎯</div>
+        <div class="onboard-opt-label">Outro segmento</div>
+        <div class="onboard-opt-sub">Score genérico por solidez</div>
+      </div>
+    </div>
+    <button class="onboard-btn" id="onboardBtn" onclick="confirmarSegmento()" disabled>PERSONALIZAR MEU SCORE →</button>
+    <div class="onboard-skip"><a onclick="confirmarSegmento('outros')">Pular por enquanto</a></div>
+  </div>
+</div>
+
 </body>
 </html>
