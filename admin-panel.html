@@ -266,10 +266,12 @@ tr:hover td { background:rgba(255,255,255,0.02); }
   <div class="login-box">
     <div class="login-logo">VERACITY</div>
     <div class="login-sub">ADMIN PANEL · ACESSO RESTRITO</div>
-    <label class="login-label">SENHA DE ADMINISTRADOR</label>
-    <input type="password" id="adminPass" class="login-input" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')fazerLogin()">
+    <label class="login-label">E-MAIL ADMINISTRADOR</label>
+    <input type="email" id="adminEmail" class="login-input" placeholder="admin@veracitytech.com.br" onkeydown="if(event.key==='Enter')fazerLogin()">
+    <label class="login-label">SENHA</label>
+    <input type="password" id="adminPass" class="login-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()">
     <button class="login-btn" onclick="fazerLogin()">ENTRAR NO PAINEL</button>
-    <div class="login-error" id="loginError">Senha incorreta. Tente novamente.</div>
+    <div class="login-error" id="loginError">E-mail ou senha incorretos. Tente novamente.</div>
   </div>
 </div>
 
@@ -490,25 +492,41 @@ const PLANOS = {
 let todosClientes = [];
 
 // ── LOGIN ──
+const ADMIN_EMAIL = 'admin@veracitytech.com.br';
+
 function fazerLogin() {
+  const email = document.getElementById('adminEmail').value.trim().toLowerCase();
   const pass = document.getElementById('adminPass').value;
-  if (pass === ADMIN_PASS) {
+  const erro = document.getElementById('loginError');
+
+  if (!email || !pass) {
+    erro.style.display = 'block';
+    erro.textContent = 'Preencha e-mail e senha.';
+    return;
+  }
+
+  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     sessionStorage.setItem('adminAuth', '1');
+    sessionStorage.setItem('adminEmail', email);
     carregarClientes();
   } else {
-    document.getElementById('loginError').style.display = 'block';
+    erro.style.display = 'block';
+    erro.textContent = 'E-mail ou senha incorretos. Tente novamente.';
+    // Limpa senha mas mantém email
+    document.getElementById('adminPass').value = '';
   }
 }
 
 function logout() {
   sessionStorage.removeItem('adminAuth');
+  sessionStorage.removeItem('adminEmail');
   location.reload();
 }
 
 // Verifica se já está logado
-if (sessionStorage.getItem('adminAuth') === '1') {
+if (sessionStorage.getItem('adminAuth') === '1' && sessionStorage.getItem('adminEmail') === ADMIN_EMAIL) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   carregarClientes();
