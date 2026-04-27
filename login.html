@@ -405,7 +405,7 @@ body {
         <button onclick="enviarRecuperacao()" style="width:100%;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.3);color:var(--cyan);font-size:13px;font-weight:700;padding:11px;cursor:pointer;letter-spacing:1px;">ENVIAR LINK DE RECUPERAÇÃO</button>
         <div id="recoveryMsg" style="font-size:12px;text-align:center;margin-top:10px;display:none;"></div>
         <div style="text-align:center;margin-top:10px;">
-          <a onclick="esconderRecuperacao()" style="color:#B8C4D8;font-size:12px;cursor:pointer;">← Voltar ao login</a>
+          <a onclick="esconderRecuperacao()" style="color:#FFFFFF;font-size:12px;cursor:pointer;">← Voltar ao login</a>
         </div>
       </div>
 
@@ -474,7 +474,7 @@ body {
   <!-- ABAS DO PAINEL -->
   <div style="display:flex;gap:2px;margin-bottom:24px;border-bottom:1px solid var(--border);">
     <button type="button" id="tabBusca" onclick="mostrarAba('busca')" style="background:rgba(0,212,255,0.1);border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">⚡ NOVA BUSCA</button>
-    <button type="button" id="tabHistorico" onclick="mostrarAba('historico')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#C8D4E4;font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">📋 HISTÓRICO</button>
+    <button type="button" id="tabHistorico" onclick="mostrarAba('historico')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">📋 HISTÓRICO</button>
   </div>
 
   <div id="abaHistorico" style="display:none;">
@@ -798,7 +798,7 @@ body {
     </div>
     <div class="loading-row" id="loadingRow">
       <div class="spinner"></div>
-      <p style="color:#C8D4E4;font-size:13px;">Buscando empresas...</p>
+      <p style="color:#FFFFFF;font-size:13px;">Buscando empresas...</p>
     </div>
     <div class="empty-row" id="emptyRow">
       <div class="empty-icon">🔍</div>
@@ -1367,7 +1367,7 @@ function renderResults(data) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><input type="checkbox" id="cb_${i}" style="accent-color:var(--cyan);width:14px;height:16px;"></td>
-      <td style="color:var(--gray);font-size:11px;">${String(i+1).padStart(2,'0')}</td>
+      <td style="color:#FFFFFF;font-size:11px;">${String(i+1).padStart(2,'0')}</td>
       <td class="td-name" style="max-width:200px;">
         ${nome}
         ${e.nome_fantasia ? `<br><span style="font-size:10px;color:var(--gray);font-weight:400;">${e.nome_fantasia}</span>` : ''}
@@ -1379,8 +1379,8 @@ function renderResults(data) {
         <div style="margin-bottom:6px;">${scoreBadge}</div>
         ${emailLink ? `<a href="${emailLink}" style="display:block;color:#00E676;font-size:11px;text-decoration:none;margin-bottom:4px;" title="${email}">✉ ${email.length > 22 ? email.slice(0,22)+'...' : email}</a>` : ''}
         ${waLink ? `<a href="${waLink}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;text-decoration:none;border-radius:2px;">WhatsApp</a>` : ''}
-        ${hasTel && !hasCel ? `<span style="color:var(--gray);font-size:11px;">${tel}</span>` : ''}
-        ${!hasEmail && !hasCel && !hasTel ? '<span style="color:var(--gray);font-size:11px;">-</span>' : ''}
+        ${hasTel && !hasCel ? `<span style="color:#FFFFFF;font-size:11px;">${tel}</span>` : ''}
+        ${!hasEmail && !hasCel && !hasTel ? '<span style="color:#FFFFFF;font-size:11px;">-</span>' : ''}
       </td>
     `;
     tbody.appendChild(tr);
@@ -1540,7 +1540,7 @@ async function buscarCnpj() {
           <div>
             ${email ? `<a href="mailto:${email}" style="display:block;color:#00E676;font-size:12px;text-decoration:none;margin-bottom:6px;">✉ ${email}</a>` : ''}
             ${waLink ? `<a href="${waLink}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:12px;font-weight:700;padding:6px 16px;text-decoration:none;">WhatsApp</a>` : ''}
-            ${!email && !waLink ? '<span style="color:#B8C4D8;font-size:12px;">Sem contatos</span>' : ''}
+            ${!email && !waLink ? '<span style="color:#FFFFFF;font-size:12px;">Sem contatos</span>' : ''}
           </div>
         </div>
       </div>
