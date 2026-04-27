@@ -1128,6 +1128,35 @@ async function logout() {
 // ── BUSCAR EMPRESAS ──
 async function buscar() {
   const btn = document.getElementById('btnBuscar');
+
+  // ── VERIFICA CRÉDITOS ANTES DE BUSCAR ──
+  if (currentProfile) {
+    const disponiveis = (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0);
+    const qtdSolicitada = parseInt(document.getElementById('fQtd').value) || 20;
+
+    if (disponiveis <= 0) {
+      const plano = currentProfile.plan || 'trial';
+      if (plano === 'trial') {
+        alert('Seus 30 créditos grátis foram utilizados! Assine um plano para continuar prospectando.');
+        window.location.href = 'https://veracitytech.com.br/#planos';
+      } else {
+        alert('Seus créditos do mês foram esgotados. Entre em contato para recarregar.');
+      }
+      return;
+    }
+
+    // Ajusta quantidade para não ultrapassar o saldo
+    if (qtdSolicitada > disponiveis) {
+      const fQtd = document.getElementById('fQtd');
+      // Encontra a opção mais próxima
+      const opcoes = [20, 50, 100, 200, 500];
+      const opcaoIdeal = opcoes.filter(o => o <= disponiveis).pop() || 20;
+      // Limita ao disponível
+      fQtd.value = Math.min(qtdSolicitada, disponiveis).toString();
+      console.log(`Créditos disponíveis: ${disponiveis}. Ajustando busca para ${disponiveis} empresas.`);
+    }
+  }
+
   btn.disabled = true; btn.textContent = 'Buscando...';
 
   document.getElementById('emptyRow').style.display = 'none';
@@ -1213,7 +1242,11 @@ async function buscar() {
     console.log('API response:', json);
     const empresas = (json.cnpjs || json.data || json.results || []);
     console.log(`Encontradas ${empresas.length} empresas`);
-    const empresasFinal = empresas.slice(0, qtd);
+    // Limita ao saldo disponível de créditos
+    const creditosDisponiveis = currentProfile ? 
+      Math.max(0, (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0)) : qtd;
+    const limiteReal = Math.min(qtd, creditosDisponiveis);
+    const empresasFinal = empresas.slice(0, limiteReal);
     currentResults = empresasFinal;
 
     renderResults(empresasFinal);
