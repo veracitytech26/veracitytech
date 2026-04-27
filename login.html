@@ -1045,6 +1045,7 @@ async function loadProfile() {
 // ── MOSTRAR DASHBOARD ──
 function showDashboard() {
   verificarOnboarding();
+  verificarPlanoPendente();
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
@@ -1810,6 +1811,55 @@ function verificarOnboarding() {
   }, 1500);
 }
 
+
+// ── DETECÇÃO DE PLANO NA URL ──
+const PLANO_LINKS = {
+  starter: 'https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=205f08f4013444f597876e7bb55631e0',
+  growth: 'https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=fb10d4275b9240c5ad0129b1b3084531',
+  scale: 'https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=73428f86c4f34225af02b942c2c4ae21',
+  enterprise: 'https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=d689f23a4ee84b75817752d0d134436c',
+};
+
+const PLANO_NOMES = {
+  starter: 'Starter — R$ 397/mês',
+  growth: 'Growth — R$ 797/mês',
+  scale: 'Scale — R$ 1.497/mês',
+  enterprise: 'Enterprise — R$ 2.997/mês',
+};
+
+function verificarPlanoURL() {
+  const params = new URLSearchParams(window.location.search);
+  const plano = params.get('plano');
+  if (!plano || !PLANO_LINKS[plano]) return;
+
+  // Salva o plano escolhido
+  try { sessionStorage.setItem('planoEscolhido', plano); } catch(e) {}
+
+  // Atualiza o select do formulário de cadastro
+  const selectPlano = document.getElementById('regPlan');
+  if (selectPlano) selectPlano.value = plano;
+}
+
+function verificarPlanoPendente() {
+  try {
+    const plano = sessionStorage.getItem('planoEscolhido');
+    if (!plano || !PLANO_LINKS[plano]) return;
+
+    // Mostra banner de pagamento pendente
+    let banner = document.getElementById('bannerPagamento');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'bannerPagamento';
+      banner.style.cssText = 'background:linear-gradient(135deg,rgba(0,230,118,0.1),rgba(0,212,255,0.05));border:1px solid rgba(0,230,118,0.3);padding:16px 24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;';
+      const statsRow = document.querySelector('.stats-row');
+      if (statsRow) statsRow.parentNode.insertBefore(banner, statsRow);
+    }
+
+    banner.innerHTML = '<div><div style="font-size:14px;font-weight:700;color:#00E676;margin-bottom:4px;">✅ Cadastro realizado! Finalize sua assinatura</div><div style="font-size:12px;color:#8896B3;">Você escolheu o plano <strong style="color:#fff;">' + PLANO_NOMES[plano] + '</strong>. Clique para pagar e ativar.</div></div><a href="' + PLANO_LINKS[plano] + '" target="_blank" onclick="sessionStorage.removeItem('planoEscolhido')" style="background:#00E676;color:#080E1E;font-size:13px;font-weight:700;padding:12px 28px;text-decoration:none;white-space:nowrap;">💳 FINALIZAR PAGAMENTO →</a>';
+
+  } catch(e) {}
+}
+
 // ── VERIFICAR SESSION ATIVA ──
 async function init() {
   await setupDB();
@@ -1822,6 +1872,7 @@ async function init() {
 }
 
 init();
+verificarPlanoURL();
 </script>
 
 <!-- MODAL GERADOR DE MENSAGEM -->
