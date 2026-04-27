@@ -1934,28 +1934,39 @@ async function enviarRecuperacao() {
 
 // Verifica se veio do link de recuperação
 function verificarReset() {
+  // Supabase envia o token no hash da URL: #access_token=...&type=recovery
+  const hash = window.location.hash;
   const params = new URLSearchParams(window.location.search);
-  if (params.get('reset') === 'true' || window.location.hash.includes('type=recovery')) {
-    // Mostra formulário de nova senha
-    const container = document.getElementById('loginContainer');
-    if (container) {
-      const novaSenhaHtml = `
-        <div style="text-align:center;margin-bottom:24px;">
-          <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px;">Nova Senha</div>
-          <div style="font-size:13px;color:#8896B3;">Digite sua nova senha abaixo</div>
-        </div>
-        <div style="font-size:11px;color:#8896B3;letter-spacing:2px;font-weight:700;margin-bottom:8px;">NOVA SENHA</div>
-        <input type="password" id="newPassword" class="form-input" placeholder="Mínimo 6 caracteres" style="width:100%;margin-bottom:16px;">
-        <button onclick="salvarNovaSenha()" style="width:100%;background:var(--cyan);color:var(--navy);font-size:14px;font-weight:700;padding:14px;border:none;cursor:pointer;letter-spacing:2px;">SALVAR NOVA SENHA</button>
-        <div id="newPassMsg" style="font-size:12px;text-align:center;margin-top:10px;display:none;"></div>
-      `;
-      container.innerHTML = novaSenhaHtml;
-    }
+  const isReset = hash.includes('type=recovery') || params.get('type') === 'recovery' || params.get('reset') === 'true';
+  
+  if (!isReset) return;
+
+  // Esconde as abas de login/cadastro
+  const tabs = document.querySelector('.auth-tabs') || document.querySelector('.tabs');
+  if (tabs) tabs.style.display = 'none';
+
+  // Substitui o formulário de login
+  const container = document.getElementById('loginForm');
+  if (container) {
+    container.style.display = 'block';
+    container.innerHTML = `
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:8px;">🔐 Nova Senha</div>
+        <div style="font-size:13px;color:#8896B3;">Digite sua nova senha abaixo para continuar</div>
+      </div>
+      <div style="font-size:11px;color:#8896B3;letter-spacing:2px;font-weight:700;margin-bottom:8px;">NOVA SENHA</div>
+      <input type="password" id="newPassword" placeholder="Mínimo 6 caracteres" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:12px 14px;font-size:14px;outline:none;margin-bottom:16px;">
+      <div style="font-size:11px;color:#8896B3;letter-spacing:2px;font-weight:700;margin-bottom:8px;">CONFIRMAR NOVA SENHA</div>
+      <input type="password" id="confirmPassword" placeholder="Repita a senha" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:12px 14px;font-size:14px;outline:none;margin-bottom:20px;">
+      <button onclick="salvarNovaSenha()" style="width:100%;background:var(--cyan);color:var(--navy);font-size:14px;font-weight:700;padding:14px;border:none;cursor:pointer;letter-spacing:2px;">SALVAR NOVA SENHA</button>
+      <div id="newPassMsg" style="font-size:13px;text-align:center;margin-top:14px;display:none;"></div>
+    `;
   }
 }
 
 async function salvarNovaSenha() {
   const senha = document.getElementById('newPassword').value;
+  const confirma = document.getElementById('confirmPassword').value;
   const msg = document.getElementById('newPassMsg');
 
   if (senha.length < 6) {
@@ -1965,20 +1976,37 @@ async function salvarNovaSenha() {
     return;
   }
 
+  if (senha !== confirma) {
+    msg.style.display = 'block';
+    msg.style.color = '#FF4D4D';
+    msg.textContent = 'As senhas não coincidem. Tente novamente.';
+    return;
+  }
+
   try {
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Supabase precisa da sessão do hash para atualizar a senha
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+
+    if (accessToken) {
+      await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    }
+
     const { error } = await sb.auth.updateUser({ password: senha });
     if (error) throw error;
 
     msg.style.display = 'block';
     msg.style.color = '#00E676';
-    msg.textContent = '✅ Senha alterada! Redirecionando...';
-    setTimeout(() => window.location.href = '/login.html', 2000);
+    msg.textContent = '✅ Senha alterada com sucesso! Redirecionando para o login...';
+    setTimeout(() => window.location.href = 'https://veracitytech.com.br/login.html', 2500);
   } catch(e) {
     msg.style.display = 'block';
     msg.style.color = '#FF4D4D';
-    msg.textContent = '❌ Erro ao salvar. Tente novamente.';
+    msg.textContent = '❌ Link expirado ou inválido. Solicite um novo link de recuperação.';
   }
 }
 
