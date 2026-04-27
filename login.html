@@ -1071,6 +1071,7 @@ async function loadProfile() {
 function showDashboard() {
   verificarOnboarding();
   verificarPlanoPendente();
+  setTimeout(atualizarOpcoesCreditos, 500);
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
@@ -1297,6 +1298,7 @@ async function buscar() {
       currentProfile.credits_used = newUsed;
       currentProfile.exports = newExports;
       showDashboard(); // Atualiza stats
+  atualizarOpcoesCreditos(); // Atualiza opções de quantidade
     }
 
   } catch(e) {
@@ -2007,6 +2009,51 @@ async function salvarNovaSenha() {
     msg.style.display = 'block';
     msg.style.color = '#FF4D4D';
     msg.textContent = '❌ Link expirado ou inválido. Solicite um novo link de recuperação.';
+  }
+}
+
+
+// ── ATUALIZA OPÇÕES DE QUANTIDADE CONFORME CRÉDITOS ──
+function atualizarOpcoesCreditos() {
+  if (!currentProfile) return;
+  const disponiveis = Math.max(0, (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0));
+  const select = document.getElementById('fQtd');
+  if (!select) return;
+
+  const opcoesPadrao = [20, 50, 100, 200, 500];
+  select.innerHTML = '';
+
+  opcoesPadrao.forEach(op => {
+    if (op <= disponiveis) {
+      const opt = document.createElement('option');
+      opt.value = op;
+      opt.textContent = op + ' empresas';
+      if (op === 20) opt.selected = true;
+      select.appendChild(opt);
+    }
+  });
+
+  // Adiciona opção "Usar tudo" se o saldo não for múltiplo das opções padrão
+  const ultimaOpcao = opcoesPadrao.filter(o => o <= disponiveis).pop();
+  if (disponiveis > 0 && disponiveis !== ultimaOpcao) {
+    const opt = document.createElement('option');
+    opt.value = disponiveis;
+    opt.textContent = disponiveis + ' empresas (usar tudo)';
+    select.appendChild(opt);
+  }
+
+  // Se saldo for menor que 20, adiciona só o saldo disponível
+  if (disponiveis > 0 && disponiveis < 20) {
+    select.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = disponiveis;
+    opt.textContent = disponiveis + ' empresas (saldo disponível)';
+    select.appendChild(opt);
+  }
+
+  // Se zerado
+  if (disponiveis <= 0) {
+    select.innerHTML = '<option value="0">Sem créditos disponíveis</option>';
   }
 }
 
