@@ -352,6 +352,15 @@ body {
   .onboard-btn:disabled { opacity:0.4; cursor:not-allowed; }
   .onboard-skip { text-align:center; margin-top:12px; }
   .onboard-skip a { color:#8896B3; font-size:12px; cursor:pointer; text-decoration:none; }
+
+  .recovery-link { 
+    text-align:center; margin-top:12px;
+  }
+  .recovery-link a { 
+    color:var(--cyan); font-size:12px; cursor:pointer; text-decoration:none;
+  }
+  .recovery-link a:hover { text-decoration:underline; }
+  #recoveryForm { display:none; }
 </style>
 </head>
 <body>
@@ -1860,6 +1869,103 @@ function verificarPlanoPendente() {
   } catch(e) {}
 }
 
+
+// ── RECUPERAÇÃO DE SENHA ──
+function mostrarRecuperacao() {
+  document.getElementById('recoveryForm').style.display = 'block';
+  document.getElementById('btnLogin').style.display = 'none';
+  document.getElementById('loginError').style.display = 'none';
+  document.querySelector('.recovery-link').style.display = 'none';
+}
+
+function esconderRecuperacao() {
+  document.getElementById('recoveryForm').style.display = 'none';
+  document.getElementById('btnLogin').style.display = 'block';
+  document.querySelector('.recovery-link').style.display = 'block';
+}
+
+async function enviarRecuperacao() {
+  const email = document.getElementById('recoveryEmail').value.trim();
+  const msg = document.getElementById('recoveryMsg');
+
+  if (!email) {
+    msg.style.display = 'block';
+    msg.style.color = '#FF4D4D';
+    msg.textContent = 'Digite seu e-mail cadastrado.';
+    return;
+  }
+
+  try {
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://veracitytech.com.br/login.html?reset=true'
+    });
+
+    if (error) throw error;
+
+    msg.style.display = 'block';
+    msg.style.color = '#00E676';
+    msg.textContent = '✅ Link de recuperação enviado! Verifique seu e-mail.';
+    document.getElementById('recoveryEmail').value = '';
+  } catch(e) {
+    msg.style.display = 'block';
+    msg.style.color = '#FF4D4D';
+    msg.textContent = '❌ Erro ao enviar. Verifique o e-mail e tente novamente.';
+  }
+}
+
+// Verifica se veio do link de recuperação
+function verificarReset() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('reset') === 'true' || window.location.hash.includes('type=recovery')) {
+    // Mostra formulário de nova senha
+    const container = document.getElementById('loginContainer');
+    if (container) {
+      const novaSenhaHtml = `
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px;">Nova Senha</div>
+          <div style="font-size:13px;color:#8896B3;">Digite sua nova senha abaixo</div>
+        </div>
+        <div style="font-size:11px;color:#8896B3;letter-spacing:2px;font-weight:700;margin-bottom:8px;">NOVA SENHA</div>
+        <input type="password" id="newPassword" class="form-input" placeholder="Mínimo 6 caracteres" style="width:100%;margin-bottom:16px;">
+        <button onclick="salvarNovaSenha()" style="width:100%;background:var(--cyan);color:var(--navy);font-size:14px;font-weight:700;padding:14px;border:none;cursor:pointer;letter-spacing:2px;">SALVAR NOVA SENHA</button>
+        <div id="newPassMsg" style="font-size:12px;text-align:center;margin-top:10px;display:none;"></div>
+      `;
+      container.innerHTML = novaSenhaHtml;
+    }
+  }
+}
+
+async function salvarNovaSenha() {
+  const senha = document.getElementById('newPassword').value;
+  const msg = document.getElementById('newPassMsg');
+
+  if (senha.length < 6) {
+    msg.style.display = 'block';
+    msg.style.color = '#FF4D4D';
+    msg.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+    return;
+  }
+
+  try {
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { error } = await sb.auth.updateUser({ password: senha });
+    if (error) throw error;
+
+    msg.style.display = 'block';
+    msg.style.color = '#00E676';
+    msg.textContent = '✅ Senha alterada! Redirecionando...';
+    setTimeout(() => window.location.href = '/login.html', 2000);
+  } catch(e) {
+    msg.style.display = 'block';
+    msg.style.color = '#FF4D4D';
+    msg.textContent = '❌ Erro ao salvar. Tente novamente.';
+  }
+}
+
 // ── VERIFICAR SESSION ATIVA ──
 async function init() {
   await setupDB();
@@ -1873,6 +1979,7 @@ async function init() {
 
 init();
 verificarPlanoURL();
+verificarReset();
 </script>
 
 <!-- MODAL GERADOR DE MENSAGEM -->
