@@ -392,7 +392,23 @@ body {
         <label>SENHA</label>
         <input type="password" id="loginPassword" placeholder="••••••••">
       </div>
-      <button class="btn btn-primary" onclick="login()">ENTRAR NA PLATAFORMA</button>
+      <button class="btn btn-primary" id="btnLogin" onclick="login()">ENTRAR NA PLATAFORMA</button>
+      
+      <div style="text-align:center;margin-top:12px;">
+        <a onclick="mostrarRecuperacao()" style="color:var(--cyan);font-size:12px;cursor:pointer;text-decoration:none;">Esqueci minha senha</a>
+      </div>
+
+      <!-- RECUPERAÇÃO DE SENHA -->
+      <div id="recoveryForm" style="display:none;margin-top:16px;">
+        <div style="font-size:11px;color:var(--gray);letter-spacing:2px;font-weight:700;margin-bottom:8px;">RECUPERAR SENHA</div>
+        <input type="email" id="recoveryEmail" placeholder="Digite seu e-mail cadastrado" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:11px 14px;font-size:13px;outline:none;margin-bottom:10px;">
+        <button onclick="enviarRecuperacao()" style="width:100%;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.3);color:var(--cyan);font-size:13px;font-weight:700;padding:11px;cursor:pointer;letter-spacing:1px;">ENVIAR LINK DE RECUPERAÇÃO</button>
+        <div id="recoveryMsg" style="font-size:12px;text-align:center;margin-top:10px;display:none;"></div>
+        <div style="text-align:center;margin-top:10px;">
+          <a onclick="esconderRecuperacao()" style="color:var(--gray);font-size:12px;cursor:pointer;">← Voltar ao login</a>
+        </div>
+      </div>
+
       <div class="divider">ou</div>
       <p style="text-align:center;font-size:13px;color:var(--gray);">
         Ainda não tem acesso? Escolha um plano na
