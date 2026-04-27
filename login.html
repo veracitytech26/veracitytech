@@ -1193,7 +1193,7 @@ async function buscar() {
     // Não repetir empresas já vistas
     const naoRepetir = document.getElementById('fNaoRepetir') && document.getElementById('fNaoRepetir').checked;
     if (naoRepetir) {
-      payload.mais_filtros.excluir_empresas_visualizadas = true;
+      payload.excluir_visualizadas = true;
     }
 
     console.log('Chamando proxy /.netlify/functions/buscar...', JSON.stringify(payload));
