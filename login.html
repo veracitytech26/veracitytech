@@ -1693,14 +1693,29 @@ function getHistorico() {
 function salvarNoHistorico(empresas) {
   try {
     let hist = getHistorico();
-    const novos = empresas.map(e => ({
-      cnpj: e.cnpj,
-      nome: e.razao_social,
-      cidade: (e.endereco && e.endereco.municipio) || '',
-      uf: (e.endereco && e.endereco.uf) || '',
-      email: (e.contato_email && e.contato_email[0] && e.contato_email[0].email) || '',
-      data: new Date().toLocaleDateString('pt-BR')
-    }));
+    const novos = empresas.map(e => {
+      const tels = e.contato_telefonico || [];
+      const celObj = tels.find(t => t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'));
+      const telRef = celObj || tels[0];
+      let celNum = '';
+      if (telRef) {
+        if (telRef.completo) celNum = telRef.completo.replace(/[^0-9]/g, '');
+        else if (telRef.ddd && telRef.numero) celNum = telRef.ddd.replace(/[^0-9]/g, '') + telRef.numero.replace(/[^0-9]/g, '');
+        else if (telRef.numero) celNum = telRef.numero.replace(/[^0-9]/g, '');
+        if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
+      }
+      return {
+        cnpj: e.cnpj,
+        nome: e.razao_social,
+        cidade: (e.endereco && e.endereco.municipio) || '',
+        uf: (e.endereco && e.endereco.uf) || '',
+        email: (e.contato_email && e.contato_email[0] && e.contato_email[0].email) || '',
+        whatsapp: celNum.length >= 10 ? '55' + celNum : '',
+        segmento: (e.atividade_principal && e.atividade_principal.descricao) || '',
+        data: new Date().toLocaleDateString('pt-BR'),
+        origem: 'busca'
+      };
+    });
     // Adiciona só os que não existem ainda
     novos.forEach(n => {
       if (!hist.find(h => h.cnpj === n.cnpj)) hist.unshift(n);
@@ -1720,13 +1735,23 @@ function renderHistorico() {
   }
   let html = '<div style="margin-bottom:12px;font-size:12px;color:var(--gray);">' + hist.length + ' empresas no histórico</div>';
   html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">';
-  html += '<tr><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">EMPRESA</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">CNPJ</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">CIDADE</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">DATA</th></tr>';
+  html += '<tr><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">EMPRESA</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">CNPJ</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">CIDADE</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">CONTATO</th><th style="text-align:left;padding:8px 12px;font-size:10px;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);">DATA</th></tr>';
   hist.slice(0, 100).forEach(h => {
     const cidade = h.cidade ? h.cidade.split(' ').map(w => w[0].toUpperCase()+w.slice(1).toLowerCase()).join(' ') : '';
+    const waLink = h.whatsapp ? 'https://wa.me/' + h.whatsapp : '';
+    const origemBadge = h.origem === 'abertas_hoje' ? '<span style="font-size:9px;background:rgba(255,77,77,0.2);color:#FF4D4D;padding:2px 6px;border-radius:2px;margin-left:6px;">🔥 NOVA</span>' : '';
     html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">';
-    html += '<td style="padding:10px 12px;font-size:12px;color:var(--white);font-weight:600;">' + (h.nome || '-') + '</td>';
+    html += '<td style="padding:10px 12px;">';
+    html += '<div style="font-size:12px;color:var(--white);font-weight:600;">' + (h.nome || '-') + origemBadge + '</div>';
+    html += '<div style="font-size:10px;color:var(--gray);margin-top:2px;">' + (h.segmento || '') + '</div>';
+    html += '</td>';
     html += '<td style="padding:10px 12px;font-size:11px;font-family:monospace;color:var(--gray);">' + (h.cnpj || '-') + '</td>';
     html += '<td style="padding:10px 12px;font-size:12px;color:var(--gray);">' + cidade + (h.uf ? ' · '+h.uf.toUpperCase() : '') + '</td>';
+    html += '<td style="padding:10px 12px;">';
+    if (h.email) html += '<a href="mailto:' + h.email + '" style="display:inline-block;background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2);color:#00E676;font-size:10px;font-weight:700;padding:3px 8px;text-decoration:none;margin-bottom:4px;">✉ EMAIL</a><br>';
+    if (waLink) html += '<a href="' + waLink + '" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;text-decoration:none;">WhatsApp</a>';
+    if (!h.email && !waLink) html += '<span style="font-size:11px;color:var(--gray);">-</span>';
+    html += '</td>';
     html += '<td style="padding:10px 12px;font-size:11px;color:#B8C4D8;">' + (h.data || '-') + '</td>';
     html += '</tr>';
   });
@@ -2364,6 +2389,39 @@ async function buscarAbertasHoje() {
 
     // Salva dados e mostra botão CSV
     window.abertasHojeData = empresas_ok;
+    
+    // Salva no histórico com origem marcada
+    try {
+      let hist = getHistorico();
+      const novos = empresas_ok.map(function(e) {
+        const tels = e.contato_telefonico || [];
+        const celObj = tels.find(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); });
+        const telRef = celObj || tels[0];
+        let celNum = '';
+        if (telRef) {
+          if (telRef.completo) celNum = telRef.completo.replace(/[^0-9]/g, '');
+          else if (telRef.ddd && telRef.numero) celNum = telRef.ddd.replace(/[^0-9]/g, '') + telRef.numero.replace(/[^0-9]/g, '');
+          else if (telRef.numero) celNum = telRef.numero.replace(/[^0-9]/g, '');
+          if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
+        }
+        return {
+          cnpj: e.cnpj,
+          nome: e.razao_social,
+          cidade: (e.endereco && e.endereco.municipio) || '',
+          uf: (e.endereco && e.endereco.uf) || '',
+          email: (e.contato_email && e.contato_email[0] && e.contato_email[0].email) || '',
+          whatsapp: celNum.length >= 10 ? '55' + celNum : '',
+          segmento: (e.atividade_principal && e.atividade_principal.descricao) || '',
+          data: new Date().toLocaleDateString('pt-BR'),
+          origem: 'abertas_hoje'
+        };
+      });
+      novos.forEach(function(n) {
+        if (!hist.find(function(h) { return h.cnpj === n.cnpj; })) hist.unshift(n);
+      });
+      hist = hist.slice(0, 500);
+      localStorage.setItem('hist_empresas', JSON.stringify(hist));
+    } catch(e) {}
     const btnExpAbertas = document.getElementById('btnExportAbertas');
     if (btnExpAbertas) {
       btnExpAbertas.style.display = 'inline-block';
