@@ -2359,11 +2359,11 @@ async function buscarAbertasHoje() {
       const telRef = celObj || anyTel;
       if (telRef) {
         if (telRef.completo) {
-          celNum = telRef.completo.replace(/\D/g,'');
+          celNum = telRef.completo.replace(/[^0-9]/g,'');
         } else if (telRef.ddd && telRef.numero) {
-          celNum = telRef.ddd.replace(/\D/g,'') + telRef.numero.replace(/\D/g,'');
+          celNum = telRef.ddd.replace(/[^0-9]/g,'') + telRef.numero.replace(/[^0-9]/g,'');
         } else if (telRef.numero) {
-          celNum = telRef.numero.replace(/\D/g,'');
+          celNum = telRef.numero.replace(/[^0-9]/g,'');
         }
       }
       // Remove o 55 do início se já vier
@@ -2428,9 +2428,9 @@ function exportarAbertasCSV() {
     const telRef = celObj || tels[0];
     let celNum = '';
     if (telRef) {
-      if (telRef.completo) celNum = telRef.completo.replace(/\D/g,'');
-      else if (telRef.ddd && telRef.numero) celNum = telRef.ddd.replace(/\D/g,'') + telRef.numero.replace(/\D/g,'');
-      else if (telRef.numero) celNum = telRef.numero.replace(/\D/g,'');
+      if (telRef.completo) celNum = telRef.completo.replace(/[^0-9]/g,'');
+      else if (telRef.ddd && telRef.numero) celNum = telRef.ddd.replace(/[^0-9]/g,'') + telRef.numero.replace(/[^0-9]/g,'');
+      else if (telRef.numero) celNum = telRef.numero.replace(/[^0-9]/g,'');
       if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
     }
     const waLink = celNum.length >= 10 ? 'https://wa.me/55' + celNum : '';
