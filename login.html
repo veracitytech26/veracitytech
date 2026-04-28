@@ -2250,8 +2250,8 @@ async function buscarAbertasHoje() {
     }
 
     // ── STATS ──
-    const comZap = empresas.filter(e => (e.contato_telefonico||[]).some(t => t.tipo==='CELULAR'||t.tipo==='MOVEL')).length;
-    const comEmail = empresas.filter(e => (e.contato_email||[]).length > 0).length;
+    const comZap = empresas.filter(e => (e.contato_telefonico||[]).some(t => t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'||t.tipo.toLowerCase()==='móvel'))).length;
+    const comEmail = empresas.filter(e => e.contato_email && e.contato_email.length > 0 && e.contato_email[0].email).length;
     const scores = empresas.map(e => calcularScore(e));
     const scoreMedio = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : 0;
 
@@ -2291,31 +2291,14 @@ async function buscarAbertasHoje() {
 
     // ── GRÁFICO SEGMENTOS ──
     const segmentos = {};
-    // Debug - log first empresa keys
-    if (empresas.length > 0) {
-      console.log('Empresa exemplo:', JSON.stringify(empresas[0]).slice(0,500));
-      console.log('CNAE fields:', {
-        cnae_principal: empresas[0].cnae_principal,
-        cnae_fiscal: empresas[0].cnae_fiscal_descricao,
-        atividade: empresas[0].atividade_principal,
-        atividades: empresas[0].atividades_principais,
-        cnaes: empresas[0].cnaes_principal
-      });
-    }
+
     empresas.forEach(e => {
-      // Tenta todos os campos possíveis de CNAE
+      // Campo correto: atividade_principal é um objeto {codigo, descricao}
       let cnae = 'Não informado';
-      if (e.cnae_principal) {
-        if (typeof e.cnae_principal === 'string') cnae = e.cnae_principal;
-        else if (e.cnae_principal.descricao) cnae = e.cnae_principal.descricao;
-        else if (e.cnae_principal.texto) cnae = e.cnae_principal.texto;
-        else if (e.cnae_principal.nome) cnae = e.cnae_principal.nome;
-      } else if (e.atividade_principal && e.atividade_principal.length) {
-        cnae = e.atividade_principal[0].text || e.atividade_principal[0].descricao || e.atividade_principal[0].nome || 'Não informado';
-      } else if (e.atividades_principais && e.atividades_principais.length) {
-        cnae = e.atividades_principais[0].descricao || e.atividades_principais[0].text || 'Não informado';
-      } else if (e.cnae_fiscal_descricao) {
-        cnae = e.cnae_fiscal_descricao;
+      if (e.atividade_principal && e.atividade_principal.descricao) {
+        cnae = e.atividade_principal.descricao;
+      } else if (e.atividade_principal && Array.isArray(e.atividade_principal) && e.atividade_principal[0]) {
+        cnae = e.atividade_principal[0].descricao || e.atividade_principal[0].text || 'Não informado';
       }
       const seg = cnae.length > 40 ? cnae.slice(0,40)+'...' : cnae;
       segmentos[seg] = (segmentos[seg]||0)+1;
@@ -2348,19 +2331,16 @@ async function buscarAbertasHoje() {
       const emails = e.contato_email || [];
       const tels = e.contato_telefonico || [];
       const email = emails[0]?.email || emails[0] || '';
-      const celObj = tels.find(t => t.tipo === 'CELULAR' || t.tipo === 'MOVEL' || t.tipo === 'Celular');
-      const cel = celObj?.numero || celObj?.telefone || (tels[0]?.numero) || '';
+      // tipo vem em minúsculo: "celular", "fixo"
+      const celObj = tels.find(t => t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'||t.tipo.toLowerCase()==='móvel'));
+      const cel = celObj?.numero || (tels[0]?.numero) || '';
       const celLimpo = cel.replace(/\D/g,'');
       const waLink = celLimpo.length >= 10 ? 'https://wa.me/55' + celLimpo : '';
       const dataAb = e.data_abertura ? new Date(e.data_abertura).toLocaleDateString('pt-BR') : 'Recente';
       const score = calcularScore(e);
       const scoreBadge = getScoreBadge(score);
-      let cnaeDesc = '';
-      if (e.cnae_principal) {
-        cnaeDesc = typeof e.cnae_principal === 'string' ? e.cnae_principal : (e.cnae_principal.descricao || e.cnae_principal.texto || e.cnae_principal.nome || '');
-      } else if (e.atividade_principal && e.atividade_principal[0]) {
-        cnaeDesc = e.atividade_principal[0].text || e.atividade_principal[0].descricao || '';
-      }
+      // atividade_principal é objeto {codigo, descricao}
+      const cnaeDesc = (e.atividade_principal && e.atividade_principal.descricao) ? e.atividade_principal.descricao : '';
 
       html += '<div style="background:var(--dark);border:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">'
         + '<div style="flex:1;min-width:200px;">'
