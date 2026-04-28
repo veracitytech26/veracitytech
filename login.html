@@ -2115,11 +2115,15 @@ async function buscarAbertasHoje() {
   try {
     const hoje = new Date();
     const dataHoje = hoje.toISOString().split('T')[0];
+    // Busca últimos 3 dias pois dados chegam com pequeno atraso
+    const data3dias = new Date(hoje);
+    data3dias.setDate(data3dias.getDate() - 3);
+    const dataInicio = data3dias.toISOString().split('T')[0];
 
     const payload = {
       situacao_cadastral: ['ATIVA'],
       data_abertura: { 
-        inicio: dataHoje,
+        inicio: dataInicio,
         fim: dataHoje
       },
       mais_filtros: {
@@ -2148,11 +2152,11 @@ async function buscarAbertasHoje() {
     const empresas = data.cnpjs || [];
 
     if (!empresas.length) {
-      div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Nenhuma empresa encontrada para hoje ainda. Tente novamente mais tarde.</div>';
+      div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Nenhuma empresa encontrada nos últimos 3 dias. Tente selecionar um estado específico.</div>';
       return;
     }
 
-    let html = `<div style="font-size:12px;color:var(--gray);margin-bottom:16px;">${empresas.length} empresas abertas hoje${uf ? ' em ' + uf : ''}</div>`;
+    let html = `<div style="font-size:12px;color:var(--gray);margin-bottom:16px;">${empresas.length} empresas abertas nos últimos 3 dias${uf ? ' em ' + uf : ''}</div>`;
     html += '<div style="display:flex;flex-direction:column;gap:8px;">';
 
     empresas.forEach(e => {
