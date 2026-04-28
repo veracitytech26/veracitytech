@@ -527,6 +527,13 @@ body {
           <option value="15">Últimos 15 dias</option>
           <option value="30">Últimos 30 dias</option>
         </select>
+        <select id="abertasPorte" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:#fff;padding:8px 12px;font-size:12px;outline:none;">
+          <option value="">Todos os portes</option>
+          <option value="mei">MEI</option>
+          <option value="me">Microempresa (ME)</option>
+          <option value="epp">Pequeno Porte (EPP)</option>
+          <option value="grande">Demais</option>
+        </select>
         <select id="abertasQtd" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:#fff;padding:8px 12px;font-size:12px;outline:none;">
           <option value="20">20 empresas</option>
           <option value="50" selected>50 empresas</option>
@@ -2234,7 +2241,7 @@ async function buscarAbertasHoje() {
         somente_matriz: false,
         somente_filial: false
       },
-      limite: parseInt(document.getElementById('abertasQtd')?.value || '50'),
+      limite: parseInt(document.getElementById('abertasQtd')?.value || '50') * 5,
       pagina: 1
     };
 
@@ -2250,14 +2257,29 @@ async function buscarAbertasHoje() {
     const empresas = data.cnpjs || [];
 
     // Filtra só empresas com celular
-    const empresasComZap = empresas.filter(e => {
+    const qtdDesejada = parseInt(document.getElementById('abertasQtd')?.value || '50');
+    const porteFilter = document.getElementById('abertasPorte')?.value || '';
+
+    let empresasFiltradas = empresas.filter(e => {
       const tels = e.contato_telefonico || [];
       return tels.some(t => t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel' || t.tipo.toLowerCase() === 'móvel'));
     });
 
-    // Usa lista filtrada
-    const empresasFiltradas = empresasComZap.length > 0 ? empresasComZap : empresas;
-    const empresas_final = empresasFiltradas;
+    // Aplica filtro de porte
+    if (porteFilter) {
+      empresasFiltradas = empresasFiltradas.filter(e => {
+        const isMei = e.mei && e.mei.optante;
+        const porte = (e.porte_empresa && e.porte_empresa.codigo) || '';
+        if (porteFilter === 'mei') return isMei;
+        if (porteFilter === 'me') return !isMei && (porte === '01' || porte === '1');
+        if (porteFilter === 'epp') return porte === '03' || porte === '3';
+        if (porteFilter === 'grande') return porte === '05' || porte === '5';
+        return true;
+      });
+    }
+
+    // Limita à quantidade desejada
+    const empresas_final = empresasFiltradas.slice(0, qtdDesejada);
 
     if (!empresas_final.length) {
       div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Nenhuma empresa com WhatsApp encontrada no período. Tente ampliar o período ou mudar o estado.</div>';
