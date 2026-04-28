@@ -440,6 +440,10 @@ body {
         </select>
       </div>
       <div class="form-group">
+        <label>CPF</label>
+        <input type="text" id="regCPF" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
+      </div>
+      <div class="form-group">
         <label>TELEFONE / WHATSAPP</label>
         <input type="tel" id="regPhone" placeholder="(21) 99999-9999">
       </div>
@@ -906,6 +910,8 @@ async function login() {
 async function register() {
   const name  = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
+  const cpfRaw = document.getElementById('regCPF') ? document.getElementById('regCPF').value.trim() : '';
+  const cpf = cpfRaw.replace(/[^\d]/g, '');
   const pass  = document.getElementById('regPassword').value;
   const plan  = document.getElementById('regPlan').value;
   const phone = document.getElementById('regPhone').value.trim();
@@ -2055,6 +2061,33 @@ function atualizarOpcoesCreditos() {
   if (disponiveis <= 0) {
     select.innerHTML = '<option value="0">Sem créditos disponíveis</option>';
   }
+}
+
+
+// ── CPF MASK E VALIDAÇÃO ──
+function mascaraCPF(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  input.value = v;
+}
+
+function validarCPF(cpf) {
+  cpf = cpf.replace(/[^\d]/g, '');
+  if (cpf.length !== 11) return false;
+  if (/^(\d)+$/.test(cpf)) return false;
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
+  let rest = (sum * 10) % 11;
+  if (rest === 10 || rest === 11) rest = 0;
+  if (rest !== parseInt(cpf[9])) return false;
+  sum = 0;
+  for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
+  rest = (sum * 10) % 11;
+  if (rest === 10 || rest === 11) rest = 0;
+  return rest === parseInt(cpf[10]);
 }
 
 // ── VERIFICAR SESSION ATIVA ──
