@@ -527,6 +527,12 @@ body {
           <option value="15">Últimos 15 dias</option>
           <option value="30">Últimos 30 dias</option>
         </select>
+        <select id="abertasQtd" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:#fff;padding:8px 12px;font-size:12px;outline:none;">
+          <option value="20">20 empresas</option>
+          <option value="50" selected>50 empresas</option>
+          <option value="100">100 empresas</option>
+          <option value="200">200 empresas</option>
+        </select>
         <button onclick="buscarAbertasHoje()" style="background:#FF4D4D;color:#fff;font-size:12px;font-weight:700;padding:8px 20px;border:none;cursor:pointer;letter-spacing:1px;">🔥 ATUALIZAR RADAR</button>
       </div>
     </div>
@@ -2221,13 +2227,13 @@ async function buscarAbertasHoje() {
         com_email: false,
         com_telefone: true,
         somente_fixo: false,
-        somente_celular: true,
+        somente_celular: false,
         excluir_empresas_visualizadas: false,
         excluir_email_contab: false,
         somente_matriz: false,
         somente_filial: false
       },
-      limite: 50,
+      limite: parseInt(document.getElementById('abertasQtd')?.value || '50'),
       pagina: 1
     };
 
@@ -2242,20 +2248,32 @@ async function buscarAbertasHoje() {
     const data = await res.json();
     const empresas = data.cnpjs || [];
 
-    if (!empresas.length) {
-      div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Nenhuma empresa encontrada no período. Tente ampliar o período ou mudar o estado.</div>';
+    // Filtra só empresas com celular
+    const empresasComZap = empresas.filter(e => {
+      const tels = e.contato_telefonico || [];
+      return tels.some(t => t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel' || t.tipo.toLowerCase() === 'móvel'));
+    });
+
+    // Usa lista filtrada
+    const empresasFiltradas = empresasComZap.length > 0 ? empresasComZap : empresas;
+    const empresas_final = empresasFiltradas;
+
+    if (!empresas_final.length) {
+      div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Nenhuma empresa com WhatsApp encontrada no período. Tente ampliar o período ou mudar o estado.</div>';
       document.getElementById('abertasStats').style.display = 'none';
       document.getElementById('abertasGraficos').style.display = 'none';
       return;
     }
 
+    const empresas_ok = empresas_final;
+
     // ── STATS ──
     const comZap = empresas.filter(e => (e.contato_telefonico||[]).some(t => t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'||t.tipo.toLowerCase()==='móvel'))).length;
-    const comEmail = empresas.filter(e => e.contato_email && e.contato_email.length > 0 && e.contato_email[0].email).length;
-    const scores = empresas.map(e => calcularScore(e));
+    const comEmail = empresas_ok.filter(e => e.contato_email && e.contato_email.length > 0 && e.contato_email[0].email).length;
+    const scores = empresas_ok.map(e => calcularScore(e));
     const scoreMedio = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : 0;
 
-    document.getElementById('statTotalAbertas').textContent = empresas.length;
+    document.getElementById('statTotalAbertas').textContent = empresas_ok.length;
     document.getElementById('statComZap').textContent = comZap;
     document.getElementById('statComEmail').textContent = comEmail;
     document.getElementById('statScoreMedio').textContent = scoreMedio;
@@ -2263,7 +2281,7 @@ async function buscarAbertasHoje() {
 
     // ── GRÁFICO PORTE ──
     const portes = { 'MEI': 0, 'ME': 0, 'EPP': 0, 'Grande': 0, 'Outros': 0 };
-    empresas.forEach(e => {
+    empresas_ok.forEach(e => {
       const isMei = e.mei?.optante;
       const porte = e.porte_empresa?.codigo || '';
       if (isMei) portes['MEI']++;
@@ -2292,7 +2310,7 @@ async function buscarAbertasHoje() {
     // ── GRÁFICO SEGMENTOS ──
     const segmentos = {};
 
-    empresas.forEach(e => {
+    empresas_ok.forEach(e => {
       // Campo correto: atividade_principal é um objeto {codigo, descricao}
       let cnae = 'Não informado';
       if (e.atividade_principal && e.atividade_principal.descricao) {
@@ -2324,7 +2342,7 @@ async function buscarAbertasHoje() {
     let html = `<div style="font-size:12px;color:var(--gray);margin-bottom:16px;padding:8px 0;border-bottom:1px solid var(--border);">Exibindo ${empresas.length} empresas abertas nos últimos ${dias} dias${uf ? ' em '+uf : ''}</div>`;
     html += '<div style="display:flex;flex-direction:column;gap:8px;">';
 
-    empresas.forEach(e => {
+    empresas_ok.forEach(e => {
       const nome = e.razao_social || '-';
       const cidade = e.endereco?.municipio || e.municipio || '-';
       const ufEmp = e.endereco?.uf || e.uf || '-';
@@ -2360,7 +2378,7 @@ async function buscarAbertasHoje() {
 
     // Desconta créditos
     try {
-      const newUsed = (currentProfile.credits_used || 0) + empresas.length;
+      const newUsed = (currentProfile.credits_used || 0) + empresas_ok.length;
       await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentProfile.id}`, {
         method: 'PATCH',
         headers: {
