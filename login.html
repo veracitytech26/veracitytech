@@ -2316,7 +2316,12 @@ async function buscarAbertasHoje() {
     const empresas_ok = empresas_final;
 
     // ── STATS ──
-    const comZap = empresas.filter(e => (e.contato_telefonico||[]).some(t => t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'||t.tipo.toLowerCase()==='móvel'))).length;
+    // Conta empresas com WhatsApp (celular) - não conta os telefones
+    const comZap = empresas_ok.filter(function(e) {
+      return (e.contato_telefonico||[]).some(function(t) { 
+        return t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'||t.tipo.toLowerCase()==='móvel');
+      });
+    }).length;
     const comEmail = empresas_ok.filter(e => e.contato_email && e.contato_email.length > 0 && e.contato_email[0].email).length;
     const scores = empresas_ok.map(e => calcularScore(e));
     const scoreMedio = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : 0;
