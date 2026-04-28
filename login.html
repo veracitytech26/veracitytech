@@ -683,6 +683,8 @@ body {
           <label class="filter-label">TEMPO DA EMPRESA</label>
           <select class="filter-select" id="fTempo">
             <option value="">Qualquer tempo</option>
+            <option value="hoje">🔥 Abertas hoje</option>
+            <option value="7d">Últimos 7 dias</option>
             <option value="3m">Últimos 3 meses</option>
             <option value="6m">Últimos 6 meses</option>
             <option value="1a">Último ano</option>
@@ -1239,6 +1241,8 @@ async function buscar() {
 
     // Filtro de tempo da empresa
     const tempo = document.getElementById('fTempo') ? document.getElementById('fTempo').value : '';
+    const hoje = new Date();
+    const dataHoje = hoje.toISOString().split('T')[0];
     if (tempo) {
       const hoje = new Date();
       const fim = hoje.toISOString().split('T')[0];
@@ -1249,8 +1253,19 @@ async function buscar() {
       else if (tempo === '2a') { const d = new Date(); d.setFullYear(d.getFullYear()-2); inicio = d.toISOString().split('T')[0]; }
       else if (tempo === '5a') { const d = new Date(); d.setFullYear(d.getFullYear()-5); inicio = d.toISOString().split('T')[0]; }
       else if (tempo === '5a+') { const d = new Date(2000,0,1); inicio = '2000-01-01'; }
-      if (tempo === '5a+') { payload.data_abertura = { inicio: '2000-01-01', fim: new Date(new Date().setFullYear(new Date().getFullYear()-5)).toISOString().split('T')[0] }; }
-      else if (inicio) { payload.data_abertura = { inicio, fim }; }
+      if (tempo === 'hoje') {
+        const data3dias = new Date(hoje);
+        data3dias.setDate(data3dias.getDate() - 3);
+        payload.data_abertura = { inicio: data3dias.toISOString().split('T')[0], fim: dataHoje };
+      } else if (tempo === '7d') {
+        const data7d = new Date(hoje);
+        data7d.setDate(data7d.getDate() - 7);
+        payload.data_abertura = { inicio: data7d.toISOString().split('T')[0], fim: dataHoje };
+      } else if (tempo === '5a+') {
+        payload.data_abertura = { inicio: '2000-01-01', fim: new Date(new Date().setFullYear(new Date().getFullYear()-5)).toISOString().split('T')[0] };
+      } else if (inicio) {
+        payload.data_abertura = { inicio, fim };
+      }
     }
 
     // Não repetir empresas já vistas
