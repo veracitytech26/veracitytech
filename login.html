@@ -2420,38 +2420,48 @@ function exportarAbertasCSV() {
   const dados = window.abertasHojeData || [];
   if (!dados.length) return;
 
-  const headers = ['Razão Social','CNPJ','Município','UF','Data Abertura','Segmento','Porte','E-mail','Telefone','WhatsApp'];
-  const rows = dados.map(e => {
+  const headers = ['Razao Social','CNPJ','Municipio','UF','Data Abertura','Segmento','Porte','Email','Telefone','WhatsApp'];
+  
+  function limparNum(str) {
+    return (str || '').toString().replace(/[^0-9]/g, '');
+  }
+
+  const rows = dados.map(function(e) {
     const tels = e.contato_telefonico || [];
     const emails = e.contato_email || [];
-    const celObj = tels.find(t => t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'));
+    const celObj = tels.find(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); });
     const telRef = celObj || tels[0];
     let celNum = '';
     if (telRef) {
-      if (telRef.completo) celNum = telRef.completo.replace(/[^0-9]/g,'');
-      else if (telRef.ddd && telRef.numero) celNum = telRef.ddd.replace(/[^0-9]/g,'') + telRef.numero.replace(/[^0-9]/g,'');
-      else if (telRef.numero) celNum = telRef.numero.replace(/[^0-9]/g,'');
+      if (telRef.completo) celNum = limparNum(telRef.completo);
+      else if (telRef.ddd && telRef.numero) celNum = limparNum(telRef.ddd) + limparNum(telRef.numero);
+      else if (telRef.numero) celNum = limparNum(telRef.numero);
       if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
     }
     const waLink = celNum.length >= 10 ? 'https://wa.me/55' + celNum : '';
-    const porte = e.mei?.optante ? 'MEI' : (e.porte_empresa?.descricao || '-');
-    const cnae = e.atividade_principal?.descricao || '-';
+    const porte = (e.mei && e.mei.optante) ? 'MEI' : ((e.porte_empresa && e.porte_empresa.descricao) || '-');
+    const cnae = (e.atividade_principal && e.atividade_principal.descricao) || '-';
     const dataAb = e.data_abertura ? new Date(e.data_abertura).toLocaleDateString('pt-BR') : '-';
+    const emailStr = (emails[0] && emails[0].email) ? emails[0].email : '';
+    const telStr = (tels[0] && tels[0].completo) ? tels[0].completo : '';
+    const nome = (e.razao_social || '').replace(/"/g, '');
+    const cnaeStr = cnae.replace(/"/g, '');
     return [
-      '"' + (e.razao_social||'').replace(/"/g,'') + '"',
+      '"' + nome + '"',
       e.cnpj || '',
-      e.endereco?.municipio || '',
-      e.endereco?.uf || '',
+      (e.endereco && e.endereco.municipio) || '',
+      (e.endereco && e.endereco.uf) || '',
       dataAb,
-      '"' + cnae.replace(/"/g,'') + '"',
+      '"' + cnaeStr + '"',
       porte,
-      emails[0]?.email || '',
-      tels[0]?.completo || '',
+      emailStr,
+      telStr,
       waLink
     ].join(',');
   });
 
-  const csv = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n');
+  const bom = String.fromCharCode(0xFEFF);
+  const csv = bom + headers.join(',') + String.fromCharCode(10) + rows.join(String.fromCharCode(10));
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
