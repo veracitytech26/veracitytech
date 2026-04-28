@@ -2303,12 +2303,20 @@ async function buscarAbertasHoje() {
       });
     }
     empresas.forEach(e => {
-      const cnae = (e.cnae_principal && (e.cnae_principal.descricao || e.cnae_principal.texto)) ||
-                   e.cnae_fiscal_descricao || 
-                   (e.atividade_principal && e.atividade_principal[0] && e.atividade_principal[0].text) || 
-                   (e.atividades_principais && e.atividades_principais[0] && e.atividades_principais[0].descricao) ||
-                   (e.cnaes_principal && e.cnaes_principal[0] && e.cnaes_principal[0].descricao) ||
-                   'Não informado';
+      // Tenta todos os campos possíveis de CNAE
+      let cnae = 'Não informado';
+      if (e.cnae_principal) {
+        if (typeof e.cnae_principal === 'string') cnae = e.cnae_principal;
+        else if (e.cnae_principal.descricao) cnae = e.cnae_principal.descricao;
+        else if (e.cnae_principal.texto) cnae = e.cnae_principal.texto;
+        else if (e.cnae_principal.nome) cnae = e.cnae_principal.nome;
+      } else if (e.atividade_principal && e.atividade_principal.length) {
+        cnae = e.atividade_principal[0].text || e.atividade_principal[0].descricao || e.atividade_principal[0].nome || 'Não informado';
+      } else if (e.atividades_principais && e.atividades_principais.length) {
+        cnae = e.atividades_principais[0].descricao || e.atividades_principais[0].text || 'Não informado';
+      } else if (e.cnae_fiscal_descricao) {
+        cnae = e.cnae_fiscal_descricao;
+      }
       const seg = cnae.length > 40 ? cnae.slice(0,40)+'...' : cnae;
       segmentos[seg] = (segmentos[seg]||0)+1;
     });
@@ -2347,7 +2355,12 @@ async function buscarAbertasHoje() {
       const dataAb = e.data_abertura ? new Date(e.data_abertura).toLocaleDateString('pt-BR') : 'Recente';
       const score = calcularScore(e);
       const scoreBadge = getScoreBadge(score);
-      const cnaeDesc = e.cnae_principal?.descricao || e.cnae_fiscal_descricao || '';
+      let cnaeDesc = '';
+      if (e.cnae_principal) {
+        cnaeDesc = typeof e.cnae_principal === 'string' ? e.cnae_principal : (e.cnae_principal.descricao || e.cnae_principal.texto || e.cnae_principal.nome || '');
+      } else if (e.atividade_principal && e.atividade_principal[0]) {
+        cnaeDesc = e.atividade_principal[0].text || e.atividade_principal[0].descricao || '';
+      }
 
       html += '<div style="background:var(--dark);border:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">'
         + '<div style="flex:1;min-width:200px;">'
@@ -2366,7 +2379,21 @@ async function buscarAbertasHoje() {
     div.innerHTML = html;
 
     // Desconta créditos
-    await descontarCreditos(empresas.length);
+    try {
+      const newUsed = (currentProfile.credits_used || 0) + empresas.length;
+      await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentProfile.id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${currentToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ credits_used: newUsed })
+      });
+      currentProfile.credits_used = newUsed;
+      showDashboard();
+      atualizarOpcoesCreditos();
+    } catch(ec) { console.error('Erro ao descontar créditos:', ec); }
 
   } catch(err) {
     console.error('Erro buscarAbertasHoje:', err);
