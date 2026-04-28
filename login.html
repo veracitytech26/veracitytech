@@ -2219,9 +2219,9 @@ async function buscarAbertasHoje() {
       },
       mais_filtros: {
         com_email: false,
-        com_telefone: false,
+        com_telefone: true,
         somente_fixo: false,
-        somente_celular: false,
+        somente_celular: true,
         excluir_empresas_visualizadas: false,
         excluir_email_contab: false,
         somente_matriz: false,
@@ -2291,11 +2291,23 @@ async function buscarAbertasHoje() {
 
     // ── GRÁFICO SEGMENTOS ──
     const segmentos = {};
+    // Debug - log first empresa keys
+    if (empresas.length > 0) {
+      console.log('Empresa exemplo:', JSON.stringify(empresas[0]).slice(0,500));
+      console.log('CNAE fields:', {
+        cnae_principal: empresas[0].cnae_principal,
+        cnae_fiscal: empresas[0].cnae_fiscal_descricao,
+        atividade: empresas[0].atividade_principal,
+        atividades: empresas[0].atividades_principais,
+        cnaes: empresas[0].cnaes_principal
+      });
+    }
     empresas.forEach(e => {
-      const cnae = e.cnae_principal?.descricao || 
+      const cnae = (e.cnae_principal && (e.cnae_principal.descricao || e.cnae_principal.texto)) ||
                    e.cnae_fiscal_descricao || 
-                   e.atividade_principal?.[0]?.text || 
-                   e.atividades_principais?.[0]?.descricao ||
+                   (e.atividade_principal && e.atividade_principal[0] && e.atividade_principal[0].text) || 
+                   (e.atividades_principais && e.atividades_principais[0] && e.atividades_principais[0].descricao) ||
+                   (e.cnaes_principal && e.cnaes_principal[0] && e.cnaes_principal[0].descricao) ||
                    'Não informado';
       const seg = cnae.length > 40 ? cnae.slice(0,40)+'...' : cnae;
       segmentos[seg] = (segmentos[seg]||0)+1;
@@ -2356,8 +2368,9 @@ async function buscarAbertasHoje() {
     // Desconta créditos
     await descontarCreditos(empresas.length);
 
-  } catch(e) {
-    div.innerHTML = '<div style="text-align:center;padding:40px;color:#FF4D4D;">Erro ao buscar. Tente novamente.</div>';
+  } catch(err) {
+    console.error('Erro buscarAbertasHoje:', err);
+    div.innerHTML = '<div style="text-align:center;padding:40px;color:#FF4D4D;">Erro: ' + err.message + '</div>';
   }
 }
 
