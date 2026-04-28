@@ -479,6 +479,7 @@ body {
   <div style="display:flex;gap:2px;margin-bottom:24px;border-bottom:1px solid var(--border);">
     <button type="button" id="tabBusca" onclick="mostrarAba('busca')" style="background:rgba(0,212,255,0.1);border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">⚡ NOVA BUSCA</button>
     <button type="button" id="tabHistorico" onclick="mostrarAba('historico')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">📋 HISTÓRICO</button>
+    <button type="button" id="tabAbertasHoje" onclick="mostrarAba('abertasHoje')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">🔥 ABERTAS HOJE</button>
   </div>
 
   <div id="abaHistorico" style="display:none;">
@@ -1571,6 +1572,11 @@ function mostrarAba(aba) {
   document.getElementById('tabHistorico').style.borderBottomColor = aba === 'historico' ? 'var(--cyan)' : 'transparent';
   document.getElementById('tabHistorico').style.color = aba === 'historico' ? 'var(--cyan)' : 'var(--gray)';
   document.getElementById('tabHistorico').style.background = aba === 'historico' ? 'rgba(0,212,255,0.1)' : 'transparent';
+  if (document.getElementById('tabAbertasHoje')) {
+    document.getElementById('tabAbertasHoje').style.borderBottomColor = aba === 'abertasHoje' ? '#FF4D4D' : 'transparent';
+    document.getElementById('tabAbertasHoje').style.color = aba === 'abertasHoje' ? '#FF4D4D' : 'var(--gray)';
+    document.getElementById('tabAbertasHoje').style.background = aba === 'abertasHoje' ? 'rgba(255,77,77,0.1)' : 'transparent';
+  }
   if (aba === 'historico') renderHistorico();
 }
 
