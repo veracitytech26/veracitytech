@@ -2362,7 +2362,15 @@ async function buscarAbertasHoje() {
     document.getElementById('graficoSegmentos').innerHTML = graficoSegHtml;
     document.getElementById('abertasGraficos').style.display = 'grid';
 
-    let html = `<div style="font-size:12px;color:var(--gray);margin-bottom:16px;padding:8px 0;border-bottom:1px solid var(--border);">Exibindo ${empresas.length} empresas abertas nos últimos ${dias} dias${uf ? ' em '+uf : ''}</div>`;
+    // Salva dados e mostra botão CSV
+    window.abertasHojeData = empresas_ok;
+    const btnExpAbertas = document.getElementById('btnExportAbertas');
+    if (btnExpAbertas) {
+      btnExpAbertas.style.display = 'inline-block';
+      btnExpAbertas.textContent = '↓ EXPORTAR CSV (' + empresas_ok.length + ')';
+    }
+
+    let html = `<div style="font-size:12px;color:var(--gray);margin-bottom:16px;padding:8px 0;border-bottom:1px solid var(--border);">Exibindo ${empresas_ok.length} empresas com WhatsApp · últimos ${dias} dias${uf ? ' em '+uf : ''}</div>`;
     html += '<div style="display:flex;flex-direction:column;gap:8px;">';
 
     empresas_ok.forEach(e => {
@@ -2415,12 +2423,24 @@ async function buscarAbertasHoje() {
 
     // Desconta créditos
     try {
-      const newUsed = (currentProfile.credits_used || 0) + empresas_ok.length;
+      const qtdConsumida = empresas_ok.length;
+      const newUsed = (currentProfile.credits_used || 0) + qtdConsumida;
+      
+      // Verifica se tem créditos suficientes
+      const disponivel = (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0);
+      if (disponivel <= 0) {
+        div.innerHTML = '<div style="text-align:center;padding:40px;color:#FF4D4D;">Sem créditos disponíveis. <a href="https://veracitytech.com.br/#planos" style="color:var(--cyan);">Assine um plano →</a></div>';
+        return;
+      }
+
+      const { data: { session: sessAbertas } } = await db.auth.getSession();
+      const tokAbertas = sessAbertas ? sessAbertas.access_token : SUPABASE_KEY;
+
       await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentProfile.id}`, {
         method: 'PATCH',
         headers: {
           'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${currentToken}`,
+          'Authorization': `Bearer ${tokAbertas}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ credits_used: newUsed })
