@@ -2115,8 +2115,9 @@ function validarCPF(cpf) {
 // ── ABERTAS HOJE ──
 async function buscarAbertasHoje() {
   const uf = document.getElementById('abertasUF').value;
+  const dias = parseInt(document.getElementById('abertasDias')?.value || '3');
   const div = document.getElementById('abertasHojeResultado');
-  div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Buscando empresas abertas hoje...</div>';
+  div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Carregando radar de aberturas...</div>';
 
   // Verifica créditos
   if (currentProfile) {
@@ -2130,15 +2131,14 @@ async function buscarAbertasHoje() {
   try {
     const hoje = new Date();
     const dataHoje = hoje.toISOString().split('T')[0];
-    // Busca últimos 3 dias pois dados chegam com pequeno atraso
-    const data3dias = new Date(hoje);
-    data3dias.setDate(data3dias.getDate() - 3);
-    const dataInicio = data3dias.toISOString().split('T')[0];
+    const dataInicio = new Date(hoje);
+    dataInicio.setDate(dataInicio.getDate() - dias);
+    const dataInicioStr = dataInicio.toISOString().split('T')[0];
 
     const payload = {
       situacao_cadastral: ['ATIVA'],
       data_abertura: { 
-        inicio: dataInicio,
+        inicio: dataInicioStr,
         fim: dataHoje
       },
       mais_filtros: {
@@ -2167,11 +2167,78 @@ async function buscarAbertasHoje() {
     const empresas = data.cnpjs || [];
 
     if (!empresas.length) {
-      div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Nenhuma empresa encontrada nos últimos 3 dias. Tente selecionar um estado específico.</div>';
+      div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Nenhuma empresa encontrada no período. Tente ampliar o período ou mudar o estado.</div>';
+      document.getElementById('abertasStats').style.display = 'none';
+      document.getElementById('abertasGraficos').style.display = 'none';
       return;
     }
 
-    let html = `<div style="font-size:12px;color:var(--gray);margin-bottom:16px;">${empresas.length} empresas abertas nos últimos 3 dias${uf ? ' em ' + uf : ''}</div>`;
+    // ── STATS ──
+    const comZap = empresas.filter(e => (e.contato_telefonico||[]).some(t => t.tipo==='CELULAR'||t.tipo==='MOVEL')).length;
+    const comEmail = empresas.filter(e => (e.contato_email||[]).length > 0).length;
+    const scores = empresas.map(e => calcularScore(e));
+    const scoreMedio = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : 0;
+
+    document.getElementById('statTotalAbertas').textContent = empresas.length;
+    document.getElementById('statComZap').textContent = comZap;
+    document.getElementById('statComEmail').textContent = comEmail;
+    document.getElementById('statScoreMedio').textContent = scoreMedio;
+    document.getElementById('abertasStats').style.display = 'grid';
+
+    // ── GRÁFICO PORTE ──
+    const portes = { 'MEI': 0, 'ME': 0, 'EPP': 0, 'Grande': 0, 'Outros': 0 };
+    empresas.forEach(e => {
+      const isMei = e.mei?.optante;
+      const porte = e.porte_empresa?.codigo || '';
+      if (isMei) portes['MEI']++;
+      else if (porte === '01' || porte === '1') portes['ME']++;
+      else if (porte === '03' || porte === '3') portes['EPP']++;
+      else if (porte === '05' || porte === '5') portes['Grande']++;
+      else portes['Outros']++;
+    });
+    const corePorte = { MEI:'#8896B3', ME:'#6B8EFF', EPP:'#00D4FF', Grande:'#FFB800', Outros:'#FF6B35' };
+    let graficoPorteHtml = '';
+    Object.entries(portes).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).forEach(([nome, qtd]) => {
+      const pct = Math.round((qtd/empresas.length)*100);
+      const cor = corePorte[nome] || '#8896B3';
+      graficoPorteHtml += `<div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;color:#fff;font-weight:700;">${nome}</span>
+          <span style="font-size:13px;color:var(--gray);">${qtd} · ${pct}%</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.06);height:10px;border-radius:5px;">
+          <div style="background:${cor};height:10px;width:${pct}%;border-radius:5px;transition:width 0.5s;"></div>
+        </div>
+      </div>`;
+    });
+    document.getElementById('graficoPorte').innerHTML = graficoPorteHtml;
+
+    // ── GRÁFICO SEGMENTOS ──
+    const segmentos = {};
+    empresas.forEach(e => {
+      const cnae = e.cnae_principal?.descricao || 'Outros';
+      const seg = cnae.length > 35 ? cnae.slice(0,35)+'...' : cnae;
+      segmentos[seg] = (segmentos[seg]||0)+1;
+    });
+    const topSegs = Object.entries(segmentos).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const coresSeg = ['#00D4FF','#6B8EFF','#FFB800','#FF6B35','#00E676','#FF4D4D'];
+    let graficoSegHtml = '';
+    topSegs.forEach(([nome,qtd],i) => {
+      const pct = Math.round((qtd/empresas.length)*100);
+      graficoSegHtml += `<div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <span style="font-size:11px;color:#fff;">${nome}</span>
+          <span style="font-size:11px;color:var(--gray);">${pct}%</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.06);height:8px;border-radius:4px;">
+          <div style="background:${coresSeg[i]};height:8px;width:${pct}%;border-radius:4px;"></div>
+        </div>
+      </div>`;
+    });
+    document.getElementById('graficoSegmentos').innerHTML = graficoSegHtml;
+    document.getElementById('abertasGraficos').style.display = 'grid';
+
+    let html = `<div style="font-size:12px;color:var(--gray);margin-bottom:16px;padding:8px 0;border-bottom:1px solid var(--border);">Exibindo ${empresas.length} empresas abertas nos últimos ${dias} dias${uf ? ' em '+uf : ''}</div>`;
     html += '<div style="display:flex;flex-direction:column;gap:8px;">';
 
     empresas.forEach(e => {
