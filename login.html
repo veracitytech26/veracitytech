@@ -500,6 +500,81 @@ body {
     </div>
   </div>
 
+  <!-- ABA ABERTAS HOJE -->
+  <div id="abaAbertasHoje" style="display:none;">
+    <div style="background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.2);padding:16px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#FF4D4D;margin-bottom:4px;">🔥 Radar de Aberturas</div>
+        <div style="font-size:12px;color:var(--gray);">Empresas abertas nos últimos dias — máxima propensão comercial</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <select id="abertasUF" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:#fff;padding:8px 12px;font-size:12px;outline:none;">
+          <option value="">Todos os estados</option>
+          <option value="RJ">Rio de Janeiro</option>
+          <option value="SP">São Paulo</option>
+          <option value="MG">Minas Gerais</option>
+          <option value="RS">Rio Grande do Sul</option>
+          <option value="PR">Paraná</option>
+          <option value="SC">Santa Catarina</option>
+          <option value="BA">Bahia</option>
+          <option value="GO">Goiás</option>
+          <option value="DF">Distrito Federal</option>
+          <option value="PE">Pernambuco</option>
+        </select>
+        <select id="abertasDias" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:#fff;padding:8px 12px;font-size:12px;outline:none;">
+          <option value="3">Últimos 3 dias</option>
+          <option value="7">Últimos 7 dias</option>
+          <option value="15">Últimos 15 dias</option>
+          <option value="30">Últimos 30 dias</option>
+        </select>
+        <button onclick="buscarAbertasHoje()" style="background:#FF4D4D;color:#fff;font-size:12px;font-weight:700;padding:8px 20px;border:none;cursor:pointer;letter-spacing:1px;">🔥 ATUALIZAR RADAR</button>
+      </div>
+    </div>
+    <div id="abertasStats" style="display:none;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+      <div style="background:var(--dark);border:1px solid var(--border);padding:16px;position:relative;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1240AB,#00D4FF);"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:8px;">TOTAL ABERTAS</div>
+        <div style="font-size:28px;font-weight:700;color:#fff;" id="statTotalAbertas">0</div>
+        <div style="font-size:11px;color:var(--gray);">no período</div>
+      </div>
+      <div style="background:var(--dark);border:1px solid var(--border);padding:16px;position:relative;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#25D366,#00E676);"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:8px;">COM WHATSAPP</div>
+        <div style="font-size:28px;font-weight:700;color:#25D366;" id="statComZap">0</div>
+        <div style="font-size:11px;color:var(--gray);">contato disponível</div>
+      </div>
+      <div style="background:var(--dark);border:1px solid var(--border);padding:16px;position:relative;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00D4FF,#6B8EFF);"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:8px;">COM E-MAIL</div>
+        <div style="font-size:28px;font-weight:700;color:#00D4FF;" id="statComEmail">0</div>
+        <div style="font-size:11px;color:var(--gray);">contato disponível</div>
+      </div>
+      <div style="background:var(--dark);border:1px solid var(--border);padding:16px;position:relative;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FF4D4D,#FFB800);"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:8px;">SCORE MÉDIO</div>
+        <div style="font-size:28px;font-weight:700;color:#FFB800;" id="statScoreMedio">0</div>
+        <div style="font-size:11px;color:var(--gray);">Veracity Score™</div>
+      </div>
+    </div>
+    <div id="abertasGraficos" style="display:none;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div style="background:var(--dark);border:1px solid var(--border);padding:20px;">
+        <div style="font-size:11px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:16px;">DISTRIBUIÇÃO POR PORTE</div>
+        <div id="graficoPorte"></div>
+      </div>
+      <div style="background:var(--dark);border:1px solid var(--border);padding:20px;">
+        <div style="font-size:11px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:16px;">TOP SEGMENTOS</div>
+        <div id="graficoSegmentos"></div>
+      </div>
+    </div>
+    <div id="abertasHojeResultado">
+      <div style="text-align:center;padding:60px;color:var(--gray);">
+        <div style="font-size:32px;margin-bottom:12px;">🔥</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Radar de Aberturas</div>
+        <div style="font-size:13px;">Selecione o período e clique em "Atualizar Radar"</div>
+      </div>
+    </div>
+  </div>
+
   <div id="abaBusca">
   <div class="stats-row">
     <div class="stat-card">
@@ -1581,6 +1656,7 @@ async function buscarCnpj() {
 function mostrarAba(aba) {
   document.getElementById('abaBusca').style.display = aba === 'busca' ? 'block' : 'none';
   document.getElementById('abaHistorico').style.display = aba === 'historico' ? 'block' : 'none';
+  if (document.getElementById('abaAbertasHoje')) document.getElementById('abaAbertasHoje').style.display = aba === 'abertasHoje' ? 'block' : 'none';
   document.getElementById('tabBusca').style.borderBottomColor = aba === 'busca' ? 'var(--cyan)' : 'transparent';
   document.getElementById('tabBusca').style.color = aba === 'busca' ? 'var(--cyan)' : 'var(--gray)';
   document.getElementById('tabBusca').style.background = aba === 'busca' ? 'rgba(0,212,255,0.1)' : 'transparent';
