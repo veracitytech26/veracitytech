@@ -2292,8 +2292,12 @@ async function buscarAbertasHoje() {
     // ── GRÁFICO SEGMENTOS ──
     const segmentos = {};
     empresas.forEach(e => {
-      const cnae = e.cnae_principal?.descricao || 'Outros';
-      const seg = cnae.length > 35 ? cnae.slice(0,35)+'...' : cnae;
+      const cnae = e.cnae_principal?.descricao || 
+                   e.cnae_fiscal_descricao || 
+                   e.atividade_principal?.[0]?.text || 
+                   e.atividades_principais?.[0]?.descricao ||
+                   'Não informado';
+      const seg = cnae.length > 40 ? cnae.slice(0,40)+'...' : cnae;
       segmentos[seg] = (segmentos[seg]||0)+1;
     });
     const topSegs = Object.entries(segmentos).sort((a,b)=>b[1]-a[1]).slice(0,6);
@@ -2319,27 +2323,31 @@ async function buscarAbertasHoje() {
 
     empresas.forEach(e => {
       const nome = e.razao_social || '-';
-      const cidade = e.endereco?.municipio || '-';
-      const ufEmp = e.endereco?.uf || '-';
+      const cidade = e.endereco?.municipio || e.municipio || '-';
+      const ufEmp = e.endereco?.uf || e.uf || '-';
       const emails = e.contato_email || [];
       const tels = e.contato_telefonico || [];
-      const email = emails[0]?.email || '';
-      const cel = tels.find(t => t.tipo === 'CELULAR' || t.tipo === 'MOVEL')?.numero || tels[0]?.numero || '';
-      const waLink = cel ? `https://wa.me/55${cel.replace(/\D/g,'')}` : '';
+      const email = emails[0]?.email || emails[0] || '';
+      const celObj = tels.find(t => t.tipo === 'CELULAR' || t.tipo === 'MOVEL' || t.tipo === 'Celular');
+      const cel = celObj?.numero || celObj?.telefone || (tels[0]?.numero) || '';
+      const celLimpo = cel.replace(/\D/g,'');
+      const waLink = celLimpo.length >= 10 ? 'https://wa.me/55' + celLimpo : '';
+      const dataAb = e.data_abertura ? new Date(e.data_abertura).toLocaleDateString('pt-BR') : 'Recente';
       const score = calcularScore(e);
       const scoreBadge = getScoreBadge(score);
+      const cnaeDesc = e.cnae_principal?.descricao || e.cnae_fiscal_descricao || '';
 
-      html += `<div style="background:var(--dark);border:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#fff;">${nome}</div>
-          <div style="font-size:11px;color:var(--gray);margin-top:2px;">${cidade} · ${ufEmp} · Aberta HOJE</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          ${scoreBadge}
-          ${email ? `<a href="mailto:${email}" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2);color:#00E676;font-size:11px;font-weight:700;padding:4px 12px;text-decoration:none;">✉ EMAIL</a>` : ''}
-          ${waLink ? `<a href="${waLink}" target="_blank" style="background:#25D366;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;text-decoration:none;">WhatsApp</a>` : ''}
-        </div>
-      </div>`;
+      html += '<div style="background:var(--dark);border:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">'
+        + '<div style="flex:1;min-width:200px;">'
+        + '<div style="font-size:13px;font-weight:700;color:#fff;">' + nome + '</div>'
+        + '<div style="font-size:11px;color:var(--gray);margin-top:2px;">' + cidade + ' · ' + ufEmp + ' · Abertura: ' + dataAb + '</div>'
+        + (cnaeDesc ? '<div style="font-size:10px;color:var(--gray);margin-top:2px;">' + cnaeDesc.slice(0,50) + '</div>' : '')
+        + '</div>'
+        + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
+        + scoreBadge
+        + (email ? '<a href="mailto:' + email + '" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2);color:#00E676;font-size:11px;font-weight:700;padding:4px 12px;text-decoration:none;">✉ EMAIL</a>' : '')
+        + (waLink ? '<a href="' + waLink + '" target="_blank" style="background:#25D366;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;text-decoration:none;">WhatsApp</a>' : '')
+        + '</div></div>';
     });
 
     html += '</div>';
