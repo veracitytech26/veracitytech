@@ -534,6 +534,7 @@ body {
           <option value="200">200 empresas</option>
         </select>
         <button onclick="buscarAbertasHoje()" style="background:#FF4D4D;color:#fff;font-size:12px;font-weight:700;padding:8px 20px;border:none;cursor:pointer;letter-spacing:1px;">🔥 ATUALIZAR RADAR</button>
+        <button onclick="exportarAbertasCSV()" id="btnExportAbertas" style="background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:var(--cyan);font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;display:none;">↓ EXPORTAR CSV</button>
       </div>
     </div>
     <div id="abertasStats" style="display:none;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
@@ -2350,10 +2351,24 @@ async function buscarAbertasHoje() {
       const tels = e.contato_telefonico || [];
       const email = emails[0]?.email || emails[0] || '';
       // tipo vem em minúsculo: "celular", "fixo"
+      // Campo "completo" já tem DDD+numero, ex: "21-987654321"
       const celObj = tels.find(t => t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'||t.tipo.toLowerCase()==='móvel'));
-      const cel = celObj?.numero || (tels[0]?.numero) || '';
-      const celLimpo = cel.replace(/\D/g,'');
-      const waLink = celLimpo.length >= 10 ? 'https://wa.me/55' + celLimpo : '';
+      const anyTel = tels[0];
+      // Usa completo se disponível (já tem DDD), senão monta ddd+numero
+      let celNum = '';
+      const telRef = celObj || anyTel;
+      if (telRef) {
+        if (telRef.completo) {
+          celNum = telRef.completo.replace(/\D/g,'');
+        } else if (telRef.ddd && telRef.numero) {
+          celNum = telRef.ddd.replace(/\D/g,'') + telRef.numero.replace(/\D/g,'');
+        } else if (telRef.numero) {
+          celNum = telRef.numero.replace(/\D/g,'');
+        }
+      }
+      // Remove o 55 do início se já vier
+      if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
+      const waLink = celNum.length >= 10 ? 'https://wa.me/55' + celNum : '';
       const dataAb = e.data_abertura ? new Date(e.data_abertura).toLocaleDateString('pt-BR') : 'Recente';
       const score = calcularScore(e);
       const scoreBadge = getScoreBadge(score);
@@ -2397,6 +2412,55 @@ async function buscarAbertasHoje() {
     console.error('Erro buscarAbertasHoje:', err);
     div.innerHTML = '<div style="text-align:center;padding:40px;color:#FF4D4D;">Erro: ' + err.message + '</div>';
   }
+}
+
+
+// ── EXPORTAR CSV ABERTAS HOJE ──
+function exportarAbertasCSV() {
+  const dados = window.abertasHojeData || [];
+  if (!dados.length) return;
+
+  const headers = ['Razão Social','CNPJ','Município','UF','Data Abertura','Segmento','Porte','E-mail','Telefone','WhatsApp'];
+  const rows = dados.map(e => {
+    const tels = e.contato_telefonico || [];
+    const emails = e.contato_email || [];
+    const celObj = tels.find(t => t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'));
+    const telRef = celObj || tels[0];
+    let celNum = '';
+    if (telRef) {
+      if (telRef.completo) celNum = telRef.completo.replace(/\D/g,'');
+      else if (telRef.ddd && telRef.numero) celNum = telRef.ddd.replace(/\D/g,'') + telRef.numero.replace(/\D/g,'');
+      else if (telRef.numero) celNum = telRef.numero.replace(/\D/g,'');
+      if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
+    }
+    const waLink = celNum.length >= 10 ? 'https://wa.me/55' + celNum : '';
+    const porte = e.mei?.optante ? 'MEI' : (e.porte_empresa?.descricao || '-');
+    const cnae = e.atividade_principal?.descricao || '-';
+    const dataAb = e.data_abertura ? new Date(e.data_abertura).toLocaleDateString('pt-BR') : '-';
+    return [
+      '"' + (e.razao_social||'').replace(/"/g,'') + '"',
+      e.cnpj || '',
+      e.endereco?.municipio || '',
+      e.endereco?.uf || '',
+      dataAb,
+      '"' + cnae.replace(/"/g,'') + '"',
+      porte,
+      emails[0]?.email || '',
+      tels[0]?.completo || '',
+      waLink
+    ].join(',');
+  });
+
+  const csv = '﻿' + headers.join(',') + '
+' + rows.join('
+');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'abertas_hoje_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── VERIFICAR SESSION ATIVA ──
