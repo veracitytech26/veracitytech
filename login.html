@@ -2090,6 +2090,101 @@ function validarCPF(cpf) {
   return rest === parseInt(cpf[10]);
 }
 
+
+// ── ABERTAS HOJE ──
+async function buscarAbertasHoje() {
+  const uf = document.getElementById('abertasUF').value;
+  const div = document.getElementById('abertasHojeResultado');
+  div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Buscando empresas abertas hoje...</div>';
+
+  // Verifica créditos
+  if (currentProfile) {
+    const disp = (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0);
+    if (disp <= 0) {
+      div.innerHTML = '<div style="text-align:center;padding:40px;color:#FF4D4D;">Sem créditos disponíveis. <a href="https://veracitytech.com.br/#planos" style="color:var(--cyan);">Assine um plano →</a></div>';
+      return;
+    }
+  }
+
+  try {
+    const hoje = new Date();
+    const dataHoje = hoje.toISOString().split('T')[0];
+
+    const payload = {
+      situacao_cadastral: ['ATIVA'],
+      data_abertura: { 
+        inicio: dataHoje,
+        fim: dataHoje
+      },
+      mais_filtros: {
+        com_email: false,
+        com_telefone: false,
+        somente_fixo: false,
+        somente_celular: false,
+        excluir_empresas_visualizadas: false,
+        excluir_email_contab: false,
+        somente_matriz: false,
+        somente_filial: false
+      },
+      limite: 50,
+      pagina: 1
+    };
+
+    if (uf) payload.uf = [uf];
+
+    const res = await fetch('/api/buscar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    const empresas = data.cnpjs || [];
+
+    if (!empresas.length) {
+      div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Nenhuma empresa encontrada para hoje ainda. Tente novamente mais tarde.</div>';
+      return;
+    }
+
+    let html = `<div style="font-size:12px;color:var(--gray);margin-bottom:16px;">${empresas.length} empresas abertas hoje${uf ? ' em ' + uf : ''}</div>`;
+    html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+
+    empresas.forEach(e => {
+      const nome = e.razao_social || '-';
+      const cidade = e.endereco?.municipio || '-';
+      const ufEmp = e.endereco?.uf || '-';
+      const emails = e.contato_email || [];
+      const tels = e.contato_telefonico || [];
+      const email = emails[0]?.email || '';
+      const cel = tels.find(t => t.tipo === 'CELULAR' || t.tipo === 'MOVEL')?.numero || tels[0]?.numero || '';
+      const waLink = cel ? `https://wa.me/55${cel.replace(/\D/g,'')}` : '';
+      const score = calcularScore(e);
+      const scoreBadge = getScoreBadge(score);
+
+      html += `<div style="background:var(--dark);border:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#fff;">${nome}</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px;">${cidade} · ${ufEmp} · Aberta HOJE</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          ${scoreBadge}
+          ${email ? `<a href="mailto:${email}" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2);color:#00E676;font-size:11px;font-weight:700;padding:4px 12px;text-decoration:none;">✉ EMAIL</a>` : ''}
+          ${waLink ? `<a href="${waLink}" target="_blank" style="background:#25D366;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;text-decoration:none;">WhatsApp</a>` : ''}
+        </div>
+      </div>`;
+    });
+
+    html += '</div>';
+    div.innerHTML = html;
+
+    // Desconta créditos
+    await descontarCreditos(empresas.length);
+
+  } catch(e) {
+    div.innerHTML = '<div style="text-align:center;padding:40px;color:#FF4D4D;">Erro ao buscar. Tente novamente.</div>';
+  }
+}
+
 // ── VERIFICAR SESSION ATIVA ──
 async function init() {
   await setupDB();
