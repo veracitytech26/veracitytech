@@ -6,7 +6,6 @@
 <title>Veracity Intelligence — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-// ── FINANCEIRO ──
 const PRECOS = {
   trial: 0,
   starter: 397,
@@ -261,7 +260,6 @@ tr:hover td { background:rgba(255,255,255,0.02); }
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">VERACITY</div>
@@ -275,7 +273,6 @@ tr:hover td { background:rgba(255,255,255,0.02); }
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard">
   <div class="topbar">
     <div>
@@ -288,7 +285,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
   </div>
 
   <div class="container">
-    <!-- TABS -->
+    
     <div class="tabs">
       <button class="tab-btn active" onclick="mostrarAba('clientes')">👥 CLIENTES</button>
       <button class="tab-btn" onclick="mostrarAba('stats')">📊 ESTATÍSTICAS</button>
@@ -296,7 +293,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
       <button class="tab-btn" onclick="mostrarAba('addCliente')">➕ NOVO CLIENTE</button>
     </div>
 
-    <!-- ABA CLIENTES -->
+    
     <div id="abaClientes">
       <div class="section-card">
         <div class="section-head">
@@ -315,7 +312,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
       </div>
     </div>
 
-    <!-- ABA STATS -->
+    
     <div id="abaStats" style="display:none;">
       <div class="stats-grid">
         <div class="stat-card">
@@ -348,9 +345,9 @@ tr:hover td { background:rgba(255,255,255,0.02); }
       </div>
     </div>
 
-    <!-- ABA FINANCEIRO -->
+    
     <div id="abaFinanceiro" style="display:none;">
-      <!-- STATS FINANCEIROS -->
+      
       <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
         <div class="stat-card">
           <div class="stat-label">MRR ESTIMADO</div>
@@ -374,7 +371,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
         </div>
       </div>
 
-      <!-- DISTRIBUIÇÃO DE RECEITA -->
+      
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
         <div class="section-card">
           <div class="section-head">
@@ -397,7 +394,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
         </div>
       </div>
 
-      <!-- TABELA DE RECEITA POR CLIENTE -->
+      
       <div class="section-card">
         <div class="section-head">
           <div>
@@ -410,7 +407,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
       </div>
     </div>
 
-    <!-- ABA NOVO CLIENTE -->
+    
     <div id="abaAddCliente" style="display:none;">
       <div class="section-card" style="max-width:500px;">
         <div class="section-title" style="margin-bottom:24px;">Ativar Plano Manualmente</div>
@@ -439,7 +436,6 @@ tr:hover td { background:rgba(255,255,255,0.02); }
   </div>
 </div>
 
-<!-- MODAL EDITAR CLIENTE -->
 <div class="modal-bg" id="modalEditar">
   <div class="modal" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="fecharModal()">✕</button>
@@ -491,7 +487,6 @@ const PLANOS = {
 
 let todosClientes = [];
 
-// ── LOGIN ──
 const ADMIN_EMAIL = 'admin@veracitytech.com.br';
 
 function fazerLogin() {
@@ -525,14 +520,12 @@ function logout() {
   location.reload();
 }
 
-// Verifica se já está logado
 if (sessionStorage.getItem('adminAuth') === '1' && sessionStorage.getItem('adminEmail') === ADMIN_EMAIL) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   carregarClientes();
 }
 
-// ── ABAS ──
 function mostrarAba(aba) {
   ['Clientes','Stats','Financeiro','AddCliente'].forEach(a => {
     document.getElementById('aba'+a).style.display = 'none';
@@ -544,7 +537,6 @@ function mostrarAba(aba) {
   if (aba === 'financeiro') carregarFinanceiro();
 }
 
-// ── CARREGAR CLIENTES ──
 async function carregarClientes() {
   document.getElementById('tabelaClientes').innerHTML = '<div class="loading">Carregando...</div>';
   
@@ -620,7 +612,6 @@ function filtrarClientes() {
   renderClientes(filtrados);
 }
 
-// ── EDITAR CLIENTE ──
 function abrirEditar(c) {
   document.getElementById('editId').value = c.id;
   document.getElementById('editNome').value = c.name || '';
@@ -687,7 +678,6 @@ async function zerarCreditos(id) {
   carregarClientes();
 }
 
-// ── ATIVAR PLANO MANUAL ──
 async function ativarPlano() {
   const email = document.getElementById('newEmail').value.trim();
   const plano = document.getElementById('newPlano').value;
@@ -727,7 +717,6 @@ async function ativarPlano() {
   }
 }
 
-// ── STATS ──
 async function carregarStats() {
   if (!todosClientes.length) await carregarClientes();
   
@@ -767,7 +756,6 @@ async function carregarStats() {
   document.getElementById('distPlanos').innerHTML = distHtml;
 }
 
-// ── FINANCEIRO ──
 const PRECOS = {
   trial: 0,
   starter: 397,
