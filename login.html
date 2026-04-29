@@ -265,7 +265,6 @@ body {
 .empty-icon { font-size: 40px; opacity: 0.3; margin-bottom: 12px; }
 .empty-text { font-size: 14px; color: var(--gray); }
 
-
   .modal-overlay {
     display:none; position:fixed; inset:0; z-index:1000;
     background:rgba(0,0,0,0.85); backdrop-filter:blur(4px);
@@ -367,7 +366,6 @@ body {
 <div class="grid-bg"></div>
 <div class="glow"></div>
 
-<!-- LOGIN / CADASTRO -->
 <div class="container" id="authContainer">
   <div class="logo">
     <div class="logo-main">VERACITY</div>
@@ -382,7 +380,7 @@ body {
   <div class="card">
     <div id="alertBox"></div>
 
-    <!-- LOGIN -->
+    
     <div id="loginForm">
       <div class="form-group">
         <label>E-MAIL</label>
@@ -398,7 +396,7 @@ body {
         <a onclick="mostrarRecuperacao()" style="color:var(--cyan);font-size:12px;cursor:pointer;text-decoration:none;">Esqueci minha senha</a>
       </div>
 
-      <!-- RECUPERAÇÃO DE SENHA -->
+      
       <div id="recoveryForm" style="display:none;margin-top:16px;">
         <div style="font-size:11px;color:#B8C4D8;letter-spacing:2px;font-weight:700;margin-bottom:8px;">RECUPERAR SENHA</div>
         <input type="email" id="recoveryEmail" placeholder="Digite seu e-mail cadastrado" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:11px 14px;font-size:13px;outline:none;margin-bottom:10px;">
@@ -416,7 +414,7 @@ body {
       </p>
     </div>
 
-    <!-- CADASTRO -->
+    
     <div id="registerForm" style="display:none;">
       <div class="form-group">
         <label>NOME COMPLETO</label>
@@ -458,7 +456,6 @@ body {
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
   <div class="dash-header">
     <div class="dash-logo">
@@ -475,7 +472,7 @@ body {
     </div>
   </div>
 
-  <!-- ABAS DO PAINEL -->
+  
   <div style="display:flex;gap:2px;margin-bottom:24px;border-bottom:1px solid var(--border);">
     <button type="button" id="tabBusca" onclick="mostrarAba('busca')" style="background:rgba(0,212,255,0.1);border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">⚡ NOVA BUSCA</button>
     <button type="button" id="tabHistorico" onclick="mostrarAba('historico')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:13px;font-weight:700;letter-spacing:1px;padding:12px 24px;cursor:pointer;">📋 HISTÓRICO</button>
@@ -500,7 +497,7 @@ body {
     </div>
   </div>
 
-  <!-- ABA ABERTAS HOJE -->
+  
   <div id="abaAbertasHoje" style="display:none;">
     <div style="background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.2);padding:16px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
       <div>
@@ -620,7 +617,7 @@ body {
       <div class="search-head-sub">Configure os filtros e gere sua lista de empresas</div>
     </div>
     <div class="search-body">
-      <!-- ROW 1 -->
+      
       <div class="filters-grid">
         <div>
           <label class="filter-label">BUSCA TEXTUAL</label>
@@ -665,7 +662,7 @@ body {
         </div>
       </div>
 
-      <!-- ROW 2 -->
+      
       <div class="filters-grid">
         <div>
           <label class="filter-label">ATIVIDADE PRINCIPAL (CNAE)</label>
@@ -756,7 +753,7 @@ body {
         </div>
       </div>
 
-      <!-- ROW 3 -->
+      
       <div class="filters-grid">
         <div>
           <label class="filter-label">PORTE DA EMPRESA</label>
@@ -793,7 +790,7 @@ body {
         </div>
       </div>
 
-      <!-- ROW 3B -->
+      
       <div class="filters-grid" style="margin-top:16px;">
         <div>
           <label class="filter-label">BUSCAR SEGMENTO POR NOME</label>
@@ -821,7 +818,7 @@ body {
         </div>
       </div>
 
-      <!-- ROW 4 - Extras -->
+      
       <div class="filters-grid" style="margin-bottom:20px;">
         <div>
           <label class="filter-label">DATA ABERTURA — DE</label>
@@ -837,7 +834,7 @@ body {
         </div>
       </div>
 
-      <!-- TOGGLES -->
+      
       <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--gray);">
           <input type="checkbox" id="fComEmail" checked style="accent-color:var(--cyan);width:16px;height:16px;">
@@ -869,7 +866,7 @@ body {
         </span>
       </div>
 
-      <!-- BUSCA POR CNPJ -->
+      
       <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
         <label class="filter-label">🔍 CONSULTA DE EMPRESA</label>
         <div style="display:flex;gap:12px;align-items:center;">
@@ -915,7 +912,6 @@ body {
 </div>
 
 <script>
-// ── SUPABASE ──
 const SUPABASE_URL = 'https://nfusabwpxpdcqedrehrc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MTEyOTUsImV4cCI6MjA5MjM4NzI5NX0.sUmFeXhXsx7D7BKPrKrXFHSVuqhFdIKgOCdfUQumECY';
 const { createClient } = supabase;
@@ -936,10 +932,8 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY, {
   }
 });
 
-// ── CASA DOS DADOS API ──
 const CDD_KEY = '006a51b4658af302f4d83f9d40653599cb48728be1e18d6329358bb1add897955d80035df7feeb6e15d2395f284f40449dab49124329e2996d517f6dbebf01e8';
 
-// ── PLANOS ──
 const PLANOS = {
   starter:    { nome: 'STARTER',    creditos: 500 },
   growth:     { nome: 'GROWTH',     creditos: 2000 },
@@ -951,7 +945,6 @@ let currentUser = null;
 let currentProfile = null;
 let currentResults = [];
 
-// ── TABS ──
 function showTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
@@ -966,7 +959,6 @@ function showAlert(msg, type = 'error') {
 }
 function clearAlert() { document.getElementById('alertBox').innerHTML = ''; }
 
-// ── CRIAR TABELA SE NÃO EXISTIR ──
 async function setupDB() {
   // Tenta criar a tabela profiles via SQL
   try {
@@ -976,7 +968,6 @@ async function setupDB() {
   }
 }
 
-// ── LOGIN ──
 async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPassword').value;
@@ -998,7 +989,6 @@ async function login() {
   showDashboard();
 }
 
-// ── CADASTRO ──
 async function register() {
   const name  = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
@@ -1088,7 +1078,6 @@ async function register() {
   btn.disabled = false; btn.textContent = 'CRIAR MINHA CONTA';
 }
 
-// ── CARREGAR PERFIL ──
 async function loadProfile() {
   if (!currentUser) return;
 
@@ -1097,7 +1086,6 @@ async function loadProfile() {
     const { data: { session } } = await db.auth.getSession();
     const token = session ? session.access_token : SUPABASE_KEY;
 
-    // Busca perfil existente
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/profiles?select=*&id=eq.${currentUser.id}`,
       {
@@ -1165,7 +1153,6 @@ async function loadProfile() {
   }
 }
 
-// ── MOSTRAR DASHBOARD ──
 function showDashboard() {
   verificarOnboarding();
   verificarPlanoPendente();
@@ -1210,13 +1197,11 @@ function showDashboard() {
 
   // Banner trial
   if (p.plan === 'trial') {
-    // Calcula dias restantes
     const criado = new Date(p.created_at);
     const hoje = new Date();
     const diasPassados = Math.floor((hoje - criado) / (1000 * 60 * 60 * 24));
     const diasRestantes = Math.max(0, 7 - diasPassados);
 
-    // Cria ou atualiza banner
     let banner = document.getElementById('bannerTrial');
     if (!banner) {
       banner = document.createElement('div');
@@ -1228,7 +1213,6 @@ function showDashboard() {
 
     if (diasRestantes <= 0) {
       banner.innerHTML = '<div><div style="font-size:14px;font-weight:700;color:#FF4D4D;margin-bottom:4px;">⛔ Trial expirado — Assine um plano para continuar</div><div style="font-size:12px;color:#8896B3;">Seu período de teste de 7 dias encerrou.</div></div><a href="https://veracitytech.com.br/#planos" style="background:#FF4D4D;color:#fff;font-size:13px;font-weight:700;padding:10px 24px;text-decoration:none;">ASSINAR AGORA →</a>';
-      // Bloqueia busca
       const btnBuscar = document.getElementById('btnBuscar');
       if (btnBuscar) { btnBuscar.disabled = true; btnBuscar.textContent = '⛔ TRIAL EXPIRADO'; }
     } else {
@@ -1240,7 +1224,6 @@ function showDashboard() {
   }
 }
 
-// ── LOGOUT ──
 async function logout() {
   await db.auth.signOut();
   currentUser = null; currentProfile = null;
@@ -1250,11 +1233,9 @@ async function logout() {
   document.getElementById('authContainer').style.alignItems = 'center';
 }
 
-// ── BUSCAR EMPRESAS ──
 async function buscar() {
   const btn = document.getElementById('btnBuscar');
 
-  // ── VERIFICA CRÉDITOS ANTES DE BUSCAR ──
   if (currentProfile) {
     const disponiveis = (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0);
     const qtdSolicitada = parseInt(document.getElementById('fQtd').value) || 20;
@@ -1390,7 +1371,6 @@ async function buscar() {
     renderResults(empresasFinal);
     salvarNoHistorico(empresasFinal);
 
-    // Atualizar créditos usados
     if (currentProfile) {
       const newUsed = (currentProfile.credits_used || 0) + empresasFinal.length;
       const newExports = (currentProfile.exports || 0) + 1;
@@ -1564,7 +1544,6 @@ function limpar() {
   currentResults = [];
 }
 
-// ── BUSCA POR CNPJ AVULSO ──
 async function buscarCnpj() {
   const cnpjRaw = document.getElementById('fCnpj').value.replace(/[^0-9]/g, '');
   if (!cnpjRaw || cnpjRaw.length !== 14) {
@@ -1664,9 +1643,6 @@ async function buscarCnpj() {
   btn.disabled = false; btn.textContent = '🔎 CONSULTAR';
 }
 
-
-
-// ── ABAS ──
 function mostrarAba(aba) {
   document.getElementById('abaBusca').style.display = aba === 'busca' ? 'block' : 'none';
   document.getElementById('abaHistorico').style.display = aba === 'historico' ? 'block' : 'none';
@@ -1685,7 +1661,6 @@ function mostrarAba(aba) {
   if (aba === 'historico') renderHistorico();
 }
 
-// ── HISTÓRICO DE EMPRESAS ──
 function getHistorico() {
   try { return JSON.parse(localStorage.getItem('hist_empresas') || '[]'); } catch(e) { return []; }
 }
@@ -1716,7 +1691,6 @@ function salvarNoHistorico(empresas) {
         origem: 'busca'
       };
     });
-    // Adiciona só os que não existem ainda
     novos.forEach(n => {
       if (!hist.find(h => h.cnpj === n.cnpj)) hist.unshift(n);
     });
@@ -1767,7 +1741,6 @@ function limparHistorico() {
   }
 }
 
-// ── AUTOCOMPLETE CNAE ──
 const CNAES = [
   {cod:'8630501',nome:'Clínicas Médicas'},{cod:'8630502',nome:'Consultórios Médicos'},
   {cod:'8640202',nome:'Laboratórios de Análises Clínicas'},{cod:'8650001',nome:'Fisioterapia'},
@@ -1817,7 +1790,6 @@ function selecionarCnae(el) {
   document.getElementById('cnaeDropdown').style.display = 'none';
 }
 
-// ── AUTOCOMPLETE CIDADE ──
 const CIDADES_BR = ['Abreu e Lima','Acaraú','Açailândia','Alagoinhas','Altamira','Americana','Ananindeua','Anápolis','Aparecida de Goiânia','Apucarana','Aracaju','Araçatuba','Aracruz','Araguaína','Araucária','Araxá','Bacarena','Bagé','Barueri','Belém','Belford Roxo','Belo Horizonte','Blumenau','Boa Vista','Botucatu','Bragança Paulista','Brumado','Caçador','Camaçari','Campina Grande','Campinas','Campo Grande','Campo Largo','Campo Mourão','Campos dos Goytacazes','Caxias do Sul','Caucaia','Chapecó','Cianorte','Colombo','Contagem','Corumbá','Criciúma','Cuiabá','Curitiba','Diadema','Dourados','Duque de Caxias','Embu das Artes','Feira de Santana','Florianópolis','Fortaleza','Foz do Iguaçu','Franca','Garanhuns','Goiânia','Governador Valadares','Guarapuava','Guarujá','Guarulhos','Ilhéus','Imperatriz','Indaiatuba','Ipatinga','Itabuna','Itajaí','Itapecerica da Serra','Itapetininga','Itaquaquecetuba','Jacareí','Jequié','João Pessoa','Joinville','Juazeiro do Norte','Juiz de Fora','Jundiaí','Lauro de Freitas','Limeira','Londrina','Luziânia','Macaé','Macapá','Maceió','Manaus','Marabá','Maracanaú','Marília','Maringá','Mauá','Mogi das Cruzes','Montes Claros','Mossoró','Natal','Niterói','Nova Friburgo','Nova Iguaçu','Novo Hamburgo','Olinda','Osasco','Palmas','Parauapebas','Parnamirim','Paulista','Pelotas','Petrolina','Petrópolis','Pindamonhangaba','Piracicaba','Porto Alegre','Porto Velho','Praia Grande','Recife','Ribeirão das Neves','Ribeirão Preto','Rio Branco','Rio de Janeiro','Rio Verde','Rondonópolis','Salvador','Santa Luzia','Santa Maria','Santarém','Santo André','Santos','São Bernardo do Campo','São Caetano do Sul','São Carlos','São Gonçalo','São João de Meriti','São José','São José do Rio Preto','São José dos Campos','São José dos Pinhais','São Luís','São Paulo','Serra','Sete Lagoas','Sinop','Sorocaba','Sumaré','Suzano','Taboão da Serra','Taubaté','Teresina','Teresópolis','Uberlândia','Uberaba','Umuarama','Várzea Grande','Vila Velha','Vitória','Vitória da Conquista','Volta Redonda'];
 
 function buscarCidade(termo) {
@@ -1849,8 +1821,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-
-// ── SCORE VERACITY ──
 let userSegmento = 'outros';
 
 // Pesos por segmento do vendedor
@@ -1974,14 +1944,11 @@ function verificarOnboarding() {
     const saved = localStorage.getItem('userSegmento');
     if (saved) { userSegmento = saved; return; }
   } catch(e) {}
-  // Mostra onboarding na primeira vez
   setTimeout(() => {
     document.getElementById('onboardModal').classList.add('show');
   }, 1500);
 }
 
-
-// ── DETECÇÃO DE PLANO NA URL ──
 const PLANO_LINKS = {
   starter: 'https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=205f08f4013444f597876e7bb55631e0',
   growth: 'https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=fb10d4275b9240c5ad0129b1b3084531',
@@ -2001,10 +1968,8 @@ function verificarPlanoURL() {
   const plano = params.get('plano');
   if (!plano || !PLANO_LINKS[plano]) return;
 
-  // Salva o plano escolhido
   try { sessionStorage.setItem('planoEscolhido', plano); } catch(e) {}
 
-  // Atualiza o select do formulário de cadastro
   const selectPlano = document.getElementById('regPlan');
   if (selectPlano) selectPlano.value = plano;
 }
@@ -2014,7 +1979,6 @@ function verificarPlanoPendente() {
     const plano = sessionStorage.getItem('planoEscolhido');
     if (!plano || !PLANO_LINKS[plano]) return;
 
-    // Mostra banner de pagamento pendente
     let banner = document.getElementById('bannerPagamento');
     if (!banner) {
       banner = document.createElement('div');
@@ -2029,8 +1993,6 @@ function verificarPlanoPendente() {
   } catch(e) {}
 }
 
-
-// ── RECUPERAÇÃO DE SENHA ──
 function mostrarRecuperacao() {
   document.getElementById('recoveryForm').style.display = 'block';
   document.getElementById('btnLogin').style.display = 'none';
@@ -2076,7 +2038,6 @@ async function enviarRecuperacao() {
   }
 }
 
-// Verifica se veio do link de recuperação
 function verificarReset() {
   // Supabase envia o token no hash da URL: #access_token=...&type=recovery
   const hash = window.location.hash;
@@ -2085,7 +2046,6 @@ function verificarReset() {
   
   if (!isReset) return;
 
-  // Esconde as abas de login/cadastro
   const tabs = document.querySelector('.auth-tabs') || document.querySelector('.tabs');
   if (tabs) tabs.style.display = 'none';
 
@@ -2131,7 +2091,6 @@ async function salvarNovaSenha() {
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Supabase precisa da sessão do hash para atualizar a senha
     const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
@@ -2154,8 +2113,6 @@ async function salvarNovaSenha() {
   }
 }
 
-
-// ── ATUALIZA OPÇÕES DE QUANTIDADE CONFORME CRÉDITOS ──
 function atualizarOpcoesCreditos() {
   if (!currentProfile) return;
   const disponiveis = Math.max(0, (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0));
@@ -2175,7 +2132,6 @@ function atualizarOpcoesCreditos() {
     }
   });
 
-  // Adiciona opção "Usar tudo" se o saldo não for múltiplo das opções padrão
   const ultimaOpcao = opcoesPadrao.filter(o => o <= disponiveis).pop();
   if (disponiveis > 0 && disponiveis !== ultimaOpcao) {
     const opt = document.createElement('option');
@@ -2184,7 +2140,6 @@ function atualizarOpcoesCreditos() {
     select.appendChild(opt);
   }
 
-  // Se saldo for menor que 20, adiciona só o saldo disponível
   if (disponiveis > 0 && disponiveis < 20) {
     select.innerHTML = '';
     const opt = document.createElement('option');
@@ -2199,8 +2154,6 @@ function atualizarOpcoesCreditos() {
   }
 }
 
-
-// ── CPF MASK E VALIDAÇÃO ──
 function mascaraCPF(input) {
   let v = input.value.replace(/\D/g, '');
   if (v.length > 11) v = v.slice(0, 11);
@@ -2226,15 +2179,12 @@ function validarCPF(cpf) {
   return rest === parseInt(cpf[10]);
 }
 
-
-// ── ABERTAS HOJE ──
 async function buscarAbertasHoje() {
   const uf = document.getElementById('abertasUF').value;
   const dias = parseInt(document.getElementById('abertasDias')?.value || '3');
   const div = document.getElementById('abertasHojeResultado');
   div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);">Carregando radar de aberturas...</div>';
 
-  // Verifica créditos
   if (currentProfile) {
     const disp = (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0);
     if (disp <= 0) {
@@ -2315,7 +2265,6 @@ async function buscarAbertasHoje() {
 
     const empresas_ok = empresas_final;
 
-    // ── STATS ──
     // Conta empresas com WhatsApp (celular) - não conta os telefones
     const comZap = empresas_ok.filter(function(e) {
       return (e.contato_telefonico||[]).some(function(t) { 
@@ -2332,7 +2281,6 @@ async function buscarAbertasHoje() {
     document.getElementById('statScoreMedio').textContent = scoreMedio;
     document.getElementById('abertasStats').style.display = 'grid';
 
-    // ── GRÁFICO PORTE ──
     const portes = { 'MEI': 0, 'ME': 0, 'EPP': 0, 'Grande': 0, 'Outros': 0 };
     empresas_ok.forEach(e => {
       const isMei = e.mei?.optante;
@@ -2360,11 +2308,9 @@ async function buscarAbertasHoje() {
     });
     document.getElementById('graficoPorte').innerHTML = graficoPorteHtml;
 
-    // ── GRÁFICO SEGMENTOS ──
     const segmentos = {};
 
     empresas_ok.forEach(e => {
-      // Campo correto: atividade_principal é um objeto {codigo, descricao}
       let cnae = 'Não informado';
       if (e.atividade_principal && e.atividade_principal.descricao) {
         cnae = e.atividade_principal.descricao;
@@ -2392,10 +2338,8 @@ async function buscarAbertasHoje() {
     document.getElementById('graficoSegmentos').innerHTML = graficoSegHtml;
     document.getElementById('abertasGraficos').style.display = 'grid';
 
-    // Salva dados e mostra botão CSV
     window.abertasHojeData = empresas_ok;
     
-    // Salva no histórico com origem marcada
     try {
       let hist = getHistorico();
       const novos = empresas_ok.map(function(e) {
@@ -2443,7 +2387,6 @@ async function buscarAbertasHoje() {
       const emails = e.contato_email || [];
       const tels = e.contato_telefonico || [];
       const email = emails[0]?.email || emails[0] || '';
-      // tipo vem em minúsculo: "celular", "fixo"
       // Campo "completo" já tem DDD+numero, ex: "21-987654321"
       const celObj = tels.find(t => t.tipo && (t.tipo.toLowerCase()==='celular'||t.tipo.toLowerCase()==='movel'||t.tipo.toLowerCase()==='móvel'));
       const anyTel = tels[0];
@@ -2459,7 +2402,6 @@ async function buscarAbertasHoje() {
           celNum = telRef.numero.replace(/[^0-9]/g,'');
         }
       }
-      // Remove o 55 do início se já vier
       if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
       const waLink = celNum.length >= 10 ? 'https://wa.me/55' + celNum : '';
       const dataAb = e.data_abertura ? new Date(e.data_abertura).toLocaleDateString('pt-BR') : 'Recente';
@@ -2489,7 +2431,6 @@ async function buscarAbertasHoje() {
       const qtdConsumida = empresas_ok.length;
       const newUsed = (currentProfile.credits_used || 0) + qtdConsumida;
       
-      // Verifica se tem créditos suficientes
       const disponivel = (currentProfile.credits_total || 0) - (currentProfile.credits_used || 0);
       if (disponivel <= 0) {
         div.innerHTML = '<div style="text-align:center;padding:40px;color:#FF4D4D;">Sem créditos disponíveis. <a href="https://veracitytech.com.br/#planos" style="color:var(--cyan);">Assine um plano →</a></div>';
@@ -2519,8 +2460,6 @@ async function buscarAbertasHoje() {
   }
 }
 
-
-// ── EXPORTAR CSV ABERTAS HOJE ──
 function exportarAbertasCSV() {
   const dados = window.abertasHojeData || [];
   if (!dados.length) return;
@@ -2576,7 +2515,6 @@ function exportarAbertasCSV() {
   URL.revokeObjectURL(url);
 }
 
-// ── VERIFICAR SESSION ATIVA ──
 async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
@@ -2592,7 +2530,6 @@ verificarPlanoURL();
 verificarReset();
 </script>
 
-<!-- MODAL GERADOR DE MENSAGEM -->
 <div id="modalMsg" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;">
   <div style="background:#0D1530;border:1px solid rgba(255,255,255,0.1);padding:32px;max-width:560px;width:92%;position:relative;max-height:88vh;overflow-y:auto;" onclick="event.stopPropagation()">
     <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1240AB,#00D4FF);"></div>
@@ -2653,7 +2590,6 @@ verificarReset();
 </div>
 
 <script>
-// ── GERADOR V2 ──
 let _emps2 = [];
 let _idx2 = 0;
 let _waUrl2 = '';
@@ -2664,7 +2600,6 @@ function abrirGerador() {
   _idx2 = 0;
   document.getElementById('esTotal2').textContent = _emps2.length;
   
-  // Carrega configs salvas
   try {
     const n = localStorage.getItem('g_nome');
     const p = localStorage.getItem('g_prod');
@@ -2710,7 +2645,6 @@ function gerarMsg2() {
   const tel  = document.getElementById('cfgTel2').value || '';
   const tmpl = document.getElementById('cfgTmpl2').value;
   
-  // Salva configs
   try { localStorage.setItem('g_nome',nome); localStorage.setItem('g_prod',prod); localStorage.setItem('g_tel',tel); } catch(e){}
   
   const empresa = e.razao_social || '';
@@ -2762,7 +2696,6 @@ function abrirWa2() {
 }
 </script>
 
-<!-- ONBOARDING MODAL -->
 <div class="onboard-overlay" id="onboardModal">
   <div class="onboard-box">
     <div class="onboard-title">Personalize sua experiência 🎯</div>
