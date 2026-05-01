@@ -400,6 +400,14 @@ body {
     border:1px solid rgba(255,184,0,0.3); padding:14px 20px; margin-bottom:20px;
     display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
   }
+
+  .motiv-banner {
+    padding:16px 20px; margin-bottom:20px;
+    border-left:4px solid; display:flex; align-items:center; gap:16px;
+  }
+  .motiv-emoji { font-size:28px; flex-shrink:0; }
+  .motiv-text { font-size:13px; line-height:1.6; }
+  .motiv-text strong { display:block; font-size:14px; margin-bottom:4px; }
 </style>
 </head>
 <body>
@@ -1198,6 +1206,7 @@ function showDashboard() {
   verificarPlanoPendente();
   setTimeout(atualizarOpcoesCreditos, 500);
   setTimeout(function(){ if(typeof verificarCreditosBaixos === "function") verificarCreditosBaixos(); }, 1000);
+  setTimeout(function(){ if(typeof exibirMensagemMotivacional === "function") exibirMensagemMotivacional(); }, 1200);
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
