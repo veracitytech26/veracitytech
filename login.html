@@ -1197,7 +1197,7 @@ function showDashboard() {
   verificarOnboarding();
   verificarPlanoPendente();
   setTimeout(atualizarOpcoesCreditos, 500);
-  setTimeout(verificarCreditosBaixos, 800);
+  setTimeout(function(){ if(typeof verificarCreditosBaixos === "function") verificarCreditosBaixos(); }, 1000);
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
