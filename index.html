@@ -651,6 +651,78 @@
     .calculator, .planos, .garantia, .cta-final { padding: 80px 24px; }
     footer { padding: 32px 24px; flex-direction: column; text-align: center; }
   }
+
+  .social-proof-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: rgba(8,14,30,0.97);
+    border-top: 1px solid rgba(0,212,255,0.3);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    backdrop-filter: blur(10px);
+  }
+  .social-proof-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .social-proof-dot {
+    width: 10px;
+    height: 10px;
+    background: #00E676;
+    border-radius: 50%;
+    animation: pulse-green 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(0,230,118,0.6); }
+    70% { box-shadow: 0 0 0 8px rgba(0,230,118,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); }
+  }
+  .social-proof-text {
+    font-size: 14px;
+    color: #fff;
+    font-weight: 600;
+  }
+  .social-proof-text span {
+    color: #00D4FF;
+    font-weight: 700;
+  }
+  .social-proof-sub {
+    font-size: 12px;
+    color: #8896B3;
+    margin-left: 22px;
+  }
+  .social-proof-btn {
+    background: #00D4FF;
+    color: #080E1E;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 24px;
+    text-decoration: none;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .social-proof-close {
+    background: none;
+    border: none;
+    color: #8896B3;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  /* Espaço para não cobrir footer */
+  body { padding-bottom: 70px; }
+
 </style>
 </head>
 <body>
@@ -1354,6 +1426,42 @@ window.addEventListener('DOMContentLoaded', () => {
   }, { threshold: 0.05 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 });
+</script>
+
+
+<!-- BARRA DE PROVA SOCIAL -->
+<div class="social-proof-bar" id="socialProofBar">
+  <div>
+    <div class="social-proof-left">
+      <div class="social-proof-dot"></div>
+      <div class="social-proof-text"><span id="activeCount">190</span> profissionais ativos agora na plataforma</div>
+    </div>
+    <div class="social-proof-sub">Seu concorrente já está aqui. E você?</div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <a href="/login.html" class="social-proof-btn">COMEÇAR GRÁTIS →</a>
+    <button class="social-proof-close" onclick="document.getElementById('socialProofBar').style.display='none'" title="Fechar">✕</button>
+  </div>
+</div>
+
+<script>
+  // Anima o número para parecer dinâmico
+  (function() {
+    var base = 190;
+    var el = document.getElementById('activeCount');
+    if (!el) return;
+    
+    function atualizar() {
+      var variacao = Math.floor(Math.random() * 5) - 2;
+      var novo = base + variacao;
+      if (novo < 185) novo = 185;
+      if (novo > 198) novo = 198;
+      base = novo;
+      el.textContent = novo;
+    }
+    
+    setInterval(atualizar, 8000);
+  })();
 </script>
 
 </body>
