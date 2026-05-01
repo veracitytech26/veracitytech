@@ -360,6 +360,46 @@ body {
   }
   .recovery-link a:hover { text-decoration:underline; }
   #recoveryForm { display:none; }
+
+  .upgrade-overlay {
+    display:none; position:fixed; inset:0; z-index:3000;
+    background:rgba(0,0,0,0.92); justify-content:center; align-items:center;
+  }
+  .upgrade-overlay.show { display:flex; }
+  .upgrade-box {
+    background:#0D1530; border:1px solid rgba(0,212,255,0.3);
+    padding:40px; max-width:680px; width:95%; position:relative;
+  }
+  .upgrade-box::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,#1240AB,#00D4FF);
+  }
+  .upgrade-title { font-size:22px; font-weight:700; color:#fff; margin-bottom:6px; }
+  .upgrade-sub { font-size:14px; color:#8896B3; margin-bottom:28px; }
+  .upgrade-plans { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px; }
+  .upgrade-plan {
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    padding:16px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative;
+  }
+  .upgrade-plan.destaque { border-color:#00D4FF; background:rgba(0,212,255,0.06); }
+  .upgrade-plan.destaque::before {
+    content:'RECOMENDADO'; position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    background:#00D4FF; color:#080E1E; font-size:9px; font-weight:700; padding:2px 10px; letter-spacing:1px;
+  }
+  .upgrade-plan-name { font-size:11px; font-weight:700; color:#8896B3; letter-spacing:2px; margin-bottom:8px; }
+  .upgrade-plan-price { font-size:28px; font-weight:700; color:#fff; margin-bottom:4px; }
+  .upgrade-plan-credits { font-size:12px; color:#8896B3; margin-bottom:12px; }
+  .upgrade-plan-btn {
+    width:100%; background:#1240AB; color:#fff; font-size:12px;
+    font-weight:700; padding:10px; border:none; cursor:pointer; letter-spacing:1px;
+  }
+  .upgrade-plan.destaque .upgrade-plan-btn { background:#00D4FF; color:#080E1E; }
+  .upgrade-close { position:absolute; top:14px; right:16px; background:none; border:none; color:#8896B3; font-size:20px; cursor:pointer; }
+  .banner-creditos-baixos {
+    background:linear-gradient(135deg,rgba(255,184,0,0.15),rgba(255,77,77,0.08));
+    border:1px solid rgba(255,184,0,0.3); padding:14px 20px; margin-bottom:20px;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+  }
 </style>
 </head>
 <body>
@@ -1157,6 +1197,7 @@ function showDashboard() {
   verificarOnboarding();
   verificarPlanoPendente();
   setTimeout(atualizarOpcoesCreditos, 500);
+  setTimeout(verificarCreditosBaixos, 800);
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
@@ -2744,6 +2785,59 @@ function abrirWa2() {
     </div>
     <button class="onboard-btn" id="onboardBtn" onclick="confirmarSegmento()" disabled>PERSONALIZAR MEU SCORE →</button>
     <div class="onboard-skip"><a onclick="confirmarSegmento('outros')">Pular por enquanto</a></div>
+  </div>
+</div>
+
+
+<!-- UPGRADE MODAL -->
+<div class="upgrade-overlay" id="upgradeModal">
+  <div class="upgrade-box">
+    <button class="upgrade-close" onclick="fecharUpgrade()">✕</button>
+    <div class="upgrade-title" id="upgradeTitle">⚡ Seus créditos acabaram!</div>
+    <div class="upgrade-sub" id="upgradeSubtitle">Escolha um plano para continuar prospectando sem interrupção.</div>
+    <div class="upgrade-plans">
+      <div class="upgrade-plan">
+        <div class="upgrade-plan-name">STARTER</div>
+        <div class="upgrade-plan-price">R$ 397</div>
+        <div class="upgrade-plan-credits">300 oportunidades/mês</div>
+        <button class="upgrade-plan-btn" onclick="irParaPlano('starter')">ASSINAR</button>
+      </div>
+      <div class="upgrade-plan destaque">
+        <div class="upgrade-plan-name">GROWTH</div>
+        <div class="upgrade-plan-price">R$ 797</div>
+        <div class="upgrade-plan-credits">1.000 oportunidades/mês</div>
+        <button class="upgrade-plan-btn" onclick="irParaPlano('growth')">ASSINAR</button>
+      </div>
+      <div class="upgrade-plan">
+        <div class="upgrade-plan-name">SCALE</div>
+        <div class="upgrade-plan-price">R$ 1.390</div>
+        <div class="upgrade-plan-credits">2.500 oportunidades/mês</div>
+        <button class="upgrade-plan-btn" onclick="irParaPlano('scale')">ASSINAR</button>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:12px;color:#8896B3;margin-bottom:12px;">Ou compre créditos avulsos para este mês</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:10px 16px;text-align:center;min-width:120px;">
+          <div style="font-size:11px;color:#8896B3;margin-bottom:4px;">MINI PACK</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">50 créditos</div>
+          <div style="font-size:14px;color:#FFB800;font-weight:700;margin-bottom:8px;">R$ 97</div>
+          <div style="font-size:10px;color:#8896B3;">Em breve</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:10px 16px;text-align:center;min-width:120px;">
+          <div style="font-size:11px;color:#8896B3;margin-bottom:4px;">MÉDIO PACK</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">150 créditos</div>
+          <div style="font-size:14px;color:#FFB800;font-weight:700;margin-bottom:8px;">R$ 247</div>
+          <div style="font-size:10px;color:#8896B3;">Em breve</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:10px 16px;text-align:center;min-width:120px;">
+          <div style="font-size:11px;color:#8896B3;margin-bottom:4px;">MAX PACK</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">300 créditos</div>
+          <div style="font-size:14px;color:#FFB800;font-weight:700;margin-bottom:8px;">R$ 397</div>
+          <div style="font-size:10px;color:#8896B3;">Em breve</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
