@@ -938,7 +938,7 @@
         </div>
 
         <button class="cr-btn" onclick="window.open('https://wa.me/5521973855107?text=Quero+conhecer+a+Veracity+Intelligence','_blank')">
-          QUERO CONHECER A PLATAFORMA
+          VER PLANOS →
         </button>
       </div>
     </div>
@@ -1086,7 +1086,7 @@
             <div style="font-size:13px;color:#fff;">✓ Suporte premium</div>
           </div>
         </div>
-        <a href="https://wa.me/5521973855107?text=Olá! Tenho interesse no Plano Corporativo da Veracity Intelligence." target="_blank" style="background:var(--cyan);color:var(--navy);font-size:14px;font-weight:700;letter-spacing:2px;padding:16px 36px;text-decoration:none;white-space:nowrap;">FALAR COM CONSULTOR →</a>
+        <a href="https://wa.me/5521973855107?text=Olá! Tenho interesse no Plano Corporativo da Veracity Intelligence." onclick="abrirModalCorp()" style="background:var(--cyan);color:var(--navy);font-size:14px;font-weight:700;letter-spacing:2px;padding:16px 36px;text-decoration:none;white-space:nowrap;cursor:pointer;border:none;">FALAR COM CONSULTOR →</button>
       </div>
     </div>
   </div>
@@ -1392,27 +1392,31 @@ function calcROI() {
   const percDesp      = horasMes / horasTotais;
   const custoDesp     = Math.round(vendedores * salario * percDesp);
 
-  // leads manual: 10 leads por hora de prospecção manual
-  const leadsProspecção Manual   = Math.round(horasMes * 10);
-  // leads vi: 5x mais eficiente
-  const leadsVI       = leadsProspecção Manual * 5;
+  var leadsManual = Math.round(horasMes * 10);
+  var leadsVI = leadsManual * 5;
+  var vendasAdd = Math.round((leadsVI - leadsManual) * conv);
+  var receitaAdd = vendasAdd * ticket;
+  var planoBase = 397;
+  var roi = receitaAdd > planoBase ? Math.round(((receitaAdd - planoBase) / planoBase) * 100) : 0;
+  var retorno = planoBase > 0 ? Math.round(receitaAdd / planoBase) : 0;
 
-  const vendasAdd     = Math.round((leadsVI - leadsProspecção Manual) * conv);
-  const receitaAdd    = vendasAdd * ticket;
+  function fmt(n) { return n.toLocaleString('pt-BR'); }
 
-  const planoBase     = 397;
-  const roi           = Math.round(((receitaAdd - planoBase) / planoBase) * 100);
-  const retorno       = Math.round(receitaAdd / planoBase);
+  var elCusto = document.getElementById('res-custo');
+  var elManual = document.getElementById('res-leads-manual');
+  var elVI = document.getElementById('res-leads-vi');
+  var elVendas = document.getElementById('res-vendas');
+  var elReceita = document.getElementById('res-receita');
+  var elROI = document.getElementById('res-roi');
+  var elRetorno = document.getElementById('res-retorno');
 
-  const fmt = (n) => n.toLocaleString('pt-BR');
-
-  document.getElementById('res-custo').textContent      = 'R$ ' + fmt(custoDesp);
-  document.getElementById('res-leads-manual').textContent = fmt(leadsProspecção Manual);
-  document.getElementById('res-leads-vi').textContent    = fmt(leadsVI);
-  document.getElementById('res-vendas').textContent      = '+' + fmt(vendasAdd);
-  document.getElementById('res-receita').textContent     = 'R$ ' + fmt(receitaAdd);
-  document.getElementById('res-roi').textContent         = fmt(roi) + '%';
-  document.getElementById('res-retorno').textContent     = fmt(retorno);
+  if (elCusto) elCusto.textContent = 'R$ ' + fmt(custoDesp);
+  if (elManual) elManual.textContent = fmt(leadsManual);
+  if (elVI) elVI.textContent = fmt(leadsVI);
+  if (elVendas) elVendas.textContent = '+' + fmt(vendasAdd);
+  if (elReceita) elReceita.textContent = 'R$ ' + fmt(receitaAdd);
+  if (elROI) elROI.textContent = fmt(roi) + '%';
+  if (elRetorno) elRetorno.textContent = fmt(retorno) + 'x';
 }
 
 calcROI();
@@ -1462,6 +1466,78 @@ window.addEventListener('DOMContentLoaded', () => {
     
     setInterval(atualizar, 8000);
   })();
+</script>
+
+
+<!-- MODAL CORPORATIVO -->
+<div id="corpModal" style="display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.9);justify-content:center;align-items:center;">
+  <div style="background:#0D1530;border:1px solid rgba(0,212,255,0.3);padding:36px;max-width:480px;width:94%;position:relative;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1240AB,#00D4FF);"></div>
+    <button onclick="document.getElementById('corpModal').style.display='none'" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#8896B3;font-size:20px;cursor:pointer;">✕</button>
+    <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;">Plano Corporativo</div>
+    <div style="font-size:13px;color:#8896B3;margin-bottom:24px;">Preencha os dados abaixo — nosso consultor entra em contato em até 2 horas.</div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">NOME DA EMPRESA</label>
+      <input id="corpEmpresa" type="text" placeholder="Ex: Facility Corretora de Seguros" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">CNPJ</label>
+      <input id="corpCNPJ" type="text" placeholder="00.000.000/0001-00" maxlength="18" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;" oninput="mascaraCNPJ(this)">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">NOME DO RESPONSÁVEL</label>
+      <input id="corpResponsavel" type="text" placeholder="Seu nome completo" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:24px;">
+      <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">NÚMERO DE VENDEDORES / CONSULTORES</label>
+      <input id="corpVendedores" type="number" placeholder="Ex: 20" min="1" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+    </div>
+    <button onclick="enviarCorpWhatsApp()" style="width:100%;background:#25D366;color:#fff;font-size:14px;font-weight:700;padding:14px;border:none;cursor:pointer;letter-spacing:1px;">📱 FALAR COM CONSULTOR NO WHATSAPP</button>
+    <div id="corpError" style="font-size:12px;color:#FF4D4D;text-align:center;margin-top:10px;display:none;"></div>
+  </div>
+</div>
+
+<script>
+function abrirModalCorp() {
+  document.getElementById('corpModal').style.display = 'flex';
+}
+
+function mascaraCNPJ(input) {
+  var v = input.value.replace(/[^0-9]/g, '');
+  if (v.length > 14) v = v.slice(0, 14);
+  v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+  v = v.replace(/(\d{4})(\d)/, '$1-$2');
+  input.value = v;
+}
+
+function enviarCorpWhatsApp() {
+  var empresa = document.getElementById('corpEmpresa').value.trim();
+  var cnpj = document.getElementById('corpCNPJ').value.trim();
+  var responsavel = document.getElementById('corpResponsavel').value.trim();
+  var vendedores = document.getElementById('corpVendedores').value.trim();
+  var erro = document.getElementById('corpError');
+
+  if (!empresa || !responsavel || !vendedores) {
+    erro.style.display = 'block';
+    erro.textContent = 'Preencha todos os campos obrigatórios.';
+    return;
+  }
+
+  erro.style.display = 'none';
+
+  var msg = 'Olá! Tenho interesse no Plano Corporativo da Veracity Intelligence.'
+    + '%0A%0A*Dados da empresa:*'
+    + '%0AEmpresa: ' + encodeURIComponent(empresa)
+    + (cnpj ? '%0ACNPJ: ' + encodeURIComponent(cnpj) : '')
+    + '%0AResponsável: ' + encodeURIComponent(responsavel)
+    + '%0ANúmero de vendedores: ' + encodeURIComponent(vendedores)
+    + '%0A%0AAguardo o contato!';
+
+  window.open('https://wa.me/5521973855107?' + 'text=' + msg, '_blank');
+  document.getElementById('corpModal').style.display = 'none';
+}
 </script>
 
 </body>
