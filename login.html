@@ -2795,25 +2795,8 @@ function abrirWa2() {
     <button class="upgrade-close" onclick="fecharUpgrade()">✕</button>
     <div class="upgrade-title" id="upgradeTitle">⚡ Seus créditos acabaram!</div>
     <div class="upgrade-sub" id="upgradeSubtitle">Escolha um plano para continuar prospectando sem interrupção.</div>
-    <div class="upgrade-plans">
-      <div class="upgrade-plan">
-        <div class="upgrade-plan-name">STARTER</div>
-        <div class="upgrade-plan-price">R$ 397</div>
-        <div class="upgrade-plan-credits">300 oportunidades/mês</div>
-        <button class="upgrade-plan-btn" onclick="irParaPlano('starter')">ASSINAR</button>
-      </div>
-      <div class="upgrade-plan destaque">
-        <div class="upgrade-plan-name">GROWTH</div>
-        <div class="upgrade-plan-price">R$ 797</div>
-        <div class="upgrade-plan-credits">1.000 oportunidades/mês</div>
-        <button class="upgrade-plan-btn" onclick="irParaPlano('growth')">ASSINAR</button>
-      </div>
-      <div class="upgrade-plan">
-        <div class="upgrade-plan-name">SCALE</div>
-        <div class="upgrade-plan-price">R$ 1.390</div>
-        <div class="upgrade-plan-credits">2.500 oportunidades/mês</div>
-        <button class="upgrade-plan-btn" onclick="irParaPlano('scale')">ASSINAR</button>
-      </div>
+    <div class="upgrade-plans" id="upgradePlansContainer">
+      <!-- Planos gerados dinamicamente pelo JS -->
     </div>
     <div style="text-align:center;">
       <div style="font-size:12px;color:#8896B3;margin-bottom:12px;">Ou compre créditos avulsos para este mês</div>
