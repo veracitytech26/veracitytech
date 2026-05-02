@@ -1201,6 +1201,80 @@ async function loadProfile() {
   }
 }
 
+
+function exibirMensagemMotivacional() {
+  if (!currentProfile) return;
+  var plano = currentProfile.plan || 'trial';
+  var total = currentProfile.credits_total || 0;
+  var usado = currentProfile.credits_used || 0;
+  var disponivel = total - usado;
+  var pct = total > 0 ? Math.round((usado / total) * 100) : 0;
+
+  if (disponivel <= 0) return;
+
+  var emoji, titulo, msg, cor, borderCor;
+  var btnHtml = '';
+
+  if (plano === 'trial') {
+    var diasCriado = currentProfile.created_at ? Math.floor((new Date() - new Date(currentProfile.created_at)) / (1000*60*60*24)) : 0;
+    var diasRestantes = Math.max(0, 7 - diasCriado);
+    var msgs = [
+      { t:'Voce ja viu o potencial. Agora imagine sem limite.', m:'Com ' + disponivel + ' creditos voce ja teve uma amostra. Um unico cliente fechado paga o plano inteiro.' },
+      { t:'Seu trial tem ' + diasRestantes + ' dia(s) restante(s).', m:'Quando acabar, sua prospeccao para. Seu concorrente nao vai parar junto com voce.' },
+      { t:'Por menos de R$ 14 por dia voce nao para de prospectar.', m:'Os melhores corretores nao esperam indicacao. Eles chegam antes. Nao volte para o escuro.' },
+    ];
+    var r = msgs[Math.floor(Math.random() * msgs.length)];
+    emoji = '💡'; titulo = r.t; msg = r.m;
+    cor = 'rgba(18,64,171,0.15)'; borderCor = '#00D4FF';
+    btnHtml = '<a href="https://veracitytech.com.br/#planos" style="background:#00D4FF;color:#080E1E;font-size:12px;font-weight:700;padding:10px 20px;text-decoration:none;white-space:nowrap;margin-left:12px;align-self:center;">ASSINAR AGORA</a>';
+  } else if (pct >= 70) {
+    var msgs70 = [
+      { t:'Voce esta na frente!', m:'Quem prospecta mais, vende mais. Sua consistencia e o que separa os grandes produtores. Continue assim!' },
+      { t:'Maquina de prospeccao!', m:'Pipeline cheio e sinonimo de tranquilidade financeira. Cada contato hoje e uma venda amanha.' },
+      { t:'Isso e consistencia!', m:'Enquanto seu concorrente espera indicacao, voce ja chegou na frente. E assim que se constroi carteira solida.' },
+    ];
+    var r70 = msgs70[Math.floor(Math.random() * msgs70.length)];
+    emoji = '🔥'; titulo = r70.t; msg = r70.m;
+    cor = 'rgba(0,230,118,0.08)'; borderCor = '#00E676';
+  } else if (pct >= 30) {
+    var msgs30 = [
+      { t:'Nao de margem ao seu concorrente!', m:'Cada dia sem prospectar e uma oportunidade que seu concorrente esta aproveitando. Chegue primeiro.' },
+      { t:'Sua base nao espera!', m:'Os melhores corretores nao esperam o lead cair no colo. Voce tem as ferramentas — use-as.' },
+      { t:'A constancia faz a diferenca!', m:'Prospectar todo dia e muito mais poderoso do que prospectar muito de vez em quando.' },
+    ];
+    var r30 = msgs30[Math.floor(Math.random() * msgs30.length)];
+    emoji = '⚡'; titulo = r30.t; msg = r30.m;
+    cor = 'rgba(255,184,0,0.08)'; borderCor = '#FFB800';
+  } else {
+    var msgs0 = [
+      { t:'Pense nos seus sonhos.', m:'Tudo que voce quer para voce e sua familia depende de acao. A plataforma esta aqui. So depende de voce.' },
+      { t:'Sua familia esta torcendo por voce.', m:'Cada prospecto que voce nao faz e uma comissao que fica na mesa. Voce e capaz — avance.' },
+      { t:'O momento e agora.', m:'Nao existe amanha no mundo das vendas. Quem age hoje colhe primeiro. Aumente sua prospeccao.' },
+    ];
+    var r0 = msgs0[Math.floor(Math.random() * msgs0.length)];
+    emoji = '💪'; titulo = r0.t; msg = r0.m;
+    cor = 'rgba(0,212,255,0.06)'; borderCor = '#00D4FF';
+  }
+
+  var existing = document.getElementById('bannerMotivacional');
+  if (existing) existing.remove();
+
+  var banner = document.createElement('div');
+  banner.id = 'bannerMotivacional';
+  banner.className = 'motiv-banner';
+  banner.style.cssText = 'background:' + cor + ';border-left:4px solid ' + borderCor + ';padding:16px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;';
+  banner.innerHTML = '<div style="display:flex;gap:14px;align-items:center;flex:1;">'
+    + '<div style="font-size:28px;flex-shrink:0;">' + emoji + '</div>'
+    + '<div><strong style="display:block;font-size:14px;color:#fff;margin-bottom:4px;">' + titulo + '</strong>'
+    + '<span style="font-size:13px;color:#B8C4D8;">' + msg + '</span></div></div>'
+    + btnHtml;
+
+  var statsRow = document.querySelector('.stats-row');
+  if (statsRow && statsRow.parentNode) {
+    statsRow.parentNode.insertBefore(banner, statsRow.nextSibling);
+  }
+}
+
 function showDashboard() {
   verificarOnboarding();
   verificarPlanoPendente();
