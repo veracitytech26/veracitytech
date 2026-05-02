@@ -493,7 +493,7 @@ body {
         <label>TELEFONE / WHATSAPP</label>
         <input type="tel" id="regPhone" placeholder="(21) 99999-9999">
       </div>
-      <button class="btn btn-primary" onclick="register()">CRIAR MINHA CONTA</button>
+      <button class="btn btn-primary" id="btnRegister" onclick="register(this)">CRIAR MINHA CONTA</button>
     </div>
   </div>
 
@@ -1037,7 +1037,7 @@ async function login() {
   showDashboard();
 }
 
-async function register() {
+async function register(btnEl) {
   const name  = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const cpfRaw = document.getElementById('regCPF') ? document.getElementById('regCPF').value.trim() : '';
@@ -1064,8 +1064,8 @@ async function register() {
     }
   } catch(e) { console.error('Erro ao verificar CPF:', e); }
 
-  const btn = event.target;
-  btn.disabled = true; btn.textContent = 'Criando conta...';
+  const btn = btnEl || document.getElementById('btnRegister');
+  if (btn) { btn.disabled = true; btn.textContent = 'Criando conta...'; }
 
   // Criar usuário no Supabase Auth
   const { data, error } = await db.auth.signUp({
@@ -1078,7 +1078,7 @@ async function register() {
 
   if (error) {
     showAlert('Erro ao criar conta: ' + error.message);
-    btn.disabled = false; btn.textContent = 'CRIAR MINHA CONTA';
+    if (btn) { btn.disabled = false; btn.textContent = 'CRIAR MINHA CONTA'; }
     return;
   }
 
@@ -1141,7 +1141,7 @@ async function register() {
     `✅ Conta criada! Verifique seu e-mail <strong>${email}</strong> para confirmar o acesso. Você ganhou <strong>30 créditos grátis</strong> para explorar a plataforma! 🎉`,
     'success'
   );
-  btn.disabled = false; btn.textContent = 'CRIAR MINHA CONTA';
+  if (btn) { btn.disabled = false; btn.textContent = 'CRIAR MINHA CONTA'; }
 }
 
 async function loadProfile() {
