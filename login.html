@@ -1879,6 +1879,12 @@ function mostrarAba(aba) {
   document.getElementById('abaBusca').style.display = aba === 'busca' ? 'block' : 'none';
   document.getElementById('abaHistorico').style.display = aba === 'historico' ? 'block' : 'none';
   if (document.getElementById('abaAbertasHoje')) document.getElementById('abaAbertasHoje').style.display = aba === 'abertasHoje' ? 'block' : 'none';
+  if (document.getElementById('abaCampanhas')) document.getElementById('abaCampanhas').style.display = aba === 'campanhas' ? 'block' : 'none';
+if (document.getElementById('tabCampanhas')) {
+  document.getElementById('tabCampanhas').style.borderBottomColor = aba === 'campanhas' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('tabCampanhas').style.color = aba === 'campanhas' ? 'var(--cyan)' : 'var(--gray)';
+  document.getElementById('tabCampanhas').style.background = aba === 'campanhas' ? 'rgba(0,212,255,0.1)' : 'transparent';
+}
   document.getElementById('tabBusca').style.borderBottomColor = aba === 'busca' ? 'var(--cyan)' : 'transparent';
   document.getElementById('tabBusca').style.color = aba === 'busca' ? 'var(--cyan)' : 'var(--gray)';
   document.getElementById('tabBusca').style.background = aba === 'busca' ? 'rgba(0,212,255,0.1)' : 'transparent';
