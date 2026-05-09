@@ -2884,9 +2884,13 @@ function renderCampanhas(campanhas) {
           <div style="font-size:20px;font-weight:700;color:#FFB800;">${c.lidas||0}</div>
           <div style="font-size:10px;color:var(--gray);">LIDAS</div>
         </div>
-        <div style="background:rgba(0,230,118,0.08);padding:10px;border-radius:2px;">
+       <div style="background:rgba(0,230,118,0.08);padding:10px;border-radius:2px;">
           <div style="font-size:20px;font-weight:700;color:#00E676;">${c.respondidas||0}</div>
           <div style="font-size:10px;color:var(--gray);">RESPOSTAS</div>
+        </div>
+        <div style="background:rgba(255,77,77,0.08);padding:10px;border-radius:2px;">
+          <div style="font-size:20px;font-weight:700;color:#FF4D4D;">${c.quentes||0}</div>
+          <div style="font-size:10px;color:var(--gray);">🔥 QUENTES</div>
         </div>
       </div>
       ${c.total > 0 ? `<div style="margin-top:12px;background:rgba(255,255,255,0.06);height:6px;border-radius:3px;overflow:hidden;">
