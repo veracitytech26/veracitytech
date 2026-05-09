@@ -1531,7 +1531,7 @@ async function buscar() {
       payload.excluir_visualizadas = true;
     }
 
-    console.log('Chamando proxy /.netlify/functions/buscar...', JSON.stringify(payload));
+  console.log('Chamando proxy /api/buscar...', JSON.stringify(payload));
     const { data: { session: sessMain } } = await db.auth.getSession();
     const authMain = sessMain ? sessMain.access_token : null;
     const res = await fetch('/api/buscar', {
