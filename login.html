@@ -2750,10 +2750,12 @@ async function mostrarNovaCampanha() {
 function atualizarTemplateCamp() {
   const tmpl = document.getElementById('campTemplate').value;
   const msgs = {
-    saude: 'Olá! Tudo bem? 😊\n\nAqui é o Rodrigo, especialista em planos de saúde empresariais.\n\nVi que a *{empresa}* pode se beneficiar de uma cobertura com o melhor custo-benefício para sua equipe.\n\nPosso te apresentar as opções? É rápido e sem compromisso! 💙',
-    seguros: 'Olá! Tudo bem? 😊\n\nAqui é o Rodrigo, especialista em seguros empresariais.\n\nIdentifiquei que a *{empresa}* pode se beneficiar de uma cobertura que protege seu patrimônio.\n\nPosso fazer uma análise gratuita? 🛡️',
-    geral: 'Olá! Tudo bem? 😊\n\nMeu nome é Rodrigo e gostaria de apresentar uma solução que pode agregar muito valor à *{empresa}*.\n\nPoderia te apresentar em 5 minutinhos? 🚀'
+    saude: 'Olá, {socio}! Tudo bem? 😊\n\nAqui é o Rodrigo, especialista em planos de saúde empresariais.\n\nVi que você é sócio da *{empresa}* e quero apresentar uma solução de saúde com o melhor custo-benefício para sua equipe.\n\nPosso te apresentar as opções? É rápido e sem compromisso! 💙',
+    seguros: 'Olá, {socio}! Tudo bem? 😊\n\nAqui é o Rodrigo, especialista em seguros empresariais.\n\nVi que você é sócio da *{empresa}* e pode se beneficiar de uma cobertura que protege seu patrimônio.\n\nPosso fazer uma análise gratuita? 🛡️',
+    geral: 'Olá, {socio}! Tudo bem? 😊\n\nMeu nome é Rodrigo e gostaria de apresentar uma solução que pode agregar muito valor à *{empresa}*.\n\nPoderia te apresentar em 5 minutinhos? 🚀'
   };
+  document.getElementById('campMensagem').value = msgs[tmpl] || msgs.geral;
+}
   document.getElementById('campMensagem').value = msgs[tmpl] || msgs.geral;
 }
 
