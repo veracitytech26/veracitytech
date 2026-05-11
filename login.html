@@ -2782,8 +2782,11 @@ async function iniciarCampanha() {
     if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
     if (celNum.length < 10) return;
     const msgPersonalizada = mensagem.replace('{empresa}', e.razao_social || 'empresa');
-    contatos.push({ nome: e.razao_social || '', telefone: celNum, mensagem: msgPersonalizada });
-  });
+const socio = (e.quadro_societario && e.quadro_societario[0] && e.quadro_societario[0].nome) 
+  ? e.quadro_societario[0].nome.split(' ')[0] 
+  : 'Olá';
+const msgPersonalizada2 = msgPersonalizada.replace('{socio}', socio);
+contatos.push({ nome: e.razao_social || '', telefone: celNum, mensagem: msgPersonalizada2 });  });
 
   if (!contatos.length) { alert('Nenhuma empresa com WhatsApp encontrada!'); return; }
 
