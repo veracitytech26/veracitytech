@@ -2869,9 +2869,9 @@ function renderCampanhas(campanhas) {
     return;
   }
   var html = '<div style="display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid var(--border);">';
-  html += '<button id="subTabCamp" onclick="mostrarSubAba('campanhas')" style="background:rgba(0,212,255,0.1);border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">📊 CAMPANHAS</button>';
-  html += '<button id="subTabCRM" onclick="mostrarSubAba('crm')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">🎯 CRM — PIPELINE</button>';
-  html += '<button id="subTabLeads" onclick="mostrarSubAba('leads')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">➕ ADICIONAR LEAD</button>';
+ html += '<button id="subTabCamp" onclick="mostrarSubAba(&quot;campanhas&quot;)" style="background:rgba(0,212,255,0.1);border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">📊 CAMPANHAS</button>';
+html += '<button id="subTabCRM" onclick="mostrarSubAba(&quot;crm&quot;)" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">🎯 CRM — PIPELINE</button>';
+html += '<button id="subTabLeads" onclick="mostrarSubAba(&quot;leads&quot;)" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">➕ ADICIONAR LEAD</button>';
   html += '</div>';
   html += '<div id="subAbaCampanhas">';
   campanhas.forEach(function(c) {
