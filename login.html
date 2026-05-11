@@ -2970,14 +2970,14 @@ function carregarCRM() {
         el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-size:12px;">Arraste leads aqui</div>';
         return;
       }
-      el.innerHTML = filtrados.map(l => `
-        <div draggable="true" ondragstart="dragLead(event,'${l.id}')" style="background:#0D1530;border:1px solid rgba(255,255,255,0.08);padding:10px;margin-bottom:8px;cursor:grab;">
-          <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;">${l.empresa}</div>
-          <div style="font-size:11px;color:var(--gray);">${l.contato || ''}</div>
-          ${l.telefone ? `<a href="https://wa.me/55${l.telefone.replace(/[^0-9]/g,'')}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;text-decoration:none;margin-top:6px;">WhatsApp</a>` : ''}
-          ${l.nota ? `<div style="font-size:10px;color:var(--gray);margin-top:6px;font-style:italic;">${l.nota}</div>` : ''}
-        </div>
-      `).join('');
+      el.innerHTML = filtrados.map(function(l) {
+        return '<div draggable="true" ondragstart="dragLead(event,\''+l.id+'\')" style="background:#0D1530;border:1px solid rgba(255,255,255,0.08);padding:10px;margin-bottom:8px;cursor:grab;">'
+          + '<div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;">'+l.empresa+'</div>'
+          + '<div style="font-size:11px;color:var(--gray);">'+(l.contato||'')+'</div>'
+          + (l.telefone ? '<a href="https://wa.me/55'+l.telefone.replace(/[^0-9]/g,'')+'" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;text-decoration:none;margin-top:6px;">WhatsApp</a>' : '')
+          + (l.nota ? '<div style="font-size:10px;color:var(--gray);margin-top:6px;font-style:italic;">'+l.nota+'</div>' : '')
+          + '</div>';
+      }).join('');
     });
   } catch(e) {}
 }
