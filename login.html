@@ -2891,18 +2891,7 @@ function renderCampanhas(campanhas) {
           <div style="font-size:20px;font-weight:700;color:#00E676;">${c.respondidas||0}</div>
           <div style="font-size:10px;color:var(--gray);">RESPOSTAS</div>
         </div>
-        <div style="background:rgba(255,77,77,0.08);padding:10px;">
-          <div style="font-size:20px;font-weight:700;color:#FF4D4D;">${c.quentes||0}</div>
-          <div style="font-size:10px;color:var(--gray);">🔥 QUENTES</div>
-        </div>
-      </div>
-      ${c.total > 0 ? `<div style="margin-top:12px;background:rgba(255,255,255,0.06);height:6px;overflow:hidden;">
-        <div style="background:linear-gradient(90deg,#1240AB,#00D4FF);height:6px;width:${Math.round((c.enviadas||0)/c.total*100)}%;transition:width 0.5s;"></div>
-      </div>
-      <div style="font-size:11px;color:var(--gray);margin-top:4px;text-align:right;">${Math.round((c.enviadas||0)/c.total*100)}% disparado</div>` : ''}
-    </div>
-  `).join('');
-  html += '</div>';
+        
 
   // ABA CRM PIPELINE
   html += '<div id="subAbaCRM" style="display:none;">';
