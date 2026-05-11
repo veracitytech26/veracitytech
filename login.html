@@ -2896,14 +2896,14 @@ function renderCampanhas(campanhas) {
   // ABA CRM PIPELINE
   html += '<div id="subAbaCRM" style="display:none;">';
   html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">';
-  const colunas = [
+ const colunasGrid = [
     { id:'contato', label:'📞 EM CONTATO', cor:'#00D4FF' },
     { id:'negociacao', label:'💬 NEGOCIAÇÃO', cor:'#FFB800' },
     { id:'proposta', label:'📄 PROPOSTA', cor:'#6B8EFF' },
     { id:'fechamento', label:'🏆 FECHADO', cor:'#00E676' },
     { id:'perdido', label:'❌ PERDIDO', cor:'#FF4D4D' },
   ];
-  colunas.forEach(col => {
+  colunasGrid.forEach(col => {
     html += `<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:12px;min-height:200px;">
       <div style="font-size:11px;font-weight:700;color:${col.cor};letter-spacing:1px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ${col.cor};">${col.label}</div>
       <div id="crm_${col.id}" ondragover="event.preventDefault()" ondrop="dropLead(event,'${col.id}')" style="min-height:150px;">
