@@ -2845,65 +2845,195 @@ async function dispararCampanha(campanhaId, contatos, intervalo, tok) {
   await carregarCampanhas();
 }
 
-async function carregarCampanhas() {
-  const { data: { session: s } } = await db.auth.getSession();
-  const tok = s ? s.access_token : '';
-  const res = await fetch('/api/campanha', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tok}` },
-    body: JSON.stringify({ action: 'listar' })
-  });
-  const data = await res.json();
-  renderCampanhas(data.campanhas || []);
-}
-
 function renderCampanhas(campanhas) {
   const div = document.getElementById('listaCampanhas');
   if (!campanhas.length) {
-    div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);"><div style="font-size:36px;margin-bottom:12px;">📱</div><div>Nenhuma campanha ainda.</div></div>';
+    div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);"><div style="font-size:36px;margin-bottom:12px;">📱</div><div>Nenhuma campanha ainda. Clique em Nova Campanha para começar.</div></div>';
     return;
   }
-  div.innerHTML = campanhas.map(c => `
+
+  // Sub-abas
+  let html = '<div style="display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid var(--border);">';
+  html += '<button id="subTabCamp" onclick="mostrarSubAba(\'campanhas\')" style="background:rgba(0,212,255,0.1);border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">📊 CAMPANHAS</button>';
+  html += '<button id="subTabCRM" onclick="mostrarSubAba(\'crm\')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">🎯 CRM — PIPELINE</button>';
+  html += '<button id="subTabLeads" onclick="mostrarSubAba(\'leads\')" style="background:transparent;border:none;border-bottom:2px solid transparent;color:#FFFFFF;font-size:12px;font-weight:700;padding:10px 20px;cursor:pointer;">➕ ADICIONAR LEAD</button>';
+  html += '</div>';
+
+  // ABA CAMPANHAS
+  html += '<div id="subAbaCampanhas">';
+  html += campanhas.map(c => `
     <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:20px;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
         <div>
           <div style="font-size:15px;font-weight:700;color:#fff;">${c.nome}</div>
           <div style="font-size:11px;color:var(--gray);">${new Date(c.created_at).toLocaleDateString('pt-BR')} · ${c.total} empresas</div>
         </div>
-        <span style="background:${c.status==='ativa'?'rgba(0,230,118,0.15)':'rgba(136,150,179,0.15)'};color:${c.status==='ativa'?'#00E676':'#8896B3'};font-size:11px;font-weight:700;padding:4px 12px;border-radius:2px;">${c.status.toUpperCase()}</span>
+        <span style="background:${c.status==='ativa'?'rgba(0,230,118,0.15)':'rgba(136,150,179,0.15)'};color:${c.status==='ativa'?'#00E676':'#8896B3'};font-size:11px;font-weight:700;padding:4px 12px;">${c.status.toUpperCase()}</span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;">
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:2px;">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;">
+        <div style="background:rgba(255,255,255,0.04);padding:10px;">
           <div style="font-size:20px;font-weight:700;color:#fff;">${c.total}</div>
           <div style="font-size:10px;color:var(--gray);">TOTAL</div>
         </div>
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:2px;">
+        <div style="background:rgba(255,255,255,0.04);padding:10px;">
           <div style="font-size:20px;font-weight:700;color:#00D4FF;">${c.enviadas||0}</div>
           <div style="font-size:10px;color:var(--gray);">ENVIADAS</div>
         </div>
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:2px;">
+        <div style="background:rgba(255,255,255,0.04);padding:10px;">
           <div style="font-size:20px;font-weight:700;color:#6B8EFF;">${c.entregues||0}</div>
           <div style="font-size:10px;color:var(--gray);">ENTREGUES</div>
         </div>
-        <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:2px;">
+        <div style="background:rgba(255,255,255,0.04);padding:10px;">
           <div style="font-size:20px;font-weight:700;color:#FFB800;">${c.lidas||0}</div>
           <div style="font-size:10px;color:var(--gray);">LIDAS</div>
         </div>
-       <div style="background:rgba(0,230,118,0.08);padding:10px;border-radius:2px;">
+        <div style="background:rgba(0,230,118,0.08);padding:10px;">
           <div style="font-size:20px;font-weight:700;color:#00E676;">${c.respondidas||0}</div>
           <div style="font-size:10px;color:var(--gray);">RESPOSTAS</div>
         </div>
-        <div style="background:rgba(255,77,77,0.08);padding:10px;border-radius:2px;">
+        <div style="background:rgba(255,77,77,0.08);padding:10px;">
           <div style="font-size:20px;font-weight:700;color:#FF4D4D;">${c.quentes||0}</div>
           <div style="font-size:10px;color:var(--gray);">🔥 QUENTES</div>
         </div>
       </div>
-      ${c.total > 0 ? `<div style="margin-top:12px;background:rgba(255,255,255,0.06);height:6px;border-radius:3px;overflow:hidden;">
+      ${c.total > 0 ? `<div style="margin-top:12px;background:rgba(255,255,255,0.06);height:6px;overflow:hidden;">
         <div style="background:linear-gradient(90deg,#1240AB,#00D4FF);height:6px;width:${Math.round((c.enviadas||0)/c.total*100)}%;transition:width 0.5s;"></div>
       </div>
       <div style="font-size:11px;color:var(--gray);margin-top:4px;text-align:right;">${Math.round((c.enviadas||0)/c.total*100)}% disparado</div>` : ''}
     </div>
   `).join('');
+  html += '</div>';
+
+  // ABA CRM PIPELINE
+  html += '<div id="subAbaCRM" style="display:none;">';
+  html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">';
+  const colunas = [
+    { id:'contato', label:'📞 EM CONTATO', cor:'#00D4FF' },
+    { id:'negociacao', label:'💬 NEGOCIAÇÃO', cor:'#FFB800' },
+    { id:'proposta', label:'📄 PROPOSTA', cor:'#6B8EFF' },
+    { id:'fechamento', label:'🏆 FECHADO', cor:'#00E676' },
+    { id:'perdido', label:'❌ PERDIDO', cor:'#FF4D4D' },
+  ];
+  colunas.forEach(col => {
+    html += `<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);padding:12px;min-height:200px;">
+      <div style="font-size:11px;font-weight:700;color:${col.cor};letter-spacing:1px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid ${col.cor};">${col.label}</div>
+      <div id="crm_${col.id}" ondragover="event.preventDefault()" ondrop="dropLead(event,'${col.id}')" style="min-height:150px;">
+        <div style="text-align:center;padding:20px;color:var(--gray);font-size:12px;">Arraste leads aqui</div>
+      </div>
+    </div>`;
+  });
+  html += '</div></div>';
+
+  // ABA ADICIONAR LEAD
+  html += `<div id="subabaLeads" style="display:none;">
+    <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;max-width:500px;">
+      <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:20px;">➕ Adicionar Lead Manual</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">NOME DA EMPRESA</label>
+        <input id="leadEmpresa" type="text" placeholder="Ex: Clínica São Lucas" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">NOME DO CONTATO</label>
+        <input id="leadContato" type="text" placeholder="Ex: Dr. João Silva" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">WHATSAPP</label>
+        <input id="leadTelefone" type="text" placeholder="Ex: 21999999999" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">ORIGEM</label>
+        <input id="leadOrigem" type="text" placeholder="Ex: Indicação, LinkedIn, Evento..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">ANOTAÇÃO</label>
+        <textarea id="leadNota" rows="3" placeholder="Contexto, observações..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
+      </div>
+      <button onclick="adicionarLeadManual()" style="width:100%;background:var(--cyan);color:var(--navy);font-size:14px;font-weight:700;padding:14px;border:none;cursor:pointer;">➕ ADICIONAR AO PIPELINE</button>
+    </div>
+  </div>`;
+
+  div.innerHTML = html;
+  carregarCRM();
+}
+
+function mostrarSubAba(aba) {
+  document.getElementById('subAbaCampanhas').style.display = aba === 'campanhas' ? 'block' : 'none';
+  document.getElementById('subAbaCRM').style.display = aba === 'crm' ? 'grid' : 'none';
+  document.getElementById('subabaLeads').style.display = aba === 'leads' ? 'block' : 'none';
+  document.getElementById('subTabCamp').style.borderBottomColor = aba === 'campanhas' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('subTabCamp').style.color = aba === 'campanhas' ? 'var(--cyan)' : '#FFFFFF';
+  document.getElementById('subTabCamp').style.background = aba === 'campanhas' ? 'rgba(0,212,255,0.1)' : 'transparent';
+  document.getElementById('subTabCRM').style.borderBottomColor = aba === 'crm' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('subTabCRM').style.color = aba === 'crm' ? 'var(--cyan)' : '#FFFFFF';
+  document.getElementById('subTabCRM').style.background = aba === 'crm' ? 'rgba(0,212,255,0.1)' : 'transparent';
+  document.getElementById('subTabLeads').style.borderBottomColor = aba === 'leads' ? 'var(--cyan)' : 'transparent';
+  document.getElementById('subTabLeads').style.color = aba === 'leads' ? 'var(--cyan)' : '#FFFFFF';
+  document.getElementById('subTabLeads').style.background = aba === 'leads' ? 'rgba(0,212,255,0.1)' : 'transparent';
+}
+
+function carregarCRM() {
+  try {
+    const leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
+    const colunas = ['contato','negociacao','proposta','fechamento','perdido'];
+    colunas.forEach(col => {
+      const el = document.getElementById('crm_' + col);
+      if (!el) return;
+      const filtrados = leads.filter(l => l.status === col);
+      if (!filtrados.length) {
+        el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-size:12px;">Arraste leads aqui</div>';
+        return;
+      }
+      el.innerHTML = filtrados.map(l => `
+        <div draggable="true" ondragstart="dragLead(event,'${l.id}')" style="background:#0D1530;border:1px solid rgba(255,255,255,0.08);padding:10px;margin-bottom:8px;cursor:grab;">
+          <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;">${l.empresa}</div>
+          <div style="font-size:11px;color:var(--gray);">${l.contato || ''}</div>
+          ${l.telefone ? `<a href="https://wa.me/55${l.telefone.replace(/[^0-9]/g,'')}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;text-decoration:none;margin-top:6px;">WhatsApp</a>` : ''}
+          ${l.nota ? `<div style="font-size:10px;color:var(--gray);margin-top:6px;font-style:italic;">${l.nota}</div>` : ''}
+        </div>
+      `).join('');
+    });
+  } catch(e) {}
+}
+
+let _dragId = null;
+function dragLead(event, id) { _dragId = id; }
+function dropLead(event, novoStatus) {
+  if (!_dragId) return;
+  try {
+    const leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
+    const lead = leads.find(l => l.id === _dragId);
+    if (lead) lead.status = novoStatus;
+    localStorage.setItem('crm_leads', JSON.stringify(leads));
+    carregarCRM();
+  } catch(e) {}
+  _dragId = null;
+}
+
+function adicionarLeadManual() {
+  const empresa = document.getElementById('leadEmpresa').value.trim();
+  const contato = document.getElementById('leadContato').value.trim();
+  const telefone = document.getElementById('leadTelefone').value.trim();
+  const origem = document.getElementById('leadOrigem').value.trim();
+  const nota = document.getElementById('leadNota').value.trim();
+  if (!empresa) { alert('Digite o nome da empresa!'); return; }
+  try {
+    const leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
+    leads.unshift({
+      id: Date.now().toString(),
+      empresa, contato, telefone, origem, nota,
+      status: 'contato',
+      data: new Date().toLocaleDateString('pt-BR')
+    });
+    localStorage.setItem('crm_leads', JSON.stringify(leads));
+    document.getElementById('leadEmpresa').value = '';
+    document.getElementById('leadContato').value = '';
+    document.getElementById('leadTelefone').value = '';
+    document.getElementById('leadOrigem').value = '';
+    document.getElementById('leadNota').value = '';
+    mostrarSubAba('crm');
+    carregarCRM();
+    alert('Lead adicionado ao pipeline!');
+  } catch(e) {}
 }
 async function init() {
   await setupDB();
