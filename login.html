@@ -3750,8 +3750,7 @@ var _cotIdades = [];
 var _cotPDFs   = [];   // [{name, file, base64, status:'pendente|processando|ok|erro', planos:[]}]
 var _cotPlanos = [];   // planos extraídos acumulados
 
-var COT_FN_URL = '/.netlify/functions/claude-cotacao';
-
+var COT_FN_URL = '/api/cotacao';
 // ── FAIXA ETÁRIA ──────────────────────────────────────────────────────────────
 function cotFaixa(idade) {
   if (idade <= 18) return '0-18';
