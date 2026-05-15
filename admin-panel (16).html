@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veracity Intelligence — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#080E1E;--dark:#0D1530;--blue:#1240AB;--cyan:#00D4FF;--white:#FFFFFF;--gray:#8896B3;--border:rgba(255,255,255,0.07);--green:#00E676;--red:#FF4D4D;--yellow:#FFB800;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
+#loginScreen{display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.login-box{background:var(--dark);border:1px solid var(--border);padding:48px;width:400px;position:relative;}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--cyan));}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+.login-sub{font-size:10px;letter-spacing:5px;color:var(--red);font-weight:700;margin-bottom:32px;}
+.login-label{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;display:block;margin-bottom:8px;}
+.login-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--white);padding:12px 16px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px;}
+.login-btn{width:100%;background:var(--cyan);color:var(--navy);font-size:13px;font-weight:700;letter-spacing:2px;padding:14px;border:none;cursor:pointer;}
+.login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none;}
+#dashboard{display:none;}
+.topbar{background:var(--dark);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;display:flex;align-items:center;gap:10px;}
+.topbar-logo span{color:var(--red);font-size:9px;letter-spacing:4px;display:block;font-family:'DM Sans',sans-serif;font-weight:700;}
+.topbar-right{display:flex;gap:12px;align-items:center;}
+.admin-badge{background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.2);color:var(--red);font-size:10px;font-weight:700;padding:4px 12px;letter-spacing:2px;}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--gray);font-size:12px;padding:7px 16px;cursor:pointer;}
+.logout-btn:hover{color:var(--white);}
+.container{max-width:1300px;margin:0 auto;padding:32px;}
+.tabs{display:flex;gap:0;margin-bottom:32px;border-bottom:1px solid var(--border);}
+.tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--gray);font-size:12px;font-weight:700;letter-spacing:2px;padding:14px 22px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.tab-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(0,212,255,0.05);}
+.tab-btn:hover:not(.active){color:var(--white);}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--dark);border:1px solid var(--border);padding:24px;position:relative;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));}
+.stat-label{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:12px;}
+.stat-val{font-size:28px;font-weight:700;color:var(--white);}
+.stat-sub{font-size:12px;color:var(--gray);margin-top:6px;}
+.section-card{background:var(--dark);border:1px solid var(--border);padding:24px;margin-bottom:24px;}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.section-title{font-size:15px;font-weight:700;}
+.section-sub{font-size:12px;color:var(--gray);margin-top:2px;}
+.btn{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:1px;padding:6px 14px;border:none;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.btn-cyan{background:var(--cyan);color:var(--navy);}
+.btn-red{background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.3);color:var(--red);}
+.btn-yellow{background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.3);color:var(--yellow);}
+.btn-green{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:var(--green);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--gray);}
+.btn-ghost:hover{color:var(--white);}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);}
+td{padding:12px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+tr:hover td{background:rgba(255,255,255,0.015);}
+.badge{font-size:10px;font-weight:700;padding:3px 10px;letter-spacing:1px;}
+.badge-trial{background:rgba(136,150,179,0.1);color:var(--gray);border:1px solid rgba(136,150,179,0.2);}
+.badge-starter{background:rgba(18,64,171,0.2);color:#6B8EFF;border:1px solid rgba(18,64,171,0.3);}
+.badge-pro{background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.2);}
+.badge-bloqueado{background:rgba(255,77,77,0.15);color:var(--red);border:1px solid rgba(255,77,77,0.4);font-size:9px;padding:2px 7px;}
+.row-bloqueado td{opacity:0.5;}
+.actions{display:flex;gap:5px;flex-wrap:wrap;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;justify-content:center;align-items:center;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--dark);border:1px solid var(--border);padding:32px;width:480px;position:relative;max-height:90vh;overflow-y:auto;}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--cyan));}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:20px;}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;}
+.form-group{margin-bottom:16px;}
+.form-label{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;display:block;margin-bottom:6px;}
+.form-input,.form-select{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--white);padding:10px 14px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.form-select option{background:#0D1530;}
+.modal-btns{display:flex;gap:10px;margin-top:20px;}
+.modal-msg{margin-top:12px;font-size:13px;text-align:center;display:none;}
+.search-input{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--white);padding:9px 14px;font-size:13px;width:260px;outline:none;font-family:'DM Sans',sans-serif;}
+.loading{text-align:center;padding:48px;color:var(--gray);}
+.empty{text-align:center;padding:48px;color:var(--gray);}
+.confirm-box{background:rgba(255,77,77,0.06);border:1px solid rgba(255,77,77,0.2);padding:16px;margin-bottom:16px;}
+.confirm-box p{font-size:13px;color:#B8C4D8;line-height:1.6;}
+.bar-wrap{background:rgba(255,255,255,0.06);height:8px;border-radius:4px;margin-top:6px;}
+.bar-fill{height:8px;border-radius:4px;background:var(--cyan);}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">VERACITY</div>
+    <div class="login-sub">ADMIN PANEL · ACESSO RESTRITO</div>
+    <label class="login-label">E-MAIL</label>
+    <input type="email" id="adminEmail" class="login-input" placeholder="admin@veracitytech.com.br">
+    <label class="login-label">SENHA</label>
+    <input type="password" id="adminPass" class="login-input" placeholder="••••••••">
+    <button class="login-btn" id="btnLogin">ENTRAR NO PAINEL</button>
+    <div class="login-error" id="loginError">E-mail ou senha incorretos.</div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">VERACITY <span>ADMIN PANEL</span></div>
+    <div class="topbar-right">
+      <div class="admin-badge">ADMINISTRADOR</div>
+      <button class="logout-btn" id="btnLogout">SAIR</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabVisaoGeral">Visão Geral</button>
+      <button class="tab-btn" id="tabClientes">Clientes</button>
+      <button class="tab-btn" id="tabMetricas">Metricas</button>
+      <button class="tab-btn" id="tabFinanceiro">Financeiro</button>
+      <button class="tab-btn" id="tabAddCliente">Novo Cliente</button>
+    </div>
+
+    <!-- VISAO GERAL -->
+    <div id="abaVisaoGeral">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">TOTAL CLIENTES</div><div class="stat-val" id="vgTotal" style="color:var(--cyan);">-</div><div class="stat-sub">cadastros na plataforma</div></div>
+        <div class="stat-card"><div class="stat-label">PLANOS PAGOS</div><div class="stat-val" id="vgPagos" style="color:var(--green);">-</div><div class="stat-sub">assinantes ativos</div></div>
+        <div class="stat-card"><div class="stat-label">MRR ESTIMADO</div><div class="stat-val" id="vgMrr" style="color:var(--green);">R$ 0</div><div class="stat-sub">receita mensal recorrente</div></div>
+        <div class="stat-card"><div class="stat-label">ARR ESTIMADO</div><div class="stat-val" id="vgArr">R$ 0</div><div class="stat-sub">receita anual recorrente</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">TRIALS ATIVOS</div><div class="stat-val" id="vgTrials">-</div><div class="stat-sub">em período de teste</div></div>
+        <div class="stat-card"><div class="stat-label">CONSULTAS TOTAIS</div><div class="stat-val" id="vgConsultas">-</div><div class="stat-sub">empresas buscadas</div></div>
+        <div class="stat-card"><div class="stat-label">CONVERSÃO TRIAL</div><div class="stat-val" id="vgConversao">-</div><div class="stat-sub">trial convertido em pago</div></div>
+        <div class="stat-card"><div class="stat-label">BLOQUEADOS</div><div class="stat-val" id="vgBloqueados" style="color:var(--red);">-</div><div class="stat-sub">acesso suspenso</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="section-card">
+          <div class="section-head"><div class="section-title">Distribuição por Plano</div></div>
+          <div id="vgDistPlanos"></div>
+        </div>
+        <div class="section-card">
+          <div class="section-head"><div class="section-title">Últimos Cadastros</div></div>
+          <div id="vgUltimosClientes"></div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div><div class="section-title">Projeção de Receita</div><div class="section-sub">Com base no ticket médio atual</div></div></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;" id="vgProjecao"></div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div id="abaClientes" style="display:none;">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Clientes da Plataforma</div>
+            <div class="section-sub" id="totalClientes">Carregando...</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="text" class="search-input" id="searchCliente" placeholder="Buscar por nome ou e-mail...">
+            <button class="btn btn-cyan" id="btnAtualizar" style="padding:9px 18px;">Atualizar</button>
+          </div>
+        </div>
+        <div id="tabelaClientes"><div class="loading">Carregando clientes...</div></div>
+      </div>
+    </div>
+
+    <!-- METRICAS -->
+    <div id="abaMetricas" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">EMAILS ENVIADOS</div><div class="stat-val" id="mtEmails" style="color:var(--cyan);">-</div><div class="stat-sub">total geral da plataforma</div></div>
+        <div class="stat-card"><div class="stat-label">DISPAROS WHATSAPP</div><div class="stat-val" id="mtDisparos" style="color:var(--green);">-</div><div class="stat-sub">mensagens enviadas</div></div>
+        <div class="stat-card"><div class="stat-label">VENDAS FECHADAS</div><div class="stat-val" id="mtVendas" style="color:var(--yellow);">-</div><div class="stat-sub">pelos corretores</div></div>
+        <div class="stat-card"><div class="stat-label">RECEITA GERADA</div><div class="stat-val" id="mtReceita" style="color:var(--green);">R$ 0</div><div class="stat-sub">valor total das vendas</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">PACOTES AVULSOS</div><div class="stat-val" id="mtPacotes">-</div><div class="stat-sub">comprados na plataforma</div></div>
+        <div class="stat-card"><div class="stat-label">RECEITA PACOTES</div><div class="stat-val" id="mtReceitaPacotes" style="color:var(--green);">R$ 0</div><div class="stat-sub">total em pacotes avulsos</div></div>
+        <div class="stat-card"><div class="stat-label">MEDIA EMAILS/USUARIO</div><div class="stat-val" id="mtMediaEmails">-</div><div class="stat-sub">por corretor</div></div>
+        <div class="stat-card"><div class="stat-label">MEDIA DISPAROS/USUARIO</div><div class="stat-val" id="mtMediaDisparos">-</div><div class="stat-sub">por corretor</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="section-card">
+          <div class="section-head"><div class="section-title">Ultimas Campanhas de Email</div></div>
+          <div id="mtTabelaEmails"><div class="loading">Carregando...</div></div>
+        </div>
+        <div class="section-card">
+          <div class="section-head"><div class="section-title">Ultimas Campanhas WhatsApp</div></div>
+          <div id="mtTabelaDisparos"><div class="loading">Carregando...</div></div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div class="section-title">Vendas Fechadas pelos Corretores</div><button class="btn btn-cyan" id="btnAtualizarMetricas" style="padding:8px 16px;">Atualizar</button></div>
+        <div id="mtTabelaVendas"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
+    <!-- FINANCEIRO -->
+    <div id="abaFinanceiro" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">MRR ESTIMADO</div><div class="stat-val" id="finMRR" style="color:var(--green);">R$ 0</div><div class="stat-sub">receita mensal recorrente</div></div>
+        <div class="stat-card"><div class="stat-label">ARR ESTIMADO</div><div class="stat-val" id="finARR">R$ 0</div><div class="stat-sub">receita anual</div></div>
+        <div class="stat-card"><div class="stat-label">TICKET MÉDIO</div><div class="stat-val" id="finTicket">R$ 0</div><div class="stat-sub">por cliente/mês</div></div>
+        <div class="stat-card"><div class="stat-label">VALUATION EST.</div><div class="stat-val" id="finValuation" style="color:var(--cyan);">R$ 0</div><div class="stat-sub">10x MRR anual</div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div><div class="section-title">Receita por Plano</div><div class="section-sub">Distribuição do MRR</div></div></div>
+        <div id="finDistReceita"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div><div class="section-title">Receita por Cliente</div><div class="section-sub">Clientes com planos pagos</div></div><div id="finTotalReceita" style="font-size:20px;font-weight:700;color:var(--green);"></div></div>
+        <div id="tabelaFinanceiro"></div>
+      </div>
+    </div>
+
+    <!-- NOVO CLIENTE -->
+    <div id="abaAddCliente" style="display:none;">
+      <div class="section-card" style="max-width:500px;">
+        <div class="section-title" style="margin-bottom:24px;">Ativar Plano Manualmente</div>
+        <div class="form-group"><label class="form-label">E-MAIL DO CLIENTE</label><input type="email" id="newEmail" class="form-input" placeholder="email@empresa.com.br"></div>
+        <div class="form-group">
+          <label class="form-label">PLANO</label>
+          <select id="newPlano" class="form-select">
+            <option value="trial">Trial — 10 créditos</option>
+            <option value="starter">Starter — 300 créditos — R$ 190/mês</option>
+            <option value="pro">Pro — 600 créditos — R$ 279/mês</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">CRÉDITOS EXTRAS (opcional)</label><input type="number" id="newCreditos" class="form-input" placeholder="0"></div>
+        <button class="btn btn-cyan" id="btnAtivar" style="width:100%;padding:14px;justify-content:center;font-size:13px;">Ativar Plano</button>
+        <div id="ativarMsg" class="modal-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-bg" id="modalEditar">
+  <div class="modal">
+    <button class="modal-close" id="btnFecharEditar">x</button>
+    <h3>Editar Cliente</h3>
+    <input type="hidden" id="editId">
+    <div class="form-group"><label class="form-label">NOME</label><input type="text" id="editNome" class="form-input"></div>
+    <div class="form-group">
+      <label class="form-label">PLANO</label>
+      <select id="editPlano" class="form-select">
+        <option value="trial">Trial</option>
+        <option value="starter">Starter — R$ 190/mês</option>
+        <option value="pro">Pro — R$ 279/mês</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">CRÉDITOS TOTAIS</label><input type="number" id="editCreditos" class="form-input"></div>
+    <div class="form-group"><label class="form-label">CRÉDITOS USADOS</label><input type="number" id="editUsados" class="form-input"></div>
+    <div class="modal-btns">
+      <button class="btn btn-cyan" id="btnSalvar" style="flex:1;padding:12px;justify-content:center;">Salvar</button>
+      <button class="btn btn-ghost" id="btnCancelarEditar" style="padding:12px 20px;">Cancelar</button>
+    </div>
+    <div id="editMsg" class="modal-msg"></div>
+  </div>
+</div>
+
+<!-- MODAL EXCLUIR -->
+<div class="modal-bg" id="modalExcluir">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" id="btnFecharExcluir">x</button>
+    <h3>Confirmar Exclusão</h3>
+    <div class="confirm-box">
+      <p>Você está prestes a excluir permanentemente:</p>
+      <p style="margin-top:10px;font-size:15px;font-weight:700;color:var(--white);" id="excluirNome">-</p>
+      <p style="font-size:12px;color:var(--gray);" id="excluirEmail">-</p>
+      <p style="margin-top:12px;color:var(--red);font-size:12px;">Esta ação não pode ser desfeita.</p>
+    </div>
+    <input type="hidden" id="excluirId">
+    <div class="modal-btns">
+      <button class="btn btn-red" id="btnConfirmarExcluir" style="flex:1;padding:12px;justify-content:center;">Excluir definitivamente</button>
+      <button class="btn btn-ghost" id="btnCancelarExcluir" style="padding:12px 20px;">Cancelar</button>
+    </div>
+    <div id="excluirMsg" class="modal-msg"></div>
+  </div>
+</div>
+
+<script>
+var ADMIN_EMAIL = 'admin@veracitytech.com.br';
+var ADMIN_PASS = 'veracitytech26';
+var SUPABASE_URL = 'https://nfusabwpxpdcqedrehrc.supabase.co';
+var SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjgxMTI5NSwiZXhwIjoyMDkyMzg3Mjk1fQ.iA7c0NPmLSkWe__qA8hLJnO3nD2Wwyvro5CKKez3UsI';
+
+var PLANOS = {trial:{label:'Trial',creditos:10}, starter:{label:'Starter',creditos:300}, pro:{label:'Pro',creditos:600}};
+var PRECOS = {trial:0, starter:190, pro:279};
+var CORES  = {starter:'6B8EFF', pro:'00D4FF'};
+
+var todosClientes = [];
+var clienteEditando = null;
+var clienteExcluindo = null;
+
+// ── HELPERS ──
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+function fmt(n){ return Number(n||0).toLocaleString('pt-BR'); }
+
+function apiCall(path, opts) {
+  var headers = {'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Accept':'application/json','Content-Type':'application/json'};
+  return fetch(SUPABASE_URL + path, Object.assign({headers:headers}, opts||{}));
+}
+
+// ── AUTH ──
+function verificarAuth() {
+  var auth = sessionStorage.getItem('adminAuth');
+  var email = sessionStorage.getItem('adminEmail');
+  if (auth === '1' && email === ADMIN_EMAIL) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    init();
+  }
+}
+
+function fazerLogin() {
+  var email = document.getElementById('adminEmail').value.trim().toLowerCase();
+  var pass = document.getElementById('adminPass').value;
+  var erro = document.getElementById('loginError');
+  if (!email || !pass) { erro.style.display='block'; erro.textContent='Preencha e-mail e senha.'; return; }
+  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+    sessionStorage.setItem('adminAuth','1');
+    sessionStorage.setItem('adminEmail', email);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    init();
+  } else {
+    erro.style.display = 'block';
+    erro.textContent = 'E-mail ou senha incorretos.';
+    document.getElementById('adminPass').value = '';
+  }
+}
+
+function logout() { sessionStorage.clear(); location.reload(); }
+
+// ── TABS ──
+function mostrarAba(aba) {
+  var abas = ['VisaoGeral','Clientes','Metricas','Financeiro','AddCliente'];
+  abas.forEach(function(a) {
+    var el = document.getElementById('aba'+a);
+    if (el) el.style.display = 'none';
+    var btn = document.getElementById('tab'+a);
+    if (btn) btn.classList.remove('active');
+  });
+  var cap = aba.charAt(0).toUpperCase() + aba.slice(1);
+  var el = document.getElementById('aba'+cap);
+  if (el) el.style.display = 'block';
+  var btn = document.getElementById('tab'+cap);
+  if (btn) btn.classList.add('active');
+  if (aba === 'financeiro') renderFinanceiro();
+  if (aba === 'visaoGeral') renderVisaoGeral();
+  if (aba === 'metricas') carregarMetricas();
+}
+
+// ── INIT ──
+function init() {
+  carregarClientes().then(function() {
+    renderVisaoGeral();
+  });
+}
+
+// ── CARREGAR CLIENTES ──
+async function carregarClientes() {
+  try {
+    var res = await apiCall('/rest/v1/profiles?select=*&order=created_at.desc');
+    todosClientes = await res.json();
+    if (!Array.isArray(todosClientes)) todosClientes = [];
+    document.getElementById('totalClientes').textContent = todosClientes.length + ' clientes cadastrados';
+    renderClientes(todosClientes);
+  } catch(e) {
+    document.getElementById('tabelaClientes').innerHTML = '<div class="empty">Erro ao carregar: ' + e.message + '<\/div>';
+  }
+}
+
+function renderClientes(lista) {
+  var div = document.getElementById('tabelaClientes');
+  if (!lista.length) { div.innerHTML = '<div class="empty">Nenhum cliente encontrado.<\/div>'; return; }
+
+  var rows = '';
+  for (var i = 0; i < lista.length; i++) {
+    var c = lista[i];
+    var plano = c.plan || 'trial';
+    var total = c.credits_total || 0;
+    var usado = c.credits_used || 0;
+    var disp = total - usado;
+    var pct = total > 0 ? Math.round((usado/total)*100) : 0;
+    var data = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '-';
+    var bl = c.bloqueado ? true : false;
+    var planoLabel = (PLANOS[plano] ? PLANOS[plano].label : plano).toUpperCase();
+
+    var row = '<tr' + (bl ? ' class="row-bloqueado"' : '') + '>';
+    row += '<td>';
+    row += '<div style="font-weight:700;color:var(--white);">' + esc(c.name||'-');
+    if (bl) row += ' <span class="badge badge-bloqueado">BLOQUEADO<\/span>';
+    row += '<\/div>';
+    row += '<div style="font-size:11px;color:var(--gray);margin-top:2px;">' + esc(c.email||'-') + '<\/div>';
+    row += '<\/td>';
+    row += '<td><span class="badge badge-' + plano + '">' + planoLabel + '<\/span><\/td>';
+    row += '<td>';
+    row += '<div style="font-size:13px;color:var(--white);">' + fmt(disp) + ' disponíveis<\/div>';
+    row += '<div style="font-size:11px;color:var(--gray);">' + fmt(usado) + ' / ' + fmt(total) + ' (' + pct + '%)<\/div>';
+    row += '<div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%;"><\/div><\/div>';
+    row += '<\/td>';
+    row += '<td style="font-size:12px;color:var(--gray);">' + data + '<\/td>';
+    row += '<td><div class="actions">';
+    row += '<button class="btn btn-cyan" data-id="' + i + '" data-action="editar" style="padding:6px 12px;font-size:10px;">Editar<\/button>';
+    row += '<button class="btn btn-ghost" data-id="' + i + '" data-action="zerar" style="padding:6px 12px;font-size:10px;">Zerar créditos<\/button>';
+    if (bl) {
+      row += '<button class="btn btn-green" data-id="' + i + '" data-action="desbloquear" style="padding:6px 12px;font-size:10px;">Desbloquear<\/button>';
+    } else {
+      row += '<button class="btn btn-yellow" data-id="' + i + '" data-action="bloquear" style="padding:6px 12px;font-size:10px;">Bloquear<\/button>';
+    }
+    row += '<button class="btn btn-red" data-id="' + i + '" data-action="excluir" style="padding:6px 12px;font-size:10px;">Excluir<\/button>';
+    row += '<\/div><\/td>';
+    row += '<\/tr>';
+    rows += row;
+  }
+
+  div.innerHTML = '<table><thead><tr><th>CLIENTE<\/th><th>PLANO<\/th><th>CREDITOS<\/th><th>CADASTRO<\/th><th>ACOES<\/th><\/tr><\/thead><tbody>' + rows + '<\/tbody><\/table>';
+}
+
+function filtrarClientes() {
+  var t = document.getElementById('searchCliente').value.toLowerCase();
+  renderClientes(todosClientes.filter(function(c) {
+    return (c.email||'').toLowerCase().includes(t) || (c.name||'').toLowerCase().includes(t);
+  }));
+}
+
+// ── EDITAR ──
+function abrirEditar(idx) {
+  var c = todosClientes[idx];
+  clienteEditando = c;
+  document.getElementById('editId').value = c.id;
+  document.getElementById('editNome').value = c.name || '';
+  document.getElementById('editPlano').value = c.plan || 'trial';
+  document.getElementById('editCreditos').value = c.credits_total || 0;
+  document.getElementById('editUsados').value = c.credits_used || 0;
+  document.getElementById('editMsg').style.display = 'none';
+  document.getElementById('modalEditar').classList.add('show');
+}
+
+async function salvarEdicao() {
+  var id = document.getElementById('editId').value;
+  var plano = document.getElementById('editPlano').value;
+  var creditos = parseInt(document.getElementById('editCreditos').value) || 0;
+  var usados = parseInt(document.getElementById('editUsados').value) || 0;
+  var nome = document.getElementById('editNome').value;
+  var msg = document.getElementById('editMsg');
+  try {
+    var res = await apiCall('/rest/v1/profiles?id=eq.' + id, {
+      method: 'PATCH',
+      body: JSON.stringify({name:nome, plan:plano, credits_total:creditos, credits_used:usados})
+    });
+    if (res.ok) {
+      msg.style.display='block'; msg.style.color='var(--green)'; msg.textContent='Salvo com sucesso!';
+      setTimeout(function(){ document.getElementById('modalEditar').classList.remove('show'); carregarClientes(); }, 1200);
+    } else { throw new Error('Erro ao salvar'); }
+  } catch(e) { msg.style.display='block'; msg.style.color='var(--red)'; msg.textContent='Erro: '+e.message; }
+}
+
+// ── ZERAR ──
+async function zerarCreditos(idx) {
+  var c = todosClientes[idx];
+  if (!confirm('Zerar créditos usados de ' + (c.name||c.email) + '?')) return;
+  await apiCall('/rest/v1/profiles?id=eq.' + c.id, {method:'PATCH', body:JSON.stringify({credits_used:0})});
+  carregarClientes();
+}
+
+// ── BLOQUEAR TOGGLE ──
+async function toggleBloquear(idx, bloquear) {
+  var c = todosClientes[idx];
+  var acao = bloquear ? 'Bloquear' : 'Desbloquear';
+  if (!confirm(acao + ' acesso de ' + (c.name||c.email) + '?')) return;
+  await apiCall('/rest/v1/profiles?id=eq.' + c.id, {method:'PATCH', body:JSON.stringify({bloqueado:bloquear})});
+  await carregarClientes();
+  renderVisaoGeral();
+}
+
+// ── EXCLUIR ──
+function abrirExcluir(idx) {
+  var c = todosClientes[idx];
+  clienteExcluindo = c;
+  document.getElementById('excluirId').value = c.id;
+  document.getElementById('excluirNome').textContent = c.name || '(sem nome)';
+  document.getElementById('excluirEmail').textContent = c.email || '-';
+  document.getElementById('excluirMsg').style.display = 'none';
+  document.getElementById('modalExcluir').classList.add('show');
+}
+
+async function confirmarExclusao() {
+  var id = document.getElementById('excluirId').value;
+  var msg = document.getElementById('excluirMsg');
+  try {
+    await apiCall('/rest/v1/profiles?id=eq.' + id, {method:'DELETE'});
+    try { await apiCall('/auth/v1/admin/users/' + id, {method:'DELETE'}); } catch(e2) {}
+    msg.style.display='block'; msg.style.color='var(--green)'; msg.textContent='Excluído com sucesso.';
+    setTimeout(function(){ document.getElementById('modalExcluir').classList.remove('show'); carregarClientes(); }, 1500);
+  } catch(e) { msg.style.display='block'; msg.style.color='var(--red)'; msg.textContent='Erro: '+e.message; }
+}
+
+// ── ATIVAR PLANO ──
+async function ativarPlano() {
+  var email = document.getElementById('newEmail').value.trim();
+  var plano = document.getElementById('newPlano').value;
+  var extras = parseInt(document.getElementById('newCreditos').value) || 0;
+  var msg = document.getElementById('ativarMsg');
+  if (!email) { msg.style.display='block'; msg.style.color='var(--red)'; msg.textContent='Digite o e-mail!'; return; }
+  var creditos = (PLANOS[plano] ? PLANOS[plano].creditos : 10) + extras;
+  try {
+    var res = await apiCall('/rest/v1/profiles?email=eq.' + encodeURIComponent(email));
+    var lista = await res.json();
+    if (lista && lista.length > 0) {
+      await apiCall('/rest/v1/profiles?email=eq.' + encodeURIComponent(email), {
+        method: 'PATCH',
+        body: JSON.stringify({plan:plano, credits_total:creditos, credits_used:0})
+      });
+      msg.style.display='block'; msg.style.color='var(--green)'; msg.textContent='Plano ' + plano.toUpperCase() + ' ativado!';
+      carregarClientes();
+    } else {
+      msg.style.display='block'; msg.style.color='var(--red)'; msg.textContent='Cliente não encontrado.';
+    }
+  } catch(e) { msg.style.display='block'; msg.style.color='var(--red)'; msg.textContent='Erro: '+e.message; }
+}
+
+// ── VISÃO GERAL ──
+function renderVisaoGeral() {
+  var total = todosClientes.length;
+  var pagos = todosClientes.filter(function(c){ return c.plan && c.plan !== 'trial'; });
+  var trials = todosClientes.filter(function(c){ return !c.plan || c.plan === 'trial'; });
+  var bloqueados = todosClientes.filter(function(c){ return c.bloqueado; });
+  var consultas = todosClientes.reduce(function(s,c){ return s + (c.credits_used||0); }, 0);
+  var mrr = pagos.reduce(function(s,c){ return s + (PRECOS[c.plan]||0); }, 0);
+  var conversao = total > 0 ? Math.round((pagos.length/total)*100) : 0;
+
+  document.getElementById('vgTotal').textContent = total;
+  document.getElementById('vgPagos').textContent = pagos.length;
+  document.getElementById('vgTrials').textContent = trials.length;
+  document.getElementById('vgBloqueados').textContent = bloqueados.length;
+  document.getElementById('vgConsultas').textContent = fmt(consultas);
+  document.getElementById('vgMrr').textContent = 'R$ ' + fmt(mrr);
+  document.getElementById('vgArr').textContent = 'R$ ' + fmt(mrr*12);
+  document.getElementById('vgConversao').textContent = conversao + '%';
+
+  // Distribuição
+  var dist = {};
+  todosClientes.forEach(function(c){ var p = c.plan||'trial'; dist[p] = (dist[p]||0)+1; });
+  var dh = '';
+  Object.keys(dist).sort(function(a,b){ return dist[b]-dist[a]; }).forEach(function(p) {
+    var qtd = dist[p];
+    var pct = total > 0 ? Math.round((qtd/total)*100) : 0;
+    var rec = (PRECOS[p]||0) * qtd;
+    var label = PLANOS[p] ? PLANOS[p].label : p;
+    dh += '<div style="margin-bottom:14px;">';
+    dh += '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">';
+    dh += '<span style="font-size:13px;color:var(--white);font-weight:700;">' + label + ' (' + qtd + ')<\/span>';
+    dh += '<span style="font-size:12px;color:var(--gray);">R$ ' + fmt(rec) + '/mês · ' + pct + '%<\/span>';
+    dh += '<\/div>';
+    dh += '<div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%;"><\/div><\/div>';
+    dh += '<\/div>';
+  });
+  document.getElementById('vgDistPlanos').innerHTML = dh || '<div class="empty">Sem dados<\/div>';
+
+  // Últimos 5
+  var ul = '';
+  var ultimos = todosClientes.slice(0, 5);
+  for (var i = 0; i < ultimos.length; i++) {
+    var c = ultimos[i];
+    var data = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '-';
+    var plano = c.plan || 'trial';
+    var label = PLANOS[plano] ? PLANOS[plano].label : plano;
+    ul += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">';
+    ul += '<div><div style="font-size:13px;font-weight:700;color:var(--white);">' + esc(c.name||'-') + '<\/div>';
+    ul += '<div style="font-size:11px;color:var(--gray);">' + esc(c.email||'-') + '<\/div><\/div>';
+    ul += '<div style="text-align:right;"><span class="badge badge-' + plano + '">' + label.toUpperCase() + '<\/span>';
+    ul += '<div style="font-size:11px;color:var(--gray);margin-top:4px;">' + data + '<\/div><\/div>';
+    ul += '<\/div>';
+  }
+  document.getElementById('vgUltimosClientes').innerHTML = ul || '<div class="empty">Nenhum cliente ainda<\/div>';
+
+  // Projeção
+  var ticketMedio = pagos.length > 0 ? Math.round(mrr/pagos.length) : 190;
+  var metas = [50, 100, 200, 500];
+  var ph = '';
+  for (var m = 0; m < metas.length; m++) {
+    var n = metas[m];
+    var rec2 = ticketMedio * n;
+    ph += '<div style="background:var(--dark);border:1px solid var(--border);padding:20px;text-align:center;position:relative;">';
+    ph += '<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));"><\/div>';
+    ph += '<div style="font-size:10px;color:var(--gray);letter-spacing:3px;margin-bottom:10px;">' + n + ' CLIENTES<\/div>';
+    ph += '<div style="font-size:24px;font-weight:700;color:var(--white);">R$ ' + fmt(rec2) + '<\/div>';
+    ph += '<div style="font-size:11px;color:var(--gray);margin-top:4px;">por mês<\/div>';
+    ph += '<\/div>';
+  }
+  document.getElementById('vgProjecao').innerHTML = ph;
+}
+
+// ── METRICAS ──
+async function carregarMetricas() {
+  try {
+    var headers = {'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Accept': 'application/json'};
+
+    var [resEmails, resDisparos, resPacotes, resVendas] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/metricas_emails?select=*&order=created_at.desc', {headers: headers}),
+      fetch(SUPABASE_URL + '/rest/v1/metricas_disparos?select=*&order=created_at.desc', {headers: headers}),
+      fetch(SUPABASE_URL + '/rest/v1/metricas_pacotes?select=*&order=created_at.desc', {headers: headers}),
+      fetch(SUPABASE_URL + '/rest/v1/metricas_vendas?select=*&order=created_at.desc', {headers: headers})
+    ]);
+
+    var emails = await resEmails.json();
+    var disparos = await resDisparos.json();
+    var pacotes = await resPacotes.json();
+    var vendas = await resVendas.json();
+
+    if (!Array.isArray(emails)) emails = [];
+    if (!Array.isArray(disparos)) disparos = [];
+    if (!Array.isArray(pacotes)) pacotes = [];
+    if (!Array.isArray(vendas)) vendas = [];
+
+    var totalEmails = emails.reduce(function(s,e){ return s + (e.total_enviados||0); }, 0);
+    var totalDisparos = disparos.reduce(function(s,d){ return s + (d.total_enviados||0); }, 0);
+    var totalVendas = vendas.length;
+    var totalReceita = vendas.reduce(function(s,v){ return s + (parseFloat(v.valor)||0); }, 0);
+    var totalPacotes = pacotes.length;
+    var totalReceitaPacotes = pacotes.reduce(function(s,p){ return s + (parseFloat(p.valor)||0); }, 0);
+
+    var totalUsers = todosClientes.length || 1;
+    var mediaEmails = totalUsers > 0 ? Math.round(totalEmails / totalUsers) : 0;
+    var mediaDisparos = totalUsers > 0 ? Math.round(totalDisparos / totalUsers) : 0;
+
+    document.getElementById('mtEmails').textContent = fmt(totalEmails);
+    document.getElementById('mtDisparos').textContent = fmt(totalDisparos);
+    document.getElementById('mtVendas').textContent = fmt(totalVendas);
+    document.getElementById('mtReceita').textContent = 'R$ ' + totalReceita.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    document.getElementById('mtPacotes').textContent = fmt(totalPacotes);
+    document.getElementById('mtReceitaPacotes').textContent = 'R$ ' + totalReceitaPacotes.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    document.getElementById('mtMediaEmails').textContent = fmt(mediaEmails);
+    document.getElementById('mtMediaDisparos').textContent = fmt(mediaDisparos);
+
+    // Tabela emails
+    var teHtml = '';
+    if (!emails.length) {
+      teHtml = '<div class="empty">Nenhum email enviado ainda<\/div>';
+    } else {
+      var rows = '';
+      emails.slice(0, 10).forEach(function(e) {
+        var data = e.created_at ? new Date(e.created_at).toLocaleDateString('pt-BR') : '-';
+        rows += '<tr><td style="font-size:12px;color:var(--white);">' + esc(e.assunto||'-') + '<\/td>';
+        rows += '<td style="font-size:12px;color:var(--green);">' + fmt(e.total_enviados) + '<\/td>';
+        rows += '<td style="font-size:12px;color:var(--red);">' + fmt(e.total_erros) + '<\/td>';
+        rows += '<td style="font-size:11px;color:var(--gray);">' + data + '<\/td><\/tr>';
+      });
+      teHtml = '<table><thead><tr><th>ASSUNTO<\/th><th>ENVIADOS<\/th><th>ERROS<\/th><th>DATA<\/th><\/tr><\/thead><tbody>' + rows + '<\/tbody><\/table>';
+    }
+    document.getElementById('mtTabelaEmails').innerHTML = teHtml;
+
+    // Tabela disparos
+    var tdHtml = '';
+    if (!disparos.length) {
+      tdHtml = '<div class="empty">Nenhum disparo realizado ainda<\/div>';
+    } else {
+      var rows2 = '';
+      disparos.slice(0, 10).forEach(function(d) {
+        var data = d.created_at ? new Date(d.created_at).toLocaleDateString('pt-BR') : '-';
+        rows2 += '<tr><td style="font-size:12px;color:var(--white);">' + esc(d.campanha_nome||'-') + '<\/td>';
+        rows2 += '<td style="font-size:12px;color:var(--green);">' + fmt(d.total_enviados) + '<\/td>';
+        rows2 += '<td style="font-size:12px;color:var(--red);">' + fmt(d.total_erros) + '<\/td>';
+        rows2 += '<td style="font-size:11px;color:var(--gray);">' + data + '<\/td><\/tr>';
+      });
+      tdHtml = '<table><thead><tr><th>CAMPANHA<\/th><th>ENVIADOS<\/th><th>ERROS<\/th><th>DATA<\/th><\/tr><\/thead><tbody>' + rows2 + '<\/tbody><\/table>';
+    }
+    document.getElementById('mtTabelaDisparos').innerHTML = tdHtml;
+
+    // Tabela vendas
+    var tvHtml = '';
+    if (!vendas.length) {
+      tvHtml = '<div class="empty">Nenhuma venda registrada ainda. Os corretores podem registrar vendas fechadas dentro da plataforma.<\/div>';
+    } else {
+      var rows3 = '';
+      vendas.forEach(function(v) {
+        var data = v.created_at ? new Date(v.created_at).toLocaleDateString('pt-BR') : '-';
+        var valor = parseFloat(v.valor||0).toLocaleString('pt-BR', {minimumFractionDigits:2});
+        rows3 += '<tr><td style="font-size:12px;color:var(--white);">' + esc(v.empresa_nome||'-') + '<\/td>';
+        rows3 += '<td style="font-size:12px;color:var(--gray);">' + esc(v.empresa_cnpj||'-') + '<\/td>';
+        rows3 += '<td style="font-size:13px;font-weight:700;color:var(--green);">R$ ' + valor + '<\/td>';
+        rows3 += '<td style="font-size:12px;color:var(--gray);">' + esc(v.descricao||'-') + '<\/td>';
+        rows3 += '<td style="font-size:11px;color:var(--gray);">' + data + '<\/td><\/tr>';
+      });
+      tvHtml = '<table><thead><tr><th>EMPRESA<\/th><th>CNPJ<\/th><th>VALOR<\/th><th>DESCRICAO<\/th><th>DATA<\/th><\/tr><\/thead><tbody>' + rows3 + '<\/tbody><\/table>';
+    }
+    document.getElementById('mtTabelaVendas').innerHTML = tvHtml;
+
+  } catch(e) {
+    console.error('Erro metricas:', e);
+    document.getElementById('mtTabelaVendas').innerHTML = '<div class="empty">Erro ao carregar: ' + e.message + '<\/div>';
+  }
+}
+
+// ── FINANCEIRO ──
+function renderFinanceiro() {
+  var pagos = todosClientes.filter(function(c){ return c.plan && c.plan !== 'trial'; });
+  var mrr = pagos.reduce(function(s,c){ return s + (PRECOS[c.plan]||0); }, 0);
+  var arr = mrr * 12;
+  var ticket = pagos.length > 0 ? Math.round(mrr/pagos.length) : 0;
+  var valuation = mrr * 12 * 10;
+
+  document.getElementById('finMRR').textContent = 'R$ ' + fmt(mrr);
+  document.getElementById('finARR').textContent = 'R$ ' + fmt(arr);
+  document.getElementById('finTicket').textContent = 'R$ ' + fmt(ticket);
+  document.getElementById('finValuation').textContent = 'R$ ' + fmt(valuation);
+  document.getElementById('finTotalReceita').textContent = 'MRR: R$ ' + fmt(mrr);
+
+  // Distribuição por plano
+  var dp = {};
+  pagos.forEach(function(c){ var p=c.plan; if(!dp[p])dp[p]={qtd:0,receita:0}; dp[p].qtd++; dp[p].receita+=(PRECOS[p]||0); });
+  var dh = '';
+  var dpKeys = Object.keys(dp).sort(function(a,b){ return dp[b].receita-dp[a].receita; });
+  for (var i = 0; i < dpKeys.length; i++) {
+    var p = dpKeys[i];
+    var d = dp[p];
+    var pct = mrr > 0 ? Math.round((d.receita/mrr)*100) : 0;
+    var cor = CORES[p] || '8896B3';
+    var label = PLANOS[p] ? PLANOS[p].label : p;
+    dh += '<div style="margin-bottom:14px;">';
+    dh += '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">';
+    dh += '<span style="font-size:13px;color:var(--white);font-weight:700;">' + label + ' · ' + d.qtd + ' cliente(s)<\/span>';
+    dh += '<span style="font-size:13px;color:var(--gray);">R$ ' + fmt(d.receita) + ' · ' + pct + '%<\/span>';
+    dh += '<\/div>';
+    dh += '<div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%;background:#' + cor + ';"><\/div><\/div>';
+    dh += '<\/div>';
+  }
+  if (!dpKeys.length) dh = '<div class="empty">Nenhum cliente pago ainda<\/div>';
+  document.getElementById('finDistReceita').innerHTML = dh;
+
+  // Tabela por cliente
+  if (!pagos.length) { document.getElementById('tabelaFinanceiro').innerHTML = '<div class="empty">Nenhum cliente com plano pago ainda.<\/div>'; return; }
+
+  pagos.sort(function(a,b){ return (PRECOS[b.plan]||0)-(PRECOS[a.plan]||0); });
+  var rows = '';
+  for (var j = 0; j < pagos.length; j++) {
+    var c = pagos[j];
+    var r = PRECOS[c.plan] || 0;
+    var t = c.credits_total || 0;
+    var u = c.credits_used || 0;
+    var pp = t > 0 ? Math.round((u/t)*100) : 0;
+    var cor2 = CORES[c.plan] || '8896B3';
+    var data = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '-';
+    var planoLabel = (PLANOS[c.plan] ? PLANOS[c.plan].label : c.plan).toUpperCase();
+    rows += '<tr>';
+    rows += '<td><div style="font-weight:700;color:var(--white);">' + esc(c.name||'-') + '<\/div><div style="font-size:11px;color:var(--gray);">' + esc(c.email||'-') + '<\/div><\/td>';
+    rows += '<td><span class="badge badge-' + c.plan + '">' + planoLabel + '<\/span><\/td>';
+    rows += '<td style="font-size:16px;font-weight:700;color:var(--green);">R$ ' + fmt(r) + '<\/td>';
+    rows += '<td><div style="font-size:12px;color:var(--white);">' + fmt(u) + ' / ' + fmt(t) + ' (' + pp + '%)<\/div><div class="bar-wrap" style="margin-top:4px;"><div class="bar-fill" style="height:4px;width:' + pp + '%;background:#' + cor2 + ';"><\/div><\/div><\/td>';
+    rows += '<td style="font-size:12px;color:var(--gray);">' + data + '<\/td>';
+    rows += '<\/tr>';
+  }
+  document.getElementById('tabelaFinanceiro').innerHTML = '<table><thead><tr><th>CLIENTE<\/th><th>PLANO<\/th><th>RECEITA/MES<\/th><th>USO<\/th><th>DESDE<\/th><\/tr><\/thead><tbody>' + rows + '<\/tbody><\/table>';
+}
+
+// ── EVENTOS ──
+window.addEventListener('load', function() {
+  // Auth
+  verificarAuth();
+
+  document.getElementById('btnLogin').addEventListener('click', fazerLogin);
+  document.getElementById('adminPass').addEventListener('keydown', function(e){ if(e.key==='Enter') fazerLogin(); });
+  document.getElementById('adminEmail').addEventListener('keydown', function(e){ if(e.key==='Enter') fazerLogin(); });
+  document.getElementById('btnLogout').addEventListener('click', logout);
+
+  // Tabs
+  document.getElementById('tabVisaoGeral').addEventListener('click', function(){ mostrarAba('visaoGeral'); });
+  document.getElementById('tabClientes').addEventListener('click', function(){ mostrarAba('clientes'); });
+  document.getElementById('tabMetricas').addEventListener('click', function(){ mostrarAba('metricas'); });
+  document.getElementById('tabFinanceiro').addEventListener('click', function(){ mostrarAba('financeiro'); });
+  document.getElementById('tabAddCliente').addEventListener('click', function(){ mostrarAba('addCliente'); });
+  document.getElementById('btnAtualizarMetricas').addEventListener('click', carregarMetricas);
+
+  // Clientes
+  document.getElementById('btnAtualizar').addEventListener('click', carregarClientes);
+  document.getElementById('searchCliente').addEventListener('input', filtrarClientes);
+
+  // Ações na tabela via delegação
+  document.getElementById('tabelaClientes').addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    var idx = parseInt(btn.getAttribute('data-id'));
+    var action = btn.getAttribute('data-action');
+    if (action === 'editar') abrirEditar(idx);
+    else if (action === 'zerar') zerarCreditos(idx);
+    else if (action === 'bloquear') toggleBloquear(idx, true);
+    else if (action === 'desbloquear') toggleBloquear(idx, false);
+    else if (action === 'excluir') abrirExcluir(idx);
+  });
+
+  // Modal editar
+  document.getElementById('btnFecharEditar').addEventListener('click', function(){ document.getElementById('modalEditar').classList.remove('show'); });
+  document.getElementById('btnCancelarEditar').addEventListener('click', function(){ document.getElementById('modalEditar').classList.remove('show'); });
+  document.getElementById('btnSalvar').addEventListener('click', salvarEdicao);
+
+  // Auto-créditos ao mudar plano
+  document.getElementById('editPlano').addEventListener('change', function() {
+    var plano = this.value;
+    var creditos = PLANOS[plano] ? PLANOS[plano].creditos : 10;
+    document.getElementById('editCreditos').value = creditos;
+  });
+
+  // Modal excluir
+  document.getElementById('btnFecharExcluir').addEventListener('click', function(){ document.getElementById('modalExcluir').classList.remove('show'); });
+  document.getElementById('btnCancelarExcluir').addEventListener('click', function(){ document.getElementById('modalExcluir').classList.remove('show'); });
+  document.getElementById('btnConfirmarExcluir').addEventListener('click', confirmarExclusao);
+
+  // Ativar plano
+  document.getElementById('btnAtivar').addEventListener('click', ativarPlano);
+});
+</script>
+</body>
+</html>
