@@ -4618,7 +4618,7 @@ async function enviarEmailAvulso() {
     var resp = await fetch('/api/email-marketing', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
-      body: JSON.stringify({ action: 'enviar_avulso', dados: { email: email, assunto: assunto, mensagem: mensagem, telefone: telefone } })
+      body: JSON.stringify({ action: 'enviar_avulso', dados: { email_destino: email, assunto: assunto, mensagem: mensagem } })
     });
     var data = await resp.json();
     if (resp.ok || data.ok) {
