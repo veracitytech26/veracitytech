@@ -1731,6 +1731,7 @@ async function register(btnEl) {
           id: data.user.id,
           email, name, plan, phone,
           cpf: cpf ? cpf.replace(/[^0-9]/g, '') : null,
+          cpf_cnpj: cpf ? cpf.replace(/[^0-9]/g, '') : null,
           credits_total: credits,
           credits_used: 0,
           exports: 0,
