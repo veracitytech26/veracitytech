@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veracity Intelligence — Prospecção B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#060C1A;--dark:#0A1228;--card:#0D1530;--blue:#1240AB;--cyan:#00D4FF;--white:#FFFFFF;--gray:#8896B3;--light:#B8C4D8;--border:rgba(255,255,255,0.07);--green:#00E676;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px);background-size:60px 60px;}
+.glow-top{position:fixed;top:-300px;left:50%;transform:translateX(-50%);width:900px;height:700px;border-radius:50%;background:radial-gradient(ellipse,rgba(18,64,171,0.2) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:20px 64px;background:rgba(6,12,26,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:5px;display:flex;align-items:center;gap:10px;}
+.nav-right{display:flex;align-items:center;gap:36px;}
+.nav-link{color:var(--gray);font-size:12px;font-weight:600;text-decoration:none;letter-spacing:2px;transition:color 0.2s;text-transform:uppercase;}
+.nav-link:hover{color:var(--white);}
+.btn-nav{background:var(--cyan);color:var(--navy);font-size:12px;font-weight:700;letter-spacing:2px;padding:11px 28px;border:none;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+.btn-nav:hover{background:#00B8D9;}
+
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:140px 24px 100px;}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.18);color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:4px;padding:9px 22px;margin-bottom:48px;}
+.badge-dot{width:6px;height:6px;background:var(--cyan);border-radius:50%;animation:blink 2s ease-in-out infinite;flex-shrink:0;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,9vw,104px);line-height:0.92;letter-spacing:2px;margin-bottom:32px;}
+.hero h1 .accent{color:var(--cyan);display:block;}
+.hero-sub{font-size:clamp(15px,1.8vw,18px);color:var(--light);line-height:1.75;max-width:500px;margin:0 auto 52px;font-weight:400;}
+.hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:var(--cyan);color:var(--navy);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:17px 40px;border:none;cursor:pointer;text-decoration:none;transition:all 0.25s;display:inline-block;}
+.btn-primary:hover{background:#00B8D9;transform:translateY(-2px);}
+.btn-ghost{background:transparent;color:var(--white);font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:17px 40px;border:1px solid rgba(255,255,255,0.12);cursor:pointer;text-decoration:none;transition:all 0.25s;display:inline-block;}
+.btn-ghost:hover{border-color:rgba(0,212,255,0.4);color:var(--cyan);}
+.hero-stats{margin-top:72px;display:flex;align-items:center;gap:56px;justify-content:center;flex-wrap:wrap;}
+.stat{text-align:center;}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--cyan);display:block;line-height:1;}
+.stat-l{font-size:10px;color:var(--gray);letter-spacing:3px;margin-top:6px;text-transform:uppercase;}
+.stat-sep{width:1px;height:44px;background:var(--border);}
+
+.online-bar{position:relative;z-index:1;background:rgba(0,230,118,0.04);border-top:1px solid rgba(0,230,118,0.1);border-bottom:1px solid rgba(0,230,118,0.1);padding:13px 24px;text-align:center;font-size:13px;color:var(--light);display:flex;justify-content:center;align-items:center;gap:12px;}
+.online-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:blink 2s ease-in-out infinite;flex-shrink:0;}
+.online-n{color:var(--green);font-weight:700;font-size:14px;}
+
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:110px 24px;}
+.sec-eyebrow{font-size:10px;font-weight:700;color:var(--cyan);letter-spacing:5px;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:12px;}
+.sec-eyebrow::after{content:'';flex:0 0 32px;height:1px;background:var(--cyan);}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,60px);letter-spacing:2px;line-height:1;margin-bottom:20px;}
+.sec-sub{font-size:16px;color:var(--light);max-width:480px;line-height:1.75;}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:64px;background:var(--border);}
+.step{background:var(--card);padding:44px 36px;position:relative;overflow:hidden;transition:background 0.3s;}
+.step:hover{background:rgba(13,21,54,1);}
+.step-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));transform:scaleX(0);transform-origin:left;transition:transform 0.4s;}
+.step:hover .step-line{transform:scaleX(1);}
+.step-num{font-family:'Bebas Neue',sans-serif;font-size:80px;color:rgba(0,212,255,0.05);line-height:1;position:absolute;bottom:16px;right:20px;}
+.step-icon{width:44px;height:44px;margin-bottom:28px;}
+.step-icon svg{width:100%;height:100%;}
+.step-t{font-size:17px;font-weight:700;margin-bottom:12px;}
+.step-d{font-size:14px;color:var(--light);line-height:1.75;}
+
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+.feat{background:var(--card);padding:36px;transition:background 0.3s;}
+.feat:hover{background:rgba(13,21,54,1);}
+.feat-icon{width:40px;height:40px;margin-bottom:24px;}
+.feat-icon svg{width:100%;height:100%;}
+.feat-t{font-size:15px;font-weight:700;margin-bottom:10px;}
+.feat-d{font-size:13px;color:var(--light);line-height:1.75;}
+
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:64px;}
+.plan{background:var(--card);padding:44px 36px;position:relative;transition:background 0.3s;}
+.plan:hover{background:rgba(13,21,54,1);}
+.plan.featured{background:linear-gradient(160deg,rgba(18,64,171,0.35),rgba(0,10,30,0.95));border-top:2px solid var(--cyan);}
+.plan-badge{position:absolute;top:-1px;right:36px;background:var(--cyan);color:var(--navy);font-size:9px;font-weight:700;letter-spacing:3px;padding:5px 14px;}
+.plan-name{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:4px;text-transform:uppercase;margin-bottom:28px;}
+.plan-price{display:flex;align-items:flex-start;gap:4px;margin-bottom:6px;}
+.plan-currency{font-size:16px;font-weight:700;color:var(--gray);margin-top:8px;}
+.plan-amount{font-family:'Bebas Neue',sans-serif;font-size:60px;color:var(--white);line-height:1;}
+.plan-period{font-size:13px;color:var(--gray);align-self:flex-end;margin-bottom:6px;}
+.plan-credits{font-size:13px;color:var(--cyan);font-weight:600;margin-bottom:36px;padding-bottom:36px;border-bottom:1px solid var(--border);}
+.plan-list{list-style:none;margin-bottom:40px;}
+.plan-list li{font-size:13px;color:var(--light);padding:9px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;}
+.plan-list li svg{flex-shrink:0;margin-top:1px;}
+.plan-list li.off{opacity:0.35;}
+.btn-plan{width:100%;padding:15px;border:none;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s;text-decoration:none;display:block;text-align:center;font-family:'DM Sans',sans-serif;}
+.btn-plan-free{background:transparent;color:var(--gray);border:1px solid var(--border);}
+.btn-plan-free:hover{border-color:rgba(255,255,255,0.3);color:var(--white);}
+.btn-plan-main{background:var(--cyan);color:var(--navy);}
+.btn-plan-main:hover{background:#00B8D9;}
+.btn-plan-alt{background:rgba(255,255,255,0.06);color:var(--white);border:1px solid rgba(255,255,255,0.1);}
+.btn-plan-alt:hover{background:rgba(255,255,255,0.1);}
+
+.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:64px;}
+.proof-card{background:var(--card);padding:36px;}
+.proof-stars{display:flex;gap:4px;margin-bottom:20px;}
+.proof-stars svg{width:13px;height:13px;fill:#FFB800;}
+.proof-text{font-size:14px;color:var(--light);line-height:1.85;margin-bottom:28px;}
+.proof-author{display:flex;align-items:center;gap:14px;padding-top:20px;border-top:1px solid var(--border);}
+.proof-av{width:40px;height:40px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+.proof-name{font-size:13px;font-weight:700;}
+.proof-role{font-size:12px;color:var(--gray);margin-top:2px;}
+
+.cta-block{position:relative;z-index:1;padding:120px 24px;text-align:center;border-top:1px solid var(--border);background:linear-gradient(180deg,rgba(18,64,171,0.12) 0%,transparent 100%);}
+.cta-block h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,6vw,76px);letter-spacing:2px;line-height:1;margin-bottom:20px;}
+.cta-block p{font-size:16px;color:var(--light);margin-bottom:52px;}
+
+.corp-strip{position:relative;z-index:1;border-top:1px solid var(--border);padding:40px 64px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+.corp-label{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;}
+.corp-title{font-size:16px;font-weight:700;color:var(--white);}
+.corp-sub{font-size:13px;color:var(--gray);margin-top:4px;}
+.btn-corp{background:transparent;color:var(--cyan);font-size:12px;font-weight:700;letter-spacing:2px;padding:11px 24px;border:1px solid rgba(0,212,255,0.25);cursor:pointer;text-decoration:none;transition:all 0.2s;display:inline-block;text-transform:uppercase;}
+.btn-corp:hover{background:rgba(0,212,255,0.06);border-color:var(--cyan);}
+
+footer{position:relative;z-index:1;background:var(--dark);border-top:1px solid var(--border);padding:48px 64px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;}
+.foot-logo{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:4px;display:flex;align-items:center;gap:10px;}
+.foot-links{display:flex;gap:32px;flex-wrap:wrap;}
+.foot-link{color:var(--gray);font-size:12px;text-decoration:none;letter-spacing:1px;transition:color 0.2s;}
+.foot-link:hover{color:var(--white);}
+.foot-copy{font-size:11px;color:rgba(136,150,179,0.5);letter-spacing:1px;}
+
+.fade{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.fade.in{opacity:1;transform:translateY(0);}
+
+@media(max-width:900px){
+  nav{padding:16px 24px;}
+  .nav-link{display:none;}
+  .steps,.feat-grid,.plans-grid,.proof-grid{grid-template-columns:1fr;}
+  footer,.corp-strip{padding:32px 24px;flex-direction:column;text-align:center;}
+  .stat-sep{display:none;}
+  .wrap{padding:72px 24px;}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow-top"></div>
+
+<nav>
+  <div class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 28 28" fill="none"><path d="M4 4L14 24L24 4" stroke="#00D4FF" stroke-width="2.5" stroke-linejoin="round" fill="none"/><path d="M8 4L14 16L20 4" stroke="#1240AB" stroke-width="2.5" stroke-linejoin="round" fill="none"/></svg>
+    VERACITY
+  </div>
+  <div class="nav-right">
+    <a href="#como-funciona" class="nav-link">Como funciona</a>
+    <a href="#planos" class="nav-link">Planos</a>
+    <a href="login.html" class="btn-nav">Entrar</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge"><span class="badge-dot"></span>INTELIGÊNCIA COMERCIAL B2B</div>
+  <h1>ENCONTRE SEUS<span class="accent">PRÓXIMOS CLIENTES</span></h1>
+  <p class="hero-sub">Acesse dados de empresas em todo o Brasil e feche mais negócios — sem depender de indicação.</p>
+  <div class="hero-ctas">
+    <a href="login.html" class="btn-primary">Começar grátis</a>
+    <a href="#planos" class="btn-ghost">Ver planos</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-n">50M+</span><div class="stat-l">Empresas no Brasil</div></div>
+    <div class="stat-sep"></div>
+    <div class="stat"><span class="stat-n">20+</span><div class="stat-l">Filtros de busca</div></div>
+    <div class="stat-sep"></div>
+    <div class="stat"><span class="stat-n" id="heroCount">--</span><div class="stat-l">Ativos agora</div></div>
+  </div>
+</section>
+
+<div class="online-bar">
+  <span class="online-dot"></span>
+  <span class="online-n" id="onlineCount">--</span>
+  <span>corretores prospectando agora na plataforma</span>
+</div>
+
+<div id="como-funciona">
+<section class="wrap fade">
+  <div class="sec-eyebrow">Como funciona</div>
+  <div class="sec-title">TRÊS PASSOS.<br>RESULTADO REAL.</div>
+  <div class="sec-sub">Do filtro ao primeiro contato em menos de 3 minutos.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-icon"><svg viewBox="0 0 44 44" fill="none"><circle cx="20" cy="20" r="10" stroke="#00D4FF" stroke-width="2"/><path d="M28 28L36 36" stroke="#00D4FF" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="20" r="4" fill="rgba(0,212,255,0.15)" stroke="#00D4FF" stroke-width="1.5"/></svg></div>
+      <div class="step-t">Filtre o perfil ideal</div>
+      <div class="step-d">Segmento, cidade, porte, data de abertura e mais de 20 parâmetros para encontrar exatamente quem você quer abordar.</div>
+      <div class="step-num">01</div>
+    </div>
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-icon"><svg viewBox="0 0 44 44" fill="none"><rect x="8" y="8" width="28" height="22" rx="4" stroke="#00D4FF" stroke-width="2"/><path d="M8 30L16 38L36 30" stroke="#00D4FF" stroke-width="2" stroke-linejoin="round"/><path d="M14 16L30 16M14 22L24 22" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="step-t">Aborde com precisão</div>
+      <div class="step-d">Mensagens personalizadas com o nome da empresa e do sócio. CRM integrado para acompanhar cada lead.</div>
+      <div class="step-num">02</div>
+    </div>
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-icon"><svg viewBox="0 0 44 44" fill="none"><path d="M22 8L26 18L38 18L28 25L32 36L22 29L12 36L16 25L6 18L18 18Z" stroke="#00D4FF" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      <div class="step-t">Feche negócios</div>
+      <div class="step-d">Gerencie o pipeline, gere propostas em PDF e acompanhe sua receita — tudo sem sair da plataforma.</div>
+      <div class="step-num">03</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<section class="wrap fade" style="padding-top:0;">
+  <div class="sec-eyebrow">Recursos</div>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 40 40" fill="none"><path d="M6 10L34 10M6 20L28 20M6 30L20 30" stroke="#00D4FF" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="30" r="5" stroke="#00D4FF" stroke-width="2"/><path d="M35.5 33.5L39 37" stroke="#00D4FF" stroke-width="2" stroke-linecap="round"/></svg></div><div class="feat-t">Busca avançada</div><div class="feat-d">Mais de 20 filtros combinados: segmento, cidade, bairro, DDD, porte, capital social e data de abertura.</div></div>
+    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14" stroke="#00D4FF" stroke-width="2"/><path d="M20 6L20 20L28 28" stroke="#00D4FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="20" r="2" fill="#00D4FF"/></svg></div><div class="feat-t">Radar de aberturas</div><div class="feat-d">Empresas abertas nos últimos dias — alta propensão de compra e sem concorrência no mercado.</div></div>
+    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 40 40" fill="none"><rect x="6" y="24" width="6" height="12" rx="1" fill="rgba(0,212,255,0.2)" stroke="#00D4FF" stroke-width="1.5"/><rect x="17" y="16" width="6" height="20" rx="1" fill="rgba(0,212,255,0.2)" stroke="#00D4FF" stroke-width="1.5"/><rect x="28" y="8" width="6" height="28" rx="1" fill="rgba(0,212,255,0.3)" stroke="#00D4FF" stroke-width="1.5"/></svg></div><div class="feat-t">Veracity Score</div><div class="feat-d">Score de propensão automático calibrado para o seu segmento — saúde, seguros, contabilidade e outros.</div></div>
+    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 40 40" fill="none"><rect x="6" y="6" width="10" height="10" rx="2" stroke="#00D4FF" stroke-width="2"/><rect x="22" y="6" width="10" height="10" rx="2" stroke="#00D4FF" stroke-width="2"/><rect x="6" y="24" width="10" height="10" rx="2" stroke="#00D4FF" stroke-width="1.5" stroke-dasharray="2 2"/><rect x="22" y="24" width="10" height="10" rx="2" stroke="#00D4FF" stroke-width="1.5" stroke-dasharray="2 2"/><path d="M16 11L22 11M11 16L11 24M27 16L27 24M16 27L22 27" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="feat-t">CRM integrado</div><div class="feat-d">Pipeline visual com arrastar e soltar. Do primeiro contato ao fechamento em um único lugar.</div></div>
+    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 40 40" fill="none"><path d="M8 32L8 10L24 10L32 18L32 32Z" stroke="#00D4FF" stroke-width="2" stroke-linejoin="round"/><path d="M24 10L24 18L32 18" stroke="#00D4FF" stroke-width="2" stroke-linejoin="round"/><path d="M13 20L27 20M13 25L22 25" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="feat-t">Proposta em PDF</div><div class="feat-d">A IA lê cotações de qualquer operadora e gera propostas profissionais com seus dados de corretor.</div></div>
+    <div class="feat"><div class="feat-icon"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="14" r="6" stroke="#00D4FF" stroke-width="2"/><path d="M8 34c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#00D4FF" stroke-width="2" stroke-linecap="round"/><path d="M26 20l2 2 4-4" stroke="#00E676" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="feat-t">Perfil personalizado</div><div class="feat-d">Suas propostas e relatórios saem com sua foto, CRECI e dados de contato. Identidade profissional completa.</div></div>
+  </div>
+</section>
+
+<div id="planos">
+<section class="wrap fade" style="padding-top:0;">
+  <div style="text-align:center;margin-bottom:60px;">
+    <div class="sec-eyebrow" style="justify-content:center;">Planos</div>
+    <div class="sec-title" style="text-align:center;">SIMPLES E DIRETO</div>
+    <p style="color:var(--light);font-size:16px;margin-top:8px;">Comece grátis. Assine quando quiser. Sem fidelidade.</p>
+  </div>
+  <div class="plans-grid">
+
+    <!-- GRATUITO -->
+    <div class="plan">
+      <div class="plan-name">Gratuito</div>
+      <div class="plan-price"><span class="plan-currency">R$</span><span class="plan-amount">0</span><span class="plan-period">/mês</span></div>
+      <div class="plan-credits">10 consultas por mês</div>
+      <ul class="plan-list">
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Busca com filtros básicos</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Consulta de CNPJ</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Histórico de consultas</li>
+        <li class="off"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M11 3L3 11" stroke="#8896B3" stroke-width="1.5" stroke-linecap="round"/></svg>Radar de aberturas</li>
+        <li class="off"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M11 3L3 11" stroke="#8896B3" stroke-width="1.5" stroke-linecap="round"/></svg>CRM e financeiro</li>
+        <li class="off"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M11 3L3 11" stroke="#8896B3" stroke-width="1.5" stroke-linecap="round"/></svg>Cotação e PDF</li>
+      </ul>
+      <a href="login.html" class="btn-plan btn-plan-free">Criar conta grátis</a>
+    </div>
+
+    <!-- STARTER -->
+    <div class="plan featured">
+      <div class="plan-badge">MAIS POPULAR</div>
+      <div class="plan-name">Starter</div>
+      <div class="plan-price"><span class="plan-currency">R$</span><span class="plan-amount">190</span><span class="plan-period">/mês</span></div>
+      <div class="plan-credits">300 consultas por mês</div>
+      <ul class="plan-list">
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Todos os filtros de busca</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Radar de aberturas</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>CRM Pipeline completo</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Cotação e PDF personalizado</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Painel financeiro</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Veracity Score</li>
+      </ul>
+      <a href="login.html?plano=starter" class="btn-plan btn-plan-main">Assinar agora</a>
+    </div>
+
+    <!-- PRO -->
+    <div class="plan">
+      <div class="plan-name">Pro</div>
+      <div class="plan-price"><span class="plan-currency">R$</span><span class="plan-amount">279</span><span class="plan-period">/mês</span></div>
+      <div class="plan-credits">600 consultas por mês</div>
+      <ul class="plan-list">
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Tudo do Starter</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>600 consultas por mês</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Pacotes de créditos avulsos</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Suporte prioritário</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Perfil do corretor completo</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 4" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round"/></svg>Histórico ilimitado</li>
+      </ul>
+      <a href="login.html?plano=pro" class="btn-plan btn-plan-alt">Assinar Pro</a>
+    </div>
+
+  </div>
+</section>
+</div>
+
+<!-- DEPOIMENTOS -->
+<section class="wrap fade" style="padding-top:0;">
+  <div class="sec-eyebrow">Resultados</div>
+  <div class="sec-title">QUEM USA,<br>VENDE MAIS.</div>
+  <div class="proof-grid">
+    <div class="proof-card">
+      <div class="proof-stars"><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg></div>
+      <div class="proof-text">"Em 3 dias de uso já tinha 12 empresas interessadas em plano de saúde. A plataforma economiza horas do meu dia."</div>
+      <div class="proof-author"><div class="proof-av">R</div><div><div class="proof-name">Ricardo M.</div><div class="proof-role">Corretor de Saúde · RJ</div></div></div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-stars"><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg></div>
+      <div class="proof-text">"O radar de empresas novas mudou minha forma de prospectar. Chego antes de qualquer concorrente."</div>
+      <div class="proof-author"><div class="proof-av">A</div><div><div class="proof-name">Amanda S.</div><div class="proof-role">Corretora de Seguros · SP</div></div></div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-stars"><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg><svg viewBox="0 0 14 14"><polygon points="7,1 8.8,5.4 13.5,5.4 9.9,8.5 11.2,13 7,10.2 2.8,13 4.1,8.5 0.5,5.4 5.2,5.4" fill="#FFB800"/></svg></div>
+      <div class="proof-text">"Fechei 4 contratos no primeiro mês. A plataforma trabalha por mim enquanto atendo meus clientes."</div>
+      <div class="proof-author"><div class="proof-av">F</div><div><div class="proof-name">Felipe C.</div><div class="proof-role">Corretor · MG</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-block fade">
+  <h2>PRONTO PARA PROSPERAR<br>COM INTELIGÊNCIA?</h2>
+  <p>Comece grátis. Sem cartão de crédito.</p>
+  <a href="login.html" class="btn-primary" style="font-size:13px;padding:19px 56px;">Criar conta grátis</a>
+</div>
+
+<!-- CORPORATIVO -->
+<div class="corp-strip fade">
+  <div>
+    <div class="corp-label">Plano Corporativo</div>
+    <div class="corp-title">Solução para equipes de corretores</div>
+    <div class="corp-sub">Gerencie sua equipe, distribua leads e acompanhe resultados em um único painel.</div>
+  </div>
+  <a href="https://wa.me/5521973855107?text=Olá! Quero conhecer o plano corporativo da Veracity Intelligence." target="_blank" class="btn-corp">Falar com o time</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">
+    <svg width="20" height="20" viewBox="0 0 28 28" fill="none"><path d="M4 4L14 24L24 4" stroke="#00D4FF" stroke-width="2.5" stroke-linejoin="round" fill="none"/><path d="M8 4L14 16L20 4" stroke="#1240AB" stroke-width="2.5" stroke-linejoin="round" fill="none"/></svg>
+    VERACITY
+  </div>
+  <div class="foot-links">
+    <a href="privacidade.html" class="foot-link">Privacidade</a>
+    <a href="termos.html" class="foot-link">Termos</a>
+    <a href="mailto:contato@veracitytech.com.br" class="foot-link">Suporte</a>
+    <a href="https://wa.me/5521973855107" class="foot-link" target="_blank">WhatsApp</a>
+  </div>
+  <div class="foot-copy">© 2026 VERACITY INTELLIGENCE</div>
+</footer>
+
+<script>
+// ── CONTADOR INTELIGENTE POR HORÁRIO ──
+function getOnlineRange() {
+  var h = new Date().getHours();
+  if (h >= 22 || h < 7)  return { min: 5,  max: 10  };
+  if (h >= 7  && h < 18) return { min: 75, max: 154 };
+  return                         { min: 20, max: 35  };
+}
+function updateCounter() {
+  var r = getOnlineRange();
+  var n = r.min + Math.floor(Math.random() * (r.max - r.min + 1));
+  var a = document.getElementById('onlineCount');
+  var b = document.getElementById('heroCount');
+  if (a) a.textContent = n;
+  if (b) b.textContent = n;
+}
+updateCounter();
+setInterval(updateCounter, 18000);
+
+// ── ANIMAÇÃO FADE ──
+var obs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade').forEach(function(el) { obs.observe(el); });
+
+// ── TOAST DE VENDAS ──
+var NOMES = ['Alexandre S.','Carla M.','Rodrigo F.','Patricia L.','Bruno T.','Fernanda C.','Lucas A.','Mariana R.','Diego P.','Juliana N.','Rafael O.','Camila V.','Thiago B.','Ana P.','Felipe G.','Renata K.','Eduardo S.','Bianca L.','Gustavo M.','Vanessa C.','André F.','Priscila T.','Leonardo R.','Sabrina O.','Henrique D.'];
+
+// Planos com regras de exibição por cidade
+var PLANOS_BR  = ['Bradesco Saúde','SulAmérica','Omint','Porto Seguro Saúde','GNDI','Amil'];
+var CIDADES_BR = ['SP','BH','Curitiba','Fortaleza','Manaus','Salvador','Recife','Porto Alegre','Goiânia','Belém','Florianópolis','Campinas','São Luís','Maceió','Vitória','Natal','Teresina','Joinville','Ribeirão Preto'];
+
+var SUPABASE_URL_LAND = 'https://nfusabwpxpdcqedrehrc.supabase.co';
+var SUPABASE_KEY_LAND = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MTEyOTUsImV4cCI6MjA5MjM4NzI5NX0.sUmFeXhXsx7D7BKPrKrXFHSVuqhFdIKgOCdfUQumECY';
+
+function dentroDoHorario() {
+  var h = new Date().getHours();
+  return h >= 8 && h < 18;
+}
+
+function valorAleatorio() {
+  return (1200 + Math.floor(Math.random() * 7801)).toLocaleString('pt-BR');
+}
+
+function exibirToast(nome, cidade, plano, valor, real) {
+  var toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;left:24px;z-index:9999;background:#0D1530;border:1px solid rgba(0,230,118,0.3);border-left:3px solid #00E676;padding:14px 18px;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.4);transform:translateX(-120%);transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);font-family:'DM Sans',sans-serif;';
+  var badge = real ? '<div style="font-size:10px;font-weight:700;color:#00D4FF;letter-spacing:1px;margin-bottom:3px;">⚡ AGORA</div>' : '';
+  toast.innerHTML = '<div style="display:flex;align-items:flex-start;gap:12px;">'
+    + '<div style="width:8px;height:8px;background:#00E676;border-radius:50%;margin-top:4px;flex-shrink:0;animation:blink 1.5s infinite;"></div>'
+    + '<div>' + badge
+    + '<div style="font-size:12px;font-weight:700;color:#00E676;letter-spacing:1px;margin-bottom:4px;">VENDA FECHADA</div>'
+    + '<div style="font-size:13px;color:#fff;font-weight:600;">' + nome + ' · ' + cidade + '</div>'
+    + '<div style="font-size:12px;color:#B8C4D8;margin-top:2px;">' + plano + '</div>'
+    + '<div style="font-size:16px;font-weight:700;color:#fff;margin-top:6px;">R$ ' + valor + '<span style="font-size:11px;color:#8896B3;">/mês</span></div>'
+    + '</div></div>';
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.style.transform = 'translateX(0)'; }, 100);
+  setTimeout(function() { toast.style.transform = 'translateX(-120%)'; }, 5500);
+  setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 6000);
+}
+
+function criarToastAleatorio() {
+  if (!dentroDoHorario()) return;
+  var nome = NOMES[Math.floor(Math.random() * NOMES.length)];
+  var valor = valorAleatorio();
+  var plano, cidade;
+  var tipo = Math.random();
+  if (tipo < 0.18) {
+    // Assim Saúde → só Rio de Janeiro
+    plano  = 'Assim Saúde';
+    cidade = 'Rio de Janeiro';
+  } else if (tipo < 0.36) {
+    // Alice → só São Paulo
+    plano  = 'Alice';
+    cidade = 'São Paulo';
+  } else {
+    // Outros planos → qualquer cidade do Brasil
+    plano  = PLANOS_BR[Math.floor(Math.random() * PLANOS_BR.length)];
+    cidade = CIDADES_BR[Math.floor(Math.random() * CIDADES_BR.length)];
+  }
+  exibirToast(nome, cidade, plano, valor, false);
+}
+
+// Vendas reais do CRM — poll a cada 90s
+var _ultimaVendaTs = 0;
+async function buscarVendasReais() {
+  if (!dentroDoHorario()) return;
+  try {
+    var limite = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    var res = await fetch(
+      SUPABASE_URL_LAND + '/rest/v1/metricas_vendas?select=*&status=eq.fechada&created_at=gt.' + limite + '&order=created_at.desc&limit=1',
+      { headers: { 'apikey': SUPABASE_KEY_LAND, 'Accept': 'application/json' } }
+    );
+    if (!res.ok) return;
+    var vendas = await res.json();
+    if (!Array.isArray(vendas) || !vendas.length) return;
+    var v = vendas[0];
+    var ts = new Date(v.created_at).getTime();
+    if (ts <= _ultimaVendaTs) return;
+    _ultimaVendaTs = ts;
+    var nomeExib  = (v.cliente_nome || 'Cliente').split(' ').slice(0,2).join(' ');
+    var valorExib = v.valor ? Number(v.valor).toLocaleString('pt-BR') : valorAleatorio();
+    var planoExib = v.plano || PLANOS_BR[Math.floor(Math.random() * PLANOS_BR.length)];
+    var cidExib   = v.cidade || 'Brasil';
+    exibirToast(nomeExib, cidExib, planoExib, valorExib, true);
+  } catch(e) {}
+}
+
+// Inicia: primeiro após 8s, depois a cada 30–60s aleatório
+// Só roda se estiver dentro do horário comercial (08h–18h)
+setTimeout(function() {
+  if (dentroDoHorario()) criarToastAleatorio();
+  setInterval(function() {
+    if (dentroDoHorario()) criarToastAleatorio();
+  }, 30000 + Math.floor(Math.random() * 30000));
+}, 8000);
+
+setInterval(buscarVendasReais, 90000);
+</script>
+</body>
+</html>
