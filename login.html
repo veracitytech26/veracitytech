@@ -5268,8 +5268,8 @@ async function abrirModalPix(produto) {
       throw new Error(data.error || 'Erro ao gerar Pix (status ' + res.status + ')');
     }
 
-    var qrBase64 = data.qrCode || data.qr_code || data.encodedImage || '';
-    var payload  = data.payload || data.code || data.copyPaste || '';
+    var qrBase64 = data.pix_qrcode || data.encodedImage || data.qrCode || '';
+    var payload  = data.pix_copia_cola || data.payload || data.copyPaste || '';
 
     if (qrBase64) {
       var src = qrBase64.startsWith('data:') ? qrBase64 : 'data:image/png;base64,' + qrBase64;
