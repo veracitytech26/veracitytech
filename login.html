@@ -4164,14 +4164,14 @@ function renderFinanceiro() {
 
 // ══════════════════════════════════════════════════════════════════════════════
 // COTAÇÃO INTELIGENTE COM IA — lê qualquer PDF de qualquer operadora do Brasil
-// Chama: /.netlify/functions/claude-cotacao (chave API fica segura no servidor)
+// Chama: /api/cotacao (chave API fica segura no servidor)
 // ══════════════════════════════════════════════════════════════════════════════
 
 var _cotIdades = [];
 var _cotPDFs   = [];   // [{name, file, base64, status:'pendente|processando|ok|erro', planos:[]}]
 var _cotPlanos = [];   // planos extraídos acumulados
 
-var COT_FN_URL = '/.netlify/functions/claude-cotacao';
+var COT_FN_URL = '/api/cotacao';
 
 // ── FAIXA ETÁRIA ──────────────────────────────────────────────────────────────
 function cotFaixa(idade) {
