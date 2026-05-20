@@ -1964,7 +1964,7 @@ function showDashboard() {
   document.getElementById('authContainer').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.body.classList.add('dashboard-mode');
-
+mostrarAba('busca');
   if (!currentProfile) {
     // Fallback com dados do auth
     const meta = currentUser.user_metadata || {};
