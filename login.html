@@ -3616,8 +3616,7 @@ async function mostrarNovaCampanha() {
   }
 
  if (qtd === 0 && !_planilhaContatos) {
-    alert('Faca uma busca, selecione empresas no historico ou importe uma planilha!');
-    mostrarAba('busca');
+    document.getElementById('modalNovaCampanha').style.display = 'flex';
     return;
   }
   atualizarTemplateCamp();
