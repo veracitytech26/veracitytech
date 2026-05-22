@@ -5815,7 +5815,123 @@ function limparPlanilhaCampanha() {
   if (info) info.textContent = 'Nenhum arquivo selecionado';
   if (btnLimpar) btnLimpar.style.display = 'none';
 }
-async function init() {
+var _discadorLead = null;
+var _discTimerInterval = null;
+var _discSegundos = 0;
+var _discCallSid = null;
+
+function abrirDiscador(nome, empresa, telefone, historico) {
+  _discadorLead = { nome: nome, empresa: empresa, telefone: telefone };
+  document.getElementById('discLeadNome').textContent    = nome    || '—';
+  document.getElementById('discLeadEmpresa').textContent = empresa || '—';
+  document.getElementById('discLeadTel').textContent     = telefone || '—';
+  document.getElementById('discStatus').textContent      = 'Pronto para ligar';
+  document.getElementById('discStatusIcon').textContent  = '📞';
+  document.getElementById('discStatus').style.color      = '#FFB800';
+  document.getElementById('discTimer').style.display     = 'none';
+  document.getElementById('discAnotacao').value          = '';
+  document.getElementById('btnDiscar').style.display     = 'inline-block';
+  document.getElementById('btnEncerrar').style.display   = 'none';
+  if (historico) {
+    document.getElementById('discHistoricoWrap').style.display = 'block';
+    document.getElementById('discHistorico').textContent = historico;
+  } else {
+    document.getElementById('discHistoricoWrap').style.display = 'none';
+  }
+  document.getElementById('modalDiscador').style.display = 'flex';
+}
+
+function fecharDiscador() {
+  pararTimer();
+  document.getElementById('modalDiscador').style.display = 'none';
+  _discadorLead = null;
+  _discCallSid  = null;
+}
+
+async function fazerLigacao() {
+  if (!_discadorLead || !_discadorLead.telefone) { alert('Nenhum número para ligar!'); return; }
+  var btn = document.getElementById('btnDiscar');
+  btn.disabled = true; btn.textContent = '⏳ Discando...';
+  document.getElementById('discStatus').textContent = 'Conectando...';
+  document.getElementById('discStatus').style.color = '#00D4FF';
+  document.getElementById('discStatusIcon').textContent = '📡';
+  try {
+    var sess = null;
+    try { sess = (await db.auth.getSession()).data.session; } catch(e) {}
+    var tok = sess ? sess.access_token : '';
+    var res = await fetch('/api/discador', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body: JSON.stringify({ action: 'ligar', telefone: _discadorLead.telefone, lead_nome: _discadorLead.nome, lead_empresa: _discadorLead.empresa })
+    });
+    var data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Erro ao discar');
+    _discCallSid = data.call_sid;
+    document.getElementById('discStatus').textContent = '🔔 Chamando...';
+    document.getElementById('discStatus').style.color = '#FFB800';
+    document.getElementById('discStatusIcon').textContent = '🔔';
+    document.getElementById('btnDiscar').style.display   = 'none';
+    document.getElementById('btnEncerrar').style.display = 'inline-block';
+    setTimeout(function() {
+      document.getElementById('discStatus').textContent = '🟢 Em ligação';
+      document.getElementById('discStatus').style.color = '#00E676';
+      document.getElementById('discStatusIcon').textContent = '🟢';
+      document.getElementById('discTimer').style.display = 'block';
+      iniciarTimer();
+    }, 5000);
+  } catch(err) {
+    document.getElementById('discStatus').textContent = '❌ Erro: ' + err.message;
+    document.getElementById('discStatus').style.color = '#FF4D4D';
+    document.getElementById('discStatusIcon').textContent = '❌';
+    btn.disabled = false; btn.textContent = '📞 LIGAR NOVAMENTE';
+  }
+}
+
+function encerrarLigacao() {
+  pararTimer();
+  document.getElementById('discStatus').textContent = '✅ Ligação encerrada';
+  document.getElementById('discStatus').style.color = '#00E676';
+  document.getElementById('discStatusIcon').textContent = '✅';
+  document.getElementById('btnEncerrar').style.display = 'none';
+  document.getElementById('btnDiscar').style.display   = 'inline-block';
+  document.getElementById('btnDiscar').disabled        = false;
+  document.getElementById('btnDiscar').textContent     = '📞 NOVA LIGAÇÃO';
+}
+
+function iniciarTimer() {
+  _discSegundos = 0;
+  _discTimerInterval = setInterval(function() {
+    _discSegundos++;
+    var min = String(Math.floor(_discSegundos / 60)).padStart(2, '0');
+    var seg = String(_discSegundos % 60).padStart(2, '0');
+    var el = document.getElementById('discTimer');
+    if (el) el.textContent = min + ':' + seg;
+  }, 1000);
+}
+
+function pararTimer() {
+  if (_discTimerInterval) { clearInterval(_discTimerInterval); _discTimerInterval = null; }
+  _discSegundos = 0;
+}
+
+function registrarResultado(resultado) {
+  var anotacao = (document.getElementById('discAnotacao').value || '').trim();
+  var lead = _discadorLead || {};
+  try {
+    var historico = JSON.parse(localStorage.getItem('historico_ligacoes') || '[]');
+    historico.unshift({ id: Date.now().toString(), nome: lead.nome || '', empresa: lead.empresa || '', telefone: lead.telefone || '', resultado: resultado, anotacao: anotacao, duracao: _discSegundos, data: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
+    historico = historico.slice(0, 500);
+    localStorage.setItem('historico_ligacoes', JSON.stringify(historico));
+  } catch(e) {}
+  var labels = { atendeu: '✅ Atendeu', nao_atendeu: '📵 Não atendeu', nao_tem_interesse: '❌ Sem interesse' };
+  alert('Resultado registrado: ' + (labels[resultado] || resultado));
+  fecharDiscador();
+}
+
+function btnLigar(nome, empresa, telefone) {
+  return '<button onclick="abrirDiscador(\'' + (nome||'').replace(/\'/g,"\\'") + '\',\'' + (empresa||'').replace(/\'/g,"\\'") + '\',\'' + (telefone||'') + '\',null)" style="background:rgba(0,230,118,0.15);border:1px solid #00E676;color:#00E676;font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;margin-left:4px;">📞 LIGAR</button>';
+}
+  async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
   if (session) {
