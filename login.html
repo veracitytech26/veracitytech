@@ -3644,7 +3644,7 @@ async function iniciarCampanha() {
   if (!nome) { alert('Digite o nome da campanha!'); return; }
   if (!mensagem) { alert('Digite a mensagem!'); return; }
 
-  var fonteContatos = (_contatosExterno && _contatosExterno.length) ? _contatosExterno : currentResults;
+  var fonteContatos = _planilhaContatos ? _planilhaContatos : ((_contatosExterno && _contatosExterno.length) ? _contatosExterno : currentResults);
   if (!fonteContatos.length) { alert('Faca uma busca ou selecione empresas no historico primeiro!'); return; }
 
   // Monta lista de contatos com WhatsApp
