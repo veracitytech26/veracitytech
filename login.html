@@ -3600,7 +3600,7 @@ function exportarAbertasCSV() {
 }
 async function mostrarNovaCampanha() {
   // Aceita contatos do histórico ou da busca atual
-  var fonte = (_contatosExterno && _contatosExterno.length) ? _contatosExterno : currentResults;
+  var fonte = _planilhaContatos ? _planilhaContatos : ((_contatosExterno && _contatosExterno.length) ? _contatosExterno : currentResults);
   var qtd   = fonte.length;
   var el    = document.getElementById('campQtdEmpresas');
   if (el) el.textContent = qtd;
