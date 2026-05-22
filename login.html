@@ -3615,8 +3615,8 @@ async function mostrarNovaCampanha() {
     }
   }
 
-  if (qtd === 0) {
-    alert('Faca uma busca ou selecione empresas no historico primeiro!');
+ if (qtd === 0 && !_planilhaContatos) {
+    alert('Faca uma busca, selecione empresas no historico ou importe uma planilha!');
     mostrarAba('busca');
     return;
   }
