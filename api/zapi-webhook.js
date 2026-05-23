@@ -71,10 +71,9 @@ console.log('Z-API body completo:', JSON.stringify(body).slice(0, 500));
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 300, system: SDR_SYSTEM, messages: messages })
+body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 300, system: SDR_SYSTEM, messages: messages })
     });
-
-    const claudeData = await claudeRes.json();
+const claudeData = await claudeRes.json();
     let resposta = claudeData.content?.[0]?.text || 'Obrigado pela mensagem! Em breve nosso consultor entrará em contato.';
 
     const isQuente = resposta.includes('[LEAD_QUENTE]');
@@ -94,7 +93,7 @@ console.log('Z-API body completo:', JSON.stringify(body).slice(0, 500));
 
     await fetch(`${ZAPI_URL}/send-text`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Client-Token': ZAPI_TOKEN },
+      headers: { 'Content-Type': 'application/json', 'Client-Token': 'A2477B3E3DF335B5628DFAFB' },
       body: JSON.stringify({ phone: phone, message: resposta })
     });
 
