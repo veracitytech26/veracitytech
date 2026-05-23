@@ -93,7 +93,7 @@ const claudeData = await claudeRes.json();
 
     await fetch(`${ZAPI_URL}/send-text`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'client-token': 'A2477B3E3DF335B5628DFAFB' },
+      headers: { 'Content-Type': 'application/json', 'client-token': 'F74077534357d405ca497b01736c52b96S' },
       body: JSON.stringify({ phone: phone, message: resposta })
     });
 
