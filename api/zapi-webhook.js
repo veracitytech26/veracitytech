@@ -45,8 +45,8 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const tipo = body.type || body.event;
-
+const tipo = body.type || body.event;
+console.log('Z-API body completo:', JSON.stringify(body).slice(0, 500));
     if (tipo !== 'ReceivedCallback' && tipo !== 'message') {
       return res.status(200).json({ ok: true });
     }
