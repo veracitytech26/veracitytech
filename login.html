@@ -6314,5 +6314,72 @@ function abrirWa2() {
     </div>
   </div>
 </div>
+  <div id="telaConsultor" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.97);align-items:center;justify-content:center;animation:fadeInConsultor 0.3s ease;">
+  <style>
+    @keyframes fadeInConsultor { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+    @keyframes pulseRing { 0%,100% { box-shadow:0 0 0 0 rgba(0,230,118,0.4); } 50% { box-shadow:0 0 0 20px rgba(0,230,118,0); } }
+  </style>
+  <div style="background:#0D1530;border:2px solid #00E676;max-width:680px;width:95%;position:relative;max-height:95vh;overflow-y:auto;">
+    <div style="background:linear-gradient(90deg,#00E676,#00D4FF);height:6px;animation:pulseRing 1.5s infinite;"></div>
+    <div style="background:rgba(0,230,118,0.08);padding:20px 28px;border-bottom:1px solid rgba(0,230,118,0.2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-size:36px;animation:pulseRing 1s infinite;">📞</div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#00E676;letter-spacing:3px;">LEAD QUENTE — EM LIGAÇÃO</div>
+          <div id="tcNomeEmpresa" style="font-size:22px;font-weight:700;color:#fff;margin-top:2px;">—</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div id="tcTimer" style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:#00E676;line-height:1;">00:00</div>
+        <div style="font-size:10px;color:#8896B3;letter-spacing:2px;">DURAÇÃO</div>
+      </div>
+    </div>
+    <div style="padding:24px 28px;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div style="background:rgba(255,255,255,0.04);padding:14px;border-left:3px solid #00D4FF;">
+          <div style="font-size:9px;font-weight:700;color:#8896B3;letter-spacing:2px;margin-bottom:4px;">SÓCIO</div>
+          <div id="tcSocio" style="font-size:14px;font-weight:700;color:#fff;">—</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);padding:14px;border-left:3px solid #00D4FF;">
+          <div style="font-size:9px;font-weight:700;color:#8896B3;letter-spacing:2px;margin-bottom:4px;">CIDADE / UF</div>
+          <div id="tcCidade" style="font-size:14px;font-weight:700;color:#fff;">—</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);padding:14px;border-left:3px solid #00D4FF;">
+          <div style="font-size:9px;font-weight:700;color:#8896B3;letter-spacing:2px;margin-bottom:4px;">SEGMENTO</div>
+          <div id="tcSegmento" style="font-size:13px;font-weight:700;color:#fff;">—</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);padding:14px;border-left:3px solid #FFB800;">
+          <div style="font-size:9px;font-weight:700;color:#8896B3;letter-spacing:2px;margin-bottom:4px;">VIDAS / FUNCIONÁRIOS</div>
+          <div id="tcVidas" style="font-size:14px;font-weight:700;color:#FFB800;">—</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);padding:14px;border-left:3px solid #FFB800;">
+          <div style="font-size:9px;font-weight:700;color:#8896B3;letter-spacing:2px;margin-bottom:4px;">PLANO ATUAL</div>
+          <div id="tcPlanoAtual" style="font-size:14px;font-weight:700;color:#FFB800;">—</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);padding:14px;border-left:3px solid #6B8EFF;">
+          <div style="font-size:9px;font-weight:700;color:#8896B3;letter-spacing:2px;margin-bottom:4px;">ORIGEM</div>
+          <div id="tcOrigem" style="font-size:14px;font-weight:700;color:#6B8EFF;">—</div>
+        </div>
+      </div>
+      <div id="tcHistoricoWrap" style="display:none;background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.2);padding:16px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:700;color:#25D366;letter-spacing:2px;margin-bottom:10px;">💬 HISTÓRICO WHATSAPP — SDR IA</div>
+        <div id="tcHistorico" style="font-size:12px;color:#B8C4D8;line-height:1.8;max-height:150px;overflow-y:auto;"></div>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">ANOTAÇÃO DA LIGAÇÃO</label>
+        <textarea id="tcAnotacao" rows="2" placeholder="Ex: Interessado em plano para 15 vidas, ligar sexta após 14h..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px;font-size:13px;outline:none;resize:none;font-family:inherit;box-sizing:border-box;"></textarea>
+      </div>
+    </div>
+    <div style="padding:20px 28px;">
+      <div style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;margin-bottom:12px;">RESULTADO DA LIGAÇÃO</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
+        <button onclick="registrarResultadoConsultor('reuniao')" style="background:rgba(0,230,118,0.15);border:2px solid #00E676;color:#00E676;font-size:12px;font-weight:700;padding:14px 8px;cursor:pointer;">🗓️ REUNIÃO<br>AGENDADA</button>
+        <button onclick="registrarResultadoConsultor('proposta')" style="background:rgba(0,212,255,0.15);border:2px solid #00D4FF;color:#00D4FF;font-size:12px;font-weight:700;padding:14px 8px;cursor:pointer;">📄 PROPOSTA<br>ENVIADA</button>
+        <button onclick="registrarResultadoConsultor('retorno')" style="background:rgba(255,184,0,0.15);border:2px solid #FFB800;color:#FFB800;font-size:12px;font-weight:700;padding:14px 8px;cursor:pointer;">📅 LIGAR<br>DEPOIS</button>
+        <button onclick="registrarResultadoConsultor('sem_interesse')" style="background:rgba(255,77,77,0.15);border:2px solid #FF4D4D;color:#FF4D4D;font-size:12px;font-weight:700;padding:14px 8px;cursor:pointer;">❌ SEM<br>INTERESSE</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
