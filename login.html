@@ -5931,6 +5931,93 @@ function registrarResultado(resultado) {
 function btnLigar(nome, empresa, telefone) {
   return '<button onclick="abrirDiscador(\'' + (nome||'').replace(/\'/g,"\\'") + '\',\'' + (empresa||'').replace(/\'/g,"\\'") + '\',\'' + (telefone||'') + '\',null)" style="background:rgba(0,230,118,0.15);border:1px solid #00E676;color:#00E676;font-size:10px;font-weight:700;padding:3px 10px;cursor:pointer;margin-left:4px;">📞 LIGAR</button>';
 }
+  var _tcTimer = null;
+var _tcSegundos = 0;
+var _tcLeadAtual = null;
+
+function abrirTelaConsultor(lead) {
+  _tcLeadAtual = lead || {};
+  document.getElementById('tcNomeEmpresa').textContent  = lead.empresa   || lead.nome    || '—';
+  document.getElementById('tcSocio').textContent        = lead.socio     || '—';
+  document.getElementById('tcCidade').textContent       = lead.cidade    || '—';
+  document.getElementById('tcSegmento').textContent     = lead.segmento  || '—';
+  document.getElementById('tcVidas').textContent        = lead.vidas     || 'Não informado';
+  document.getElementById('tcPlanoAtual').textContent   = lead.plano     || 'Não informado';
+  document.getElementById('tcOrigem').textContent       = lead.origem    || 'Busca na plataforma';
+  document.getElementById('tcAnotacao').value           = '';
+  if (lead.historico && lead.historico.length) {
+    document.getElementById('tcHistoricoWrap').style.display = 'block';
+    document.getElementById('tcHistorico').innerHTML = lead.historico.map(function(h) {
+      var cor   = h.role === 'assistant' ? '#25D366' : '#00D4FF';
+      var label = h.role === 'assistant' ? 'SDR IA' : 'Lead';
+      return '<div style="margin-bottom:6px;"><span style="color:' + cor + ';font-weight:700;">' + label + ':</span> ' + h.content + '</div>';
+    }).join('');
+  } else {
+    document.getElementById('tcHistoricoWrap').style.display = 'none';
+  }
+  var tela = document.getElementById('telaConsultor');
+  tela.style.display = 'flex';
+  _tcSegundos = 0;
+  document.getElementById('tcTimer').textContent = '00:00';
+  _tcTimer = setInterval(function() {
+    _tcSegundos++;
+    var min = String(Math.floor(_tcSegundos / 60)).padStart(2, '0');
+    var seg = String(_tcSegundos % 60).padStart(2, '0');
+    document.getElementById('tcTimer').textContent = min + ':' + seg;
+  }, 1000);
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; gain.gain.value = 0.3;
+    osc.start(); setTimeout(function() { osc.stop(); }, 600);
+  } catch(e) {}
+}
+
+function fecharTelaConsultor() {
+  if (_tcTimer) { clearInterval(_tcTimer); _tcTimer = null; }
+  document.getElementById('telaConsultor').style.display = 'none';
+  _tcLeadAtual = null;
+}
+
+function registrarResultadoConsultor(resultado) {
+  if (_tcTimer) { clearInterval(_tcTimer); _tcTimer = null; }
+  var anotacao = document.getElementById('tcAnotacao').value.trim();
+  var lead     = _tcLeadAtual || {};
+  try {
+    var hist = JSON.parse(localStorage.getItem('historico_ligacoes') || '[]');
+    hist.unshift({ id: Date.now().toString(), empresa: lead.empresa || lead.nome || '', socio: lead.socio || '', telefone: lead.telefone || '', resultado: resultado, anotacao: anotacao, duracao: _tcSegundos, data: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
+    hist = hist.slice(0, 500);
+    localStorage.setItem('historico_ligacoes', JSON.stringify(hist));
+  } catch(e) {}
+  var statusCRM = { reuniao: 'negociacao', proposta: 'proposta', retorno: 'contato', sem_interesse: 'perdido' };
+  try {
+    var leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
+    var existing = leads.find(function(l) { return l.empresa === (lead.empresa || lead.nome); });
+    if (existing) { existing.status = statusCRM[resultado] || 'contato'; existing.nota = anotacao || existing.nota; }
+    else { leads.unshift({ id: Date.now().toString(), empresa: lead.empresa || lead.nome || '', contato: lead.socio || '', telefone: lead.telefone || '', origem: lead.origem || 'discador', nota: anotacao, status: statusCRM[resultado] || 'contato', data: new Date().toLocaleDateString('pt-BR') }); }
+    localStorage.setItem('crm_leads', JSON.stringify(leads));
+  } catch(e) {}
+  var labels = { reuniao: '🗓️ Reunião agendada', proposta: '📄 Proposta enviada', retorno: '📅 Ligar depois', sem_interesse: '❌ Sem interesse' };
+  fecharTelaConsultor();
+  alert(labels[resultado] + ' registrado!' + (anotacao ? '\nAnotação: ' + anotacao : ''));
+}
+
+function simularLeadAtendeu() {
+  var lead = _discadorLead || {};
+  var phone = (lead.telefone || '').replace(/[^0-9]/g, '');
+  if (phone && !phone.startsWith('55')) phone = '55' + phone;
+  if (phone) {
+    fetch('https://nfusabwpxpdcqedrehrc.supabase.co/rest/v1/sdr_conversas?phone=eq.' + phone + '&order=created_at.asc&limit=20', {
+      headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MTEyOTUsImV4cCI6MjA5MjM4NzI5NX0.sUmFeXhXsx7D7BKPrKrXFHSVuqhFdIKgOCdfUQumECY', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjgxMTI5NSwiZXhwIjoyMDkyMzg3Mjk1fQ.iA7c0NPmLSkWe__qA8hLJnO3nD2Wwyvro5CKKez3UsI' }
+    }).then(function(r) { return r.json(); }).then(function(historico) {
+      abrirTelaConsultor({ empresa: lead.empresa || lead.nome || '—', nome: lead.nome || '—', socio: lead.socio || '—', cidade: lead.cidade || '—', segmento: lead.segmento || '—', vidas: lead.vidas || '—', plano: lead.plano || '—', telefone: lead.telefone || '—', origem: lead.origem || 'SDR IA — WhatsApp', historico: historico || [] });
+    }).catch(function() { abrirTelaConsultor(lead); });
+  } else {
+    abrirTelaConsultor(lead);
+  }
+}
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
