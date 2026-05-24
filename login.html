@@ -5874,6 +5874,7 @@ async function fazerLigacao() {
     document.getElementById('btnEncerrar').style.display = 'inline-block';
     setTimeout(function() {
       document.getElementById('discStatus').textContent = '🟢 Em ligação';
+      simularLeadAtendeu();
       document.getElementById('discStatus').style.color = '#00E676';
       document.getElementById('discStatusIcon').textContent = '🟢';
       document.getElementById('discTimer').style.display = 'block';
