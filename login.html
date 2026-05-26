@@ -6072,6 +6072,7 @@ function simularLeadAtendeu() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
   if (session) {
+    inicializarTwilioSDK();
     currentUser = session.user;
     await loadProfile();
     showDashboard();
