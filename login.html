@@ -6072,7 +6072,11 @@ function simularLeadAtendeu() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
   if (session) {
-    inicializarTwilioSDK();
+    // SDK inicializa no primeiro clique do usuário
+document.addEventListener('click', function inicSDK() {
+  document.removeEventListener('click', inicSDK);
+  inicializarTwilioSDK();
+}, { once: true });
     currentUser = session.user;
     await loadProfile();
     showDashboard();
