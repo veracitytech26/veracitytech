@@ -429,6 +429,55 @@ body.dashboard-mode {
   if(document.readyState !== 'loading') ocultarDash();
 })();
 </script>
+  <script src="https://sdk.twilio.com/js/client/releases/1.13.0/twilio.js"></script>
+<script>
+var _twilioDevice = null;
+
+async function inicializarTwilioSDK() {
+  try {
+    var sess = null;
+    try { sess = (await db.auth.getSession()).data.session; } catch(e) {}
+    var tok = sess ? sess.access_token : '';
+
+    var res = await fetch('/api/discador', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body: JSON.stringify({ action: 'token' })
+    });
+    var data = await res.json();
+    if (!data.token) { console.error('Sem token Twilio'); return; }
+
+    _twilioDevice = new Twilio.Device(data.token, {
+      codecPreferences: ['opus', 'pcmu'],
+      fakeLocalDTMF: true,
+      enableRingingState: true
+    });
+
+    _twilioDevice.on('ready', function() {
+      console.log('Twilio Device pronto para ligações!');
+    });
+
+    _twilioDevice.on('error', function(error) {
+      console.error('Twilio Device error:', error);
+    });
+
+    _twilioDevice.on('connect', function(conn) {
+      console.log('Ligação conectada!');
+      simularLeadAtendeu();
+    });
+
+    _twilioDevice.on('disconnect', function() {
+      console.log('Ligação encerrada');
+    });
+
+    await _twilioDevice.register();
+    console.log('Twilio SDK inicializado!');
+
+  } catch(e) {
+    console.error('Erro ao inicializar Twilio SDK:', e);
+  }
+}
+</script>
 </head>
 <body>
 <div class="grid-bg"></div>
