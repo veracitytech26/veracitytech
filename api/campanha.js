@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const SUPABASE_SERVICE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjgxMTI5NSwiZXhwIjoyMDkyMzg3Mjk1fQ.iA7c0NPmLSkWe__qA8hLJnO3nD2Wwyvro5CKKez3UsI';
   const ZAPI_INSTANCE = '3F2D8A534997C11828D5BE88BF499E29';
   const ZAPI_TOKEN = 'A2477B3E3DF335B5628DFAFB';
-  const ZAPI_CLIENT_TOKEN = 'Ff188b6b28a4843bca38f82e84c5a597dS';
+  const ZAPI_CLIENT_TOKEN = 'F74077534357d405ca497b01736c52b96S';
   const ZAPI_URL = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
   const DELAY_MS = 180000; // 3 minutos
 
