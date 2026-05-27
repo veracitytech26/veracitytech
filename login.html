@@ -453,6 +453,25 @@ async function inicializarTwilioSDK() {
     _twilioDevice.on('error', function(e) { console.error('Twilio error:', e); });
     _twilioDevice.on('connect', function(conn) { console.log('Conectado!'); simularLeadAtendeu(); });
     _twilioDevice.on('disconnect', function() { console.log('Desconectado'); });
+
+_twilioDevice.on('incoming', function(call) {
+  console.log('CHAMADA ENTRANTE!', call);
+  call.accept();
+  simularLeadAtendeu();
+});
+
+// Configura saída de áudio para o headset
+if (_twilioDevice.audio) {
+  navigator.mediaDevices.enumerateDevices().then(function(devices) {
+    var headset = devices.find(function(d) { 
+      return d.kind === 'audiooutput' && d.label.toLowerCase().includes('usb');
+    });
+    if (headset) {
+      _twilioDevice.audio.speakerDevices.set([headset.deviceId]);
+      console.log('Headset configurado:', headset.label);
+    }
+  });
+}
     await _twilioDevice.register();
     console.log('Twilio SDK inicializado!');
   } catch(e) {
