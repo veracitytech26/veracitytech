@@ -3742,6 +3742,15 @@ async function iniciarCampanha() {
   
   // Inicia disparo
   await dispararCampanha(data.campanha_id, contatos, intervalo, tok);
+  fetch('/api/sms', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+  body: JSON.stringify({
+    action: 'disparar_campanha',
+    contatos: contatos,
+    mensagem: 'Oi {empresa}! Sou o Rodrigo da Veracity Seguros. Te mandei uma mensagem no WhatsApp sobre plano de saude empresarial. Da uma olhada! wa.me/5521965307183'
+  })
+}).then(function(r) { return r.json(); }).then(function(d) { console.log('SMS:', d); });
 }
 
 let campanhaAtiva = false;
