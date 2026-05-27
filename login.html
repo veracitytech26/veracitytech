@@ -1179,6 +1179,108 @@ if (_twilioDevice.audio) {
       </div>
     </div>
   </div>
+  <div id="abaSMS" style="display:none;">
+  <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:14px 20px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;">CRÉDITOS DE BUSCA</div>
+        <div style="font-size:18px;font-weight:700;color:var(--cyan);" id="smsSaldoBusca">—</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;">SMS ENVIADOS HOJE</div>
+        <div style="font-size:18px;font-weight:700;color:#FFB800;" id="smsTotalHoje">0</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--gray);">Powered by Infobip · R$ 0,09 por SMS</div>
+  </div>
+  <div id="smsBannerHistorico" style="display:none;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.3);padding:12px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:13px;color:#fff;" id="smsBannerTxt">0 empresas selecionadas do historico</div>
+    <button onclick="limparContatosSMS()" style="background:transparent;border:1px solid var(--border);color:var(--gray);font-size:11px;font-weight:700;padding:4px 12px;cursor:pointer;">USAR BUSCA ATUAL</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+    <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;">
+      <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">Nova Campanha de SMS</div>
+      <div style="font-size:12px;color:var(--gray);margin-bottom:20px;">SMS direto no celular com link para o WhatsApp</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">TEMPLATE</label>
+        <select id="smsTemplate" onchange="aplicarTemplateSMS()" style="width:100%;background:#0D1530;border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+          <option value="prospeccao">Prospecção — Plano de Saúde</option>
+          <option value="retorno">Retorno de Contato</option>
+          <option value="oferta">Oferta Especial</option>
+          <option value="custom">Mensagem Personalizada</option>
+        </select>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">MENSAGEM</label>
+        <textarea id="smsMensagem" rows="5" oninput="atualizarContadorSMS()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;resize:none;font-family:inherit;line-height:1.6;"></textarea>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <div style="font-size:11px;color:#8896B3;">Use {empresa} para personalizar</div>
+          <div id="smsContador" style="font-size:11px;color:var(--cyan);">0/160</div>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">INTERVALO ENTRE ENVIOS</label>
+        <select id="smsIntervalo" style="width:100%;background:#0D1530;border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+          <option value="5">5 segundos (rápido)</option>
+          <option value="15" selected>15 segundos (recomendado)</option>
+          <option value="30">30 segundos (seguro)</option>
+        </select>
+      </div>
+      <div style="background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.2);padding:12px 16px;margin-bottom:20px;font-size:12px;color:#FFB800;">
+        Empresas com celular na busca atual: <strong id="smsQtdEmpresas" style="color:#fff;">0</strong>
+      </div>
+      <button id="btnDispararSMS" onclick="iniciarSMSMarketing()" style="width:100%;background:#FFB800;color:#080E1E;font-size:14px;font-weight:700;padding:14px;border:none;cursor:pointer;letter-spacing:1px;">DISPARAR SMS</button>
+    </div>
+    <div>
+      <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:16px;">Preview do SMS</div>
+        <div style="background:#1a1a2e;border-radius:12px;padding:20px;">
+          <div style="background:#2a2a4e;border-radius:8px 8px 8px 0;padding:12px 16px;max-width:280px;">
+            <div style="font-size:11px;color:#FFB800;font-weight:700;margin-bottom:6px;">Veracity Seguros</div>
+            <div id="smsPreviewTxt" style="font-size:13px;color:#fff;line-height:1.6;">Sua mensagem aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+      <div id="smsStatus" style="display:none;background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:16px;">Status do Disparo</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:rgba(0,212,255,0.08);padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:#00D4FF;" id="smsContEnviados">0</div>
+            <div style="font-size:10px;color:var(--gray);letter-spacing:1px;">ENVIADOS</div>
+          </div>
+          <div style="background:rgba(0,230,118,0.08);padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:#00E676;" id="smsContOk">0</div>
+            <div style="font-size:10px;color:var(--gray);letter-spacing:1px;">ENTREGUES</div>
+          </div>
+          <div style="background:rgba(255,77,77,0.08);padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:#FF4D4D;" id="smsContErro">0</div>
+            <div style="font-size:10px;color:var(--gray);letter-spacing:1px;">ERROS</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.06);height:6px;border-radius:3px;overflow:hidden;">
+          <div id="smsProgressBar" style="background:linear-gradient(90deg,#FFB800,#FF6B35);height:6px;width:0%;transition:width 0.5s;"></div>
+        </div>
+        <div style="font-size:12px;color:var(--gray);margin-top:8px;text-align:right;" id="smsProgressText">0%</div>
+        <div style="font-size:11px;color:var(--gray);margin-top:10px;text-align:center;" id="smsStatusMsg"></div>
+      </div>
+      <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:#fff;">Campanhas Anteriores</div>
+          <button onclick="carregarCampanhasSMS()" style="background:transparent;border:1px solid var(--border);color:var(--gray);font-size:11px;font-weight:700;padding:5px 12px;cursor:pointer;">ATUALIZAR</button>
+        </div>
+        <div id="smsListaCampanhas"><div style="text-align:center;padding:24px;color:var(--gray);font-size:12px;">Nenhuma campanha enviada ainda.</div></div>
+      </div>
+      <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;margin-top:16px;">
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Enviar SMS de Teste</div>
+        <div style="font-size:12px;color:var(--gray);margin-bottom:14px;">Receba uma amostra da mensagem atual no seu celular</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="tel" id="smsTesteTel" placeholder="Ex: 21999999999" style="flex:1;min-width:200px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+          <button onclick="enviarSMSTeste()" style="background:#FFB800;color:#080E1E;font-size:13px;font-weight:700;padding:10px 24px;border:none;cursor:pointer;white-space:nowrap;">ENVIAR TESTE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="abaEmailMkt" style="display:none;">
 
 
