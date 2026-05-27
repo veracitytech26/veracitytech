@@ -2701,6 +2701,15 @@ if (document.getElementById('tabCampanhas')) {
   if(document.getElementById('abaEmailMkt')) {
     document.getElementById('abaEmailMkt').style.display = aba === 'emailMkt' ? 'block' : 'none';
   }
+  if(document.getElementById('abaSMS')) {
+    document.getElementById('abaSMS').style.display = aba === 'sms' ? 'block' : 'none';
+  }
+var tabSMS = document.getElementById('tabSMS');
+if(tabSMS) {
+    tabSMS.style.borderBottomColor = aba === 'sms' ? '#FFB800' : 'transparent';
+    tabSMS.style.color             = aba === 'sms' ? '#FFB800' : 'var(--gray)';
+    tabSMS.style.background        = aba === 'sms' ? 'rgba(255,184,0,0.08)' : 'transparent';
+}
   var tabEM = document.getElementById('tabEmailMkt');
   if(tabEM) {
     tabEM.style.borderBottomColor = aba === 'emailMkt' ? 'var(--cyan)' : 'transparent';
