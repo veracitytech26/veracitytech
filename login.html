@@ -6181,6 +6181,210 @@ function simularLeadAtendeu() {
     abrirTelaConsultor(lead);
   }
 }
+  var _smsAtivo = false;
+var _smsPausado = false;
+var _contatosSMS = null;
+
+var TEMPLATES_SMS = {
+  prospeccao: 'Oi {empresa}! Sou o Rodrigo da Veracity Seguros. Te mandei msg no WhatsApp sobre plano de saude empresarial. Da uma olhada! wa.me/5521965307183',
+  retorno: 'Oi {empresa}! Passando para retomar nosso contato sobre plano de saude. Pode falar agora? wa.me/5521965307183',
+  oferta: 'Oi {empresa}! Temos condicoes especiais em planos de saude empresarial este mes. Quer saber mais? wa.me/5521965307183',
+  custom: ''
+};
+
+function aplicarTemplateSMS() {
+  var tmpl = document.getElementById('smsTemplate').value;
+  var el = document.getElementById('smsMensagem');
+  if (el) el.value = TEMPLATES_SMS[tmpl] || '';
+  atualizarContadorSMS();
+  atualizarPreviewSMS();
+}
+
+function atualizarContadorSMS() {
+  var el = document.getElementById('smsMensagem');
+  var cont = document.getElementById('smsContador');
+  if (!el || !cont) return;
+  var len = el.value.length;
+  cont.textContent = len + '/160';
+  cont.style.color = len > 160 ? '#FF4D4D' : len > 140 ? '#FFB800' : 'var(--cyan)';
+  atualizarPreviewSMS();
+}
+
+function atualizarPreviewSMS() {
+  var msg = document.getElementById('smsMensagem') ? document.getElementById('smsMensagem').value : '';
+  var prev = document.getElementById('smsPreviewTxt');
+  if (prev) prev.textContent = msg.replace(/\{empresa\}/gi, '[Nome da Empresa]') || 'Sua mensagem aparecerá aqui...';
+  var qtd = 0;
+  if (_contatosSMS && _contatosSMS.length) {
+    qtd = _contatosSMS.filter(function(e) { return e.whatsapp || e.telefone; }).length;
+  } else {
+    qtd = (currentResults || []).filter(function(e) {
+      var tels = e.contato_telefonico || [];
+      return tels.some(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); }) || tels.length > 0;
+    }).length;
+  }
+  var el = document.getElementById('smsQtdEmpresas');
+  if (el) el.textContent = qtd;
+}
+
+function iniciarAbaSMS() {
+  var p = currentProfile || {};
+  var busca = (p.credits_total || 0) - (p.credits_used || 0);
+  var sb = document.getElementById('smsSaldoBusca');
+  if (sb) sb.textContent = busca >= 0 ? busca + ' disponíveis' : '—';
+  atualizarBannerContatosSMS();
+  aplicarTemplateSMS();
+  carregarCampanhasSMS();
+}
+
+function atualizarBannerContatosSMS() {
+  var banner = document.getElementById('smsBannerHistorico');
+  var txt = document.getElementById('smsBannerTxt');
+  if (!banner) return;
+  if (_contatosSMS && _contatosSMS.length) {
+    banner.style.display = 'flex';
+    if (txt) txt.textContent = _contatosSMS.length + ' empresa(s) selecionada(s) do histórico';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function limparContatosSMS() {
+  _contatosSMS = null;
+  atualizarBannerContatosSMS();
+  atualizarPreviewSMS();
+}
+
+async function iniciarSMSMarketing() {
+  var mensagem = document.getElementById('smsMensagem') ? document.getElementById('smsMensagem').value.trim() : '';
+  var intervalo = document.getElementById('smsIntervalo') ? parseInt(document.getElementById('smsIntervalo').value) : 15;
+  if (!mensagem) { alert('Digite a mensagem!'); return; }
+  if (mensagem.length > 160) { alert('Mensagem muito longa! Máximo 160 caracteres.'); return; }
+  var fonte = _contatosSMS || (_contatosExterno && _contatosExterno.length ? _contatosExterno : null);
+  var contatos = [];
+  if (fonte) {
+    fonte.forEach(function(e) {
+      var tel = (e.whatsapp || e.telefone || '').replace(/[^0-9]/g, '');
+      if (!tel || tel.length < 10) return;
+      if (tel.startsWith('55') && tel.length > 11) tel = tel.slice(2);
+      contatos.push({ nome: e.nome || e.empresa || 'empresa', telefone: tel });
+    });
+  } else {
+    (currentResults || []).forEach(function(e) {
+      var tels = e.contato_telefonico || [];
+      var celObj = tels.find(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); });
+      var telRef = celObj || tels[0];
+      if (!telRef) return;
+      var tel = '';
+      if (telRef.completo) tel = telRef.completo.replace(/[^0-9]/g, '');
+      else if (telRef.ddd && telRef.numero) tel = telRef.ddd.replace(/[^0-9]/g, '') + telRef.numero.replace(/[^0-9]/g, '');
+      if (!tel || tel.length < 10) return;
+      if (tel.startsWith('55') && tel.length > 11) tel = tel.slice(2);
+      contatos.push({ nome: e.razao_social || 'empresa', telefone: tel });
+    });
+  }
+  if (!contatos.length) { alert('Nenhuma empresa com celular encontrada!'); return; }
+  if (!confirm('Disparar ' + contatos.length + ' SMS?\n\nMensagem: ' + mensagem.slice(0, 80) + '...')) return;
+  var statusDiv = document.getElementById('smsStatus');
+  var elEnv = document.getElementById('smsContEnviados');
+  var elOk = document.getElementById('smsContOk');
+  var elErr = document.getElementById('smsContErro');
+  var elBar = document.getElementById('smsProgressBar');
+  var elPct = document.getElementById('smsProgressText');
+  var elMsg = document.getElementById('smsStatusMsg');
+  var btnDis = document.getElementById('btnDispararSMS');
+  if (statusDiv) statusDiv.style.display = 'block';
+  if (btnDis) { btnDis.disabled = true; btnDis.textContent = 'DISPARANDO...'; }
+  _smsAtivo = true;
+  var totalOk = 0, totalErr = 0;
+  try {
+    var sess = null;
+    try { sess = (await db.auth.getSession()).data.session; } catch(e) {}
+    var tok = sess ? sess.access_token : '';
+    for (var i = 0; i < contatos.length; i++) {
+      if (!_smsAtivo) break;
+      var c = contatos[i];
+      var msgP = mensagem.replace(/\{empresa\}/gi, c.nome);
+      if (elMsg) elMsg.textContent = 'Enviando para ' + c.telefone + ' (' + (i+1) + '/' + contatos.length + ')...';
+      try {
+        var res = await fetch('/api/sms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+          body: JSON.stringify({ action: 'enviar_um', telefone: c.telefone, mensagem: msgP, nome_empresa: c.nome })
+        });
+        var data = await res.json();
+        if (res.ok && data.ok) totalOk++;
+        else totalErr++;
+      } catch(eReq) { totalErr++; }
+      if (elEnv) elEnv.textContent = i + 1;
+      if (elOk) elOk.textContent = totalOk;
+      if (elErr) elErr.textContent = totalErr;
+      var pct = Math.round(((i+1) / contatos.length) * 100);
+      if (elBar) elBar.style.width = pct + '%';
+      if (elPct) elPct.textContent = pct + '%';
+      if (i < contatos.length - 1 && _smsAtivo) {
+        await new Promise(function(r) { setTimeout(r, intervalo * 1000); });
+      }
+    }
+    _smsAtivo = false;
+    if (btnDis) { btnDis.disabled = false; btnDis.textContent = 'DISPARAR SMS'; }
+    if (elMsg) elMsg.textContent = 'Concluído: ' + totalOk + ' enviados, ' + totalErr + ' erros.';
+    try {
+      var hist = JSON.parse(localStorage.getItem('historico_sms') || '[]');
+      hist.unshift({ id: Date.now().toString(), mensagem: mensagem, total: contatos.length, enviados: totalOk, erros: totalErr, data: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
+      hist = hist.slice(0, 50);
+      localStorage.setItem('historico_sms', JSON.stringify(hist));
+      carregarCampanhasSMS();
+    } catch(e) {}
+    alert('SMS concluído!\n' + totalOk + ' mensagens enviadas.' + (totalErr ? '\n' + totalErr + ' erros.' : ''));
+  } catch(e) {
+    _smsAtivo = false;
+    if (btnDis) { btnDis.disabled = false; btnDis.textContent = 'DISPARAR SMS'; }
+    alert('Erro no disparo: ' + e.message);
+  }
+}
+
+function carregarCampanhasSMS() {
+  var cont = document.getElementById('smsListaCampanhas');
+  if (!cont) return;
+  try {
+    var hist = JSON.parse(localStorage.getItem('historico_sms') || '[]');
+    if (!hist.length) { cont.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray);font-size:12px;">Nenhuma campanha enviada ainda.</div>'; return; }
+    cont.innerHTML = hist.map(function(c) {
+      return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);gap:12px;flex-wrap:wrap;">'
+        + '<div><div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;">' + c.mensagem.slice(0, 60) + '...</div>'
+        + '<div style="font-size:11px;color:var(--gray);">' + c.enviados + '/' + c.total + ' enviados' + (c.erros ? ' · ' + c.erros + ' erros' : '') + '</div></div>'
+        + '<div style="font-size:11px;color:#8896B3;white-space:nowrap;">' + c.data + ' ' + c.hora + '</div>'
+        + '</div>';
+    }).join('');
+  } catch(e) { cont.innerHTML = '<div style="font-size:12px;color:var(--gray);padding:12px;">Erro ao carregar.</div>'; }
+}
+
+async function enviarSMSTeste() {
+  var tel = document.getElementById('smsTesteTel') ? document.getElementById('smsTesteTel').value.trim() : '';
+  var msg = document.getElementById('smsMensagem') ? document.getElementById('smsMensagem').value.trim() : '';
+  if (!tel) { alert('Digite um número para teste!'); return; }
+  if (!msg) { alert('Digite a mensagem primeiro!'); return; }
+  var btn = document.querySelector('[onclick="enviarSMSTeste()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+  try {
+    var sess = null;
+    try { sess = (await db.auth.getSession()).data.session; } catch(e) {}
+    var tok = sess ? sess.access_token : '';
+    var res = await fetch('/api/sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body: JSON.stringify({ action: 'enviar_um', telefone: tel, mensagem: msg, nome_empresa: 'Teste' })
+    });
+    var data = await res.json();
+    if (res.ok && data.ok) alert('SMS de teste enviado para ' + tel + '!');
+    else alert('Erro ao enviar: ' + JSON.stringify(data));
+  } catch(e) {
+    alert('Erro: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'ENVIAR TESTE'; }
+  }
+}
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
