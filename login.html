@@ -6404,6 +6404,72 @@ async function enviarSMSTeste() {
     if (btn) { btn.disabled = false; btn.textContent = 'ENVIAR TESTE'; }
   }
 }
+  function dispararAbertasWhatsApp() {
+  var dados = window.abertasHojeData || [];
+  if (!dados.length) { alert('Faça uma busca primeiro!'); return; }
+  _contatosExterno = dados.map(function(e) {
+    var tels = e.contato_telefonico || [];
+    var celObj = tels.find(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); });
+    var telRef = celObj || tels[0];
+    var celNum = '';
+    if (telRef) {
+      if (telRef.completo) celNum = telRef.completo.replace(/[^0-9]/g, '');
+      else if (telRef.ddd && telRef.numero) celNum = telRef.ddd.replace(/[^0-9]/g, '') + telRef.numero.replace(/[^0-9]/g, '');
+      if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
+    }
+    return {
+      nome: e.razao_social || '',
+      empresa: e.razao_social || '',
+      whatsapp: celNum.length >= 10 ? '55' + celNum : '',
+      email: (e.contato_email && e.contato_email[0] && e.contato_email[0].email) || '',
+      cidade: (e.endereco && e.endereco.municipio) || '',
+      uf: (e.endereco && e.endereco.uf) || '',
+      segmento: (e.atividade_principal && e.atividade_principal.descricao) || '',
+      origem: 'abertas_hoje'
+    };
+  }).filter(function(c) { return c.whatsapp; });
+  if (!_contatosExterno.length) { alert('Nenhuma empresa com WhatsApp encontrada!'); return; }
+  mostrarNovaCampanha();
+}
+
+function dispararAbertasSMS() {
+  var dados = window.abertasHojeData || [];
+  if (!dados.length) { alert('Faça uma busca primeiro!'); return; }
+  _contatosSMS = dados.map(function(e) {
+    var tels = e.contato_telefonico || [];
+    var celObj = tels.find(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); });
+    var telRef = celObj || tels[0];
+    var celNum = '';
+    if (telRef) {
+      if (telRef.completo) celNum = telRef.completo.replace(/[^0-9]/g, '');
+      else if (telRef.ddd && telRef.numero) celNum = telRef.ddd.replace(/[^0-9]/g, '') + telRef.numero.replace(/[^0-9]/g, '');
+      if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
+    }
+    return {
+      nome: e.razao_social || '',
+      empresa: e.razao_social || '',
+      telefone: celNum.length >= 10 ? celNum : '',
+      origem: 'abertas_hoje'
+    };
+  }).filter(function(c) { return c.telefone; });
+  if (!_contatosSMS.length) { alert('Nenhuma empresa com celular encontrada!'); return; }
+  mostrarAba('sms');
+}
+
+function dispararAbertasEmail() {
+  var dados = window.abertasHojeData || [];
+  if (!dados.length) { alert('Faça uma busca primeiro!'); return; }
+  _contatosExterno = dados.map(function(e) {
+    return {
+      nome: e.razao_social || '',
+      empresa: e.razao_social || '',
+      email: (e.contato_email && e.contato_email[0] && e.contato_email[0].email) || '',
+      origem: 'abertas_hoje'
+    };
+  }).filter(function(c) { return c.email && c.email.includes('@'); });
+  if (!_contatosExterno.length) { alert('Nenhuma empresa com email encontrada!'); return; }
+  mostrarAba('emailMkt');
+}
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
