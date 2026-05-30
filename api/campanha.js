@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const ZAPI_TOKEN = 'A2477B3E3DF335B5628DFAFB';
   const ZAPI_CLIENT_TOKEN = 'F74077534357d405ca497b01736c52b96S';
   const ZAPI_URL = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
-  const DELAY_MS = 180000; // 3 minutos
+  const DELAY_MS = 30000; // 30 segundos
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
