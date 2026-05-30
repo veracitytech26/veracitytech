@@ -3647,6 +3647,12 @@ async function buscarAbertasHoje() {
     const btnExpAbertas = document.getElementById('btnExportAbertas');
     if (btnExpAbertas) {
       btnExpAbertas.style.display = 'inline-block';
+      var btnWA = document.getElementById('btnDispararAbertasWA');
+var btnSMS = document.getElementById('btnDispararAbertasSMS');
+var btnEmail = document.getElementById('btnDispararAbertasEmail');
+if (btnWA) btnWA.style.display = 'inline-block';
+if (btnSMS) btnSMS.style.display = 'inline-block';
+if (btnEmail) btnEmail.style.display = 'inline-block';
       btnExpAbertas.textContent = '↓ EXPORTAR CSV (' + empresas_ok.length + ')';
     }
 
