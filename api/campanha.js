@@ -12,9 +12,6 @@ export default async function handler(req, res) {
   const ZAPI_TOKEN = 'A2477B3E3DF335B5628DFAFB';
   const ZAPI_CLIENT_TOKEN = 'F74077534357d405ca497b01736c52b96S';
   const ZAPI_URL = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
-  const DELAY_MS = 30000; // 30 segundos
-
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   try {
     const authHeader = req.headers.authorization;
@@ -28,7 +25,7 @@ export default async function handler(req, res) {
     const userId = userData.id;
     if (!userId) return res.status(401).json({ error: 'Usuário não encontrado' });
 
-    const { action, campanha_id, dados } = req.body;
+    const { action, campanha_id, dados, contato_id } = req.body;
 
     // ── CRIAR CAMPANHA ──
     if (action === 'criar') {
@@ -49,11 +46,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, campanha_id: camp.id });
     }
 
-    // ── DISPARAR TUDO NO SERVIDOR ──
-    // ── ENVIAR UMA MENSAGEM POR VEZ (chamado pelo frontend) ──
     // ── LISTAR CONTATOS PENDENTES ──
     if (action === 'listar_pendentes') {
-      const { campanha_id } = body;
       if (!campanha_id) return res.status(400).json({ error: 'campanha_id obrigatório' });
       const cRes = await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos?campanha_id=eq.${campanha_id}&status=eq.pendente&select=id,telefone,mensagem&order=created_at.asc`, {
         headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
@@ -61,10 +55,10 @@ export default async function handler(req, res) {
       const contatos = await cRes.json();
       return res.status(200).json({ ok: true, contatos: contatos || [] });
     }
-    if (action === 'enviar_um') {
-      const { campanha_id, contato_id } = body;
-      if (!campanha_id || !contato_id) return res.status(400).json({ error: 'Dados incompletos' });
 
+    // ── ENVIAR UMA MENSAGEM POR VEZ ──
+    if (action === 'enviar_um') {
+      if (!campanha_id || !contato_id) return res.status(400).json({ error: 'Dados incompletos' });
       const cRes = await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos?id=eq.${contato_id}&campanha_id=eq.${campanha_id}&select=*`, {
         headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
       });
@@ -89,116 +83,19 @@ export default async function handler(req, res) {
         body: JSON.stringify({ status: sucesso ? 'enviada' : 'erro', enviado_em: new Date().toISOString() })
       });
 
-      return res.status(200).json({ ok: sucesso, telefone: telFull });
-    }
-    if (action === 'disparar_tudo') {
-
-      // Verifica se o add-on Veracity Disparo está ativo e não vencido
-      const perfilRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=addon_disparo,disparo_vencimento`, {
-        headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
-      });
-      const perfis = await perfilRes.json();
-      const perfil = perfis && perfis[0];
-
-      if (!perfil || !perfil.addon_disparo) {
-        return res.status(403).json({ error: 'Veracity Disparo não contratado. Entre em contato para ativar.', code: 'NO_ADDON' });
-      }
-
-      if (perfil.disparo_vencimento) {
-        const venc = new Date(perfil.disparo_vencimento);
-        if (venc < new Date()) {
-          return res.status(403).json({ error: 'Seu Veracity Disparo venceu em ' + venc.toLocaleDateString('pt-BR') + '. Renove para continuar disparando.', code: 'ADDON_EXPIRED' });
-        }
-      }
-
-      // Busca contatos pendentes da campanha
-      const contatosRes = await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos?campanha_id=eq.${campanha_id}&status=eq.pendente&order=created_at.asc`, {
-        headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
-      });
-      const contatos = await contatosRes.json();
-
-      if (!contatos || !contatos.length) {
-        return res.status(200).json({ ok: true, enviadas: 0, msg: 'Nenhum contato pendente' });
-      }
-
-      let enviadas = 0;
-      let erros = 0;
-
-      for (let i = 0; i < contatos.length; i++) {
-        const c = contatos[i];
-
-        // Verifica se campanha foi pausada/cancelada
-        const campCheck = await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}&select=status`, {
+      if (sucesso) {
+        const campAtual = await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}&select=enviadas`, {
           headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
         });
-        const campData = await campCheck.json();
-        if (!campData[0] || campData[0].status === 'pausada' || campData[0].status === 'cancelada') {
-          return res.status(200).json({ ok: true, enviadas, parado: true, msg: 'Campanha pausada ou cancelada' });
-        }
-
-        // Envia mensagem
-        const tel = c.telefone.replace(/[^0-9]/g, '');
-        const telFull = tel.startsWith('55') ? tel : '55' + tel;
-        const zapiRes = await fetch(`${ZAPI_URL}/send-text`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'client-token': ZAPI_CLIENT_TOKEN },
-          body: JSON.stringify({ phone: telFull, message: c.mensagem })
-        });
-        const zapiData = await zapiRes.json();
-        const messageId = zapiData.zaapId || zapiData.messageId || null;
-        const sucesso = zapiRes.ok && !zapiData.error;
-
-        // Atualiza status do contato
-        await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos?id=eq.${c.id}`, {
+        const cd = await campAtual.json();
+        await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}`, {
           method: 'PATCH',
           headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: sucesso ? 'enviada' : 'erro', message_id: messageId })
-        });
-
-        // Atualiza contador
-        if (sucesso) {
-          enviadas++;
-          const campAtual = await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}&select=enviadas`, {
-            headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
-          });
-          const cd = await campAtual.json();
-          await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enviadas: (cd[0]?.enviadas || 0) + 1 })
-          });
-        } else {
-          erros++;
-        }
-
-        // Aguarda 3 minutos antes do próximo — exceto no último
-        if (i < contatos.length - 1) {
-          await delay(DELAY_MS);
-        }
-      }
-
-      // Marca campanha como concluída
-      await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}`, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'concluida' })
-      });
-
-      // Salva métrica de disparos
-      if (enviadas > 0) {
-        const campInfo = await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}&select=nome`, {
-          headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
-        });
-        const campInfoData = await campInfo.json();
-        const campNome = campInfoData[0]?.nome || 'Campanha';
-        await fetch(`${SUPABASE_URL}/rest/v1/metricas_disparos`, {
-          method: 'POST',
-          headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ user_id: userId, campanha_nome: campNome, total_enviados: enviadas, total_erros: erros })
+          body: JSON.stringify({ enviadas: ((cd[0] && cd[0].enviadas) || 0) + 1 })
         });
       }
 
-      return res.status(200).json({ ok: true, enviadas, erros });
+      return res.status(200).json({ ok: sucesso, telefone: telFull });
     }
 
     // ── PAUSAR CAMPANHA ──
@@ -244,26 +141,7 @@ export default async function handler(req, res) {
       const zapiData = await zapiRes.json();
       const messageId = zapiData.zaapId || zapiData.messageId || null;
       const sucesso = zapiRes.ok && !zapiData.error;
-      if (cId && cId !== 'teste') {
-        await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos?id=eq.${cId}`, {
-          method: 'PATCH',
-          headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: sucesso ? 'enviada' : 'erro', message_id: messageId })
-        });
-      }
-      if (sucesso && campanha_id && campanha_id !== 'teste') {
-        const campAtual = await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}&select=enviadas`, {
-          headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
-        });
-        const campData2 = await campAtual.json();
-        const enviadas = (campData2[0]?.enviadas || 0) + 1;
-        await fetch(`${SUPABASE_URL}/rest/v1/campanhas?id=eq.${campanha_id}`, {
-          method: 'PATCH',
-          headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enviadas })
-        });
-      }
-      return res.status(200).json({ ok: sucesso, messageId, error: zapiData.error, zapiData });
+      return res.status(200).json({ ok: sucesso, messageId, error: zapiData.error });
     }
 
     // ── LISTAR CAMPANHAS ──
