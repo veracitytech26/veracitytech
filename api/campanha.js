@@ -50,6 +50,37 @@ export default async function handler(req, res) {
     }
 
     // ── DISPARAR TUDO NO SERVIDOR ──
+    // ── ENVIAR UMA MENSAGEM POR VEZ (chamado pelo frontend) ──
+    if (action === 'enviar_um') {
+      const { campanha_id, contato_id } = body;
+      if (!campanha_id || !contato_id) return res.status(400).json({ error: 'Dados incompletos' });
+
+      const cRes = await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos?id=eq.${contato_id}&campanha_id=eq.${campanha_id}&select=*`, {
+        headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
+      });
+      const cs = await cRes.json();
+      const c = cs && cs[0];
+      if (!c) return res.status(404).json({ error: 'Contato não encontrado' });
+
+      const tel = c.telefone.replace(/[^0-9]/g, '');
+      const telFull = tel.startsWith('55') ? tel : '55' + tel;
+
+      const zapiRes = await fetch(`${ZAPI_URL}/send-text`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'client-token': ZAPI_CLIENT_TOKEN },
+        body: JSON.stringify({ phone: telFull, message: c.mensagem })
+      });
+      const zapiData = await zapiRes.json();
+      const sucesso = zapiRes.ok && !zapiData.error;
+
+      await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos?id=eq.${contato_id}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: sucesso ? 'enviada' : 'erro', enviado_em: new Date().toISOString() })
+      });
+
+      return res.status(200).json({ ok: sucesso, telefone: telFull });
+    }
     if (action === 'disparar_tudo') {
 
       // Verifica se o add-on Veracity Disparo está ativo e não vencido
