@@ -3883,8 +3883,8 @@ async function dispararCampanha(campanhaId, contatos, intervalo, tok) {
   await carregarCampanhas();
 
   try {
-    var sessD = (await db.auth.getSession()).data.session;
-    var tokD = sessD ? sessD.access_token : tok;
+    var sessD = (await db.auth.refreshSession()).data.session || (await db.auth.getSession()).data.session;
+var tokD = sessD ? sessD.access_token : tok;
 
     var cRes = await fetch('/api/campanha', {
       method: 'POST',
