@@ -3880,23 +3880,45 @@ let campanhaPausada = false;
 
 async function dispararCampanha(campanhaId, contatos, intervalo, tok) {
   campanhaAtiva = true;
-
-  // Mostra status na tela
   await carregarCampanhas();
 
-  // Dispara tudo no servidor — não depende do navegador ficar aberto
   try {
-    const res = await fetch('/api/campanha', {
+    var sessD = (await db.auth.getSession()).data.session;
+    var tokD = sessD ? sessD.access_token : tok;
+
+    var cRes = await fetch('/api/campanha', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
-      body: JSON.stringify({ action: 'disparar_tudo', campanha_id: campanhaId })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tokD },
+      body: JSON.stringify({ action: 'listar_pendentes', campanha_id: campanhaId })
     });
-    const data = await res.json();
-    console.log('Disparo concluído:', data);
-    // Tratar erros de add-on
-    if (data.code === 'NO_ADDON' || data.code === 'ADDON_EXPIRED' || data.error_code === 'NO_ADDON' || data.error_code === 'ADDON_EXPIRED') {
-      mostrarModalAddon(data.code || data.error_code);
+    var cData = await cRes.json();
+    var pendentes = cData.contatos || [];
+
+    if (!pendentes.length) {
+      console.log('Nenhum contato pendente');
+      campanhaAtiva = false;
+      await carregarCampanhas();
       return;
+    }
+
+    console.log('Disparando', pendentes.length, 'mensagens...');
+
+    for (var i = 0; i < pendentes.length; i++) {
+      if (!campanhaAtiva) break;
+      var c = pendentes[i];
+      try {
+        await fetch('/api/campanha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tokD },
+          body: JSON.stringify({ action: 'enviar_um', campanha_id: campanhaId, contato_id: c.id })
+        });
+        console.log('Enviado ' + (i+1) + '/' + pendentes.length + ' — ' + c.telefone);
+      } catch(e) {
+        console.error('Erro ao enviar:', c.telefone, e);
+      }
+      if (i < pendentes.length - 1 && campanhaAtiva) {
+        await new Promise(function(r) { setTimeout(r, intervalo * 1000); });
+      }
     }
   } catch(e) {
     console.error('Erro no disparo:', e);
