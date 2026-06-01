@@ -51,6 +51,16 @@ export default async function handler(req, res) {
 
     // ── DISPARAR TUDO NO SERVIDOR ──
     // ── ENVIAR UMA MENSAGEM POR VEZ (chamado pelo frontend) ──
+    // ── LISTAR CONTATOS PENDENTES ──
+    if (action === 'listar_pendentes') {
+      const { campanha_id } = body;
+      if (!campanha_id) return res.status(400).json({ error: 'campanha_id obrigatório' });
+      const cRes = await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos?campanha_id=eq.${campanha_id}&status=eq.pendente&select=id,telefone,mensagem&order=created_at.asc`, {
+        headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` }
+      });
+      const contatos = await cRes.json();
+      return res.status(200).json({ ok: true, contatos: contatos || [] });
+    }
     if (action === 'enviar_um') {
       const { campanha_id, contato_id } = body;
       if (!campanha_id || !contato_id) return res.status(400).json({ error: 'Dados incompletos' });
