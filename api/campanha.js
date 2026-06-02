@@ -30,20 +30,57 @@ export default async function handler(req, res) {
     // ── CRIAR CAMPANHA ──
     if (action === 'criar') {
       const { nome, template, mensagem, contatos } = dados;
+
+      // Busca todos os números que já receberam mensagem deste usuário
+      const jaEnviadosRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/campanha_contatos?user_id=eq.${userId}&status=in.(enviada,pendente)&select=telefone`,
+        { headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}` } }
+      );
+      const jaEnviados = jaEnviadosRes.ok ? (await jaEnviadosRes.json()) : [];
+      const telefonesJaEnviados = new Set(jaEnviados.map(j => j.telefone.replace(/[^0-9]/g, '')));
+
+      // Filtra contatos que ainda não receberam
+      const contatosFiltrados = contatos.filter(c => {
+        const tel = (c.telefone || '').replace(/[^0-9]/g, '');
+        return tel && !telefonesJaEnviados.has(tel);
+      });
+
+      const duplicados = contatos.length - contatosFiltrados.length;
+
+      if (!contatosFiltrados.length) {
+        return res.status(200).json({ ok: false, error: 'Todos os contatos já receberam mensagem anteriormente.', duplicados });
+      }
+
       const campRes = await fetch(`${SUPABASE_URL}/rest/v1/campanhas`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify({ user_id: userId, nome, template, mensagem, total: contatos.length, status: 'ativa' })
+        body: JSON.stringify({ user_id: userId, nome, template, mensagem, total: contatosFiltrados.length, status: 'ativa' })
       });
       const campData = await campRes.json();
       const camp = campData[0];
-      const contatosPayload = contatos.map(c => ({ campanha_id: camp.id, user_id: userId, nome: c.nome, telefone: c.telefone, mensagem: c.mensagem, status: 'pendente' }));
+
+      const contatosPayload = contatosFiltrados.map(c => ({
+        campanha_id: camp.id,
+        user_id: userId,
+        nome: c.nome,
+        telefone: c.telefone,
+        mensagem: c.mensagem,
+        status: 'pendente'
+      }));
+
       await fetch(`${SUPABASE_URL}/rest/v1/campanha_contatos`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': `Bearer ${SUPABASE_SERVICE}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(contatosPayload)
       });
-      return res.status(200).json({ ok: true, campanha_id: camp.id });
+
+      return res.status(200).json({
+        ok: true,
+        campanha_id: camp.id,
+        total: contatosFiltrados.length,
+        duplicados: duplicados,
+        msg: duplicados > 0 ? `${duplicados} contato(s) ignorado(s) por já terem recebido mensagem.` : null
+      });
     }
 
     // ── LISTAR CONTATOS PENDENTES ──
@@ -139,9 +176,8 @@ export default async function handler(req, res) {
         body: JSON.stringify({ phone: telFull, message: mensagem })
       });
       const zapiData = await zapiRes.json();
-      const messageId = zapiData.zaapId || zapiData.messageId || null;
       const sucesso = zapiRes.ok && !zapiData.error;
-      return res.status(200).json({ ok: sucesso, messageId, error: zapiData.error });
+      return res.status(200).json({ ok: sucesso, error: zapiData.error });
     }
 
     // ── LISTAR CAMPANHAS ──
