@@ -12,8 +12,10 @@ export default async function handler(req, res) {
   const TWILIO_TOKEN  = process.env.TWILIO_AUTH_TOKEN;
   const TWILIO_FROM   = process.env.TWILIO_FROM_NUMBER;
   const CLIENT_TOKEN  = 'F74077534357d405ca497b01736c52b96S';
+  const MEU_WHATSAPP  = '5521973855107'; // Rodrigo — aviso de lead quente fora do horário
 
-const SDR_SYSTEM = 'Voce e um assistente de vendas da Veracity Seguros, especializada em planos de saude empresariais no Rio de Janeiro.\n\nSeu objetivo e qualificar leads e marcar uma conversa com o consultor.\n\nREGRAS IMPORTANTES:\n- Seja natural, curto e direto. Maximo 2 frases por mensagem.\n- Nunca mencione que e uma IA\n- Use linguagem informal mas profissional\n- Nunca mande listas ou textos longos\n- Use emojis com moderacao\n- NUNCA encerre a conversa sem tentar marcar uma ligacao ou enviar proposta\n- NUNCA diga para o lead entrar em contato depois - voce que deve insistir\n\nFLUXO DE QUALIFICACAO:\n1. Quando confirmar que e o responsavel: pergunte se a empresa tem plano de saude\n2. Se TEM plano: pergunte quantas vidas tem na empresa\n3. Se NAO TEM plano: diga que tem opcoes excelentes e pergunte quantos funcionarios tem\n4. Apos saber o numero de vidas: diga que pode montar uma proposta e pergunte se pode ligar agora\n5. Se disser que nao tem interesse ainda: diga que entende e pergunte se pode enviar uma proposta rapida por aqui mesmo sem compromisso\n6. Se disser que vai pensar: pergunte qual o melhor horario para ligar e confirme\n7. Se aceitar ligacao ou horario: confirme e inclua [LEAD_QUENTE] no final\n8. Se recusar definitivamente apos 3 tentativas: agradeca e inclua [LEAD_FRIO] no final\n9. NUNCA desista antes de tentar pelo menos 3 vezes de formas diferentes\n\nEXEMPLOS QUANDO RECUSAR:\n- Entendo! Mas sao so 5 minutinhos, vale muito a pena! Consigo te ligar agora?\n- Sem problema! Posso mandar uma proposta rapida por aqui mesmo, sem compromisso?\n- Tudo bem! Qual seria o melhor horario para voce amanha?\n\nCLASSIFICACAO:\n- Quando aceitar conversar com o consultor: inclua [LEAD_QUENTE] no final\n- Quando recusar definitivamente: inclua [LEAD_FRIO] no final\n\nVoce representa: Rodrigo Monteiro - Especialista em Planos de Saude Empresariais';
+  const SDR_SYSTEM = 'Voce e um assistente de vendas da Veracity Seguros, especializada em planos de saude no Rio de Janeiro. Seu nome e Rodrigo.\n\nSeu objetivo e qualificar leads e conectar com o consultor.\n\nREGRAS:\n- Seja natural, curto e direto. Maximo 2 frases por mensagem.\n- Nunca diga que e uma IA\n- Use linguagem informal mas profissional\n- Nunca mande listas ou textos longos\n- Use emojis com moderacao\n- NUNCA encerre sem tentar pelo menos 3 vezes\n\nFLUXO:\n1. Quando o lead responder qualquer coisa: diga "Que bom! Tenho uma novidade especial esse mes de Copa. Voce e sua familia ja tem plano de saude hoje?"\n2. Se TEM plano: pergunte "Esta satisfeito com o valor que paga hoje?"\n3. Se NAO esta satisfeito ou NAO tem plano: diga "Esse mes estamos com condicao exclusiva no Bradesco — primeira mensalidade por nossa conta! Posso te apresentar as opcoes?"\n4. Se aceitar: diga que vai conectar com o consultor agora e inclua [LEAD_QUENTE]\n5. Se pedir para ligar depois: pergunte o melhor horario e inclua [LEAD_QUENTE]\n6. Se recusar 1a vez: "Entendo! Mas sao so 5 minutinhos e pode fazer diferenca no seu bolso. Consigo te ligar agora?"\n7. Se recusar 2a vez: "Sem problema! Posso te mandar uma proposta aqui mesmo sem compromisso?"\n8. Se recusar 3a vez: agradeca e inclua [LEAD_FRIO]\n\nCLASSIFICACAO:\n- Aceitar falar com consultor: inclua [LEAD_QUENTE]\n- Recusar definitivamente: inclua [LEAD_FRIO]\n\nVoce representa: Rodrigo Monteiro - Especialista em Planos de Saude';
+
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const tipo = body.type || body.event;
@@ -27,6 +29,11 @@ const SDR_SYSTEM = 'Voce e um assistente de vendas da Veracity Seguros, especial
     const fromMe   = body.fromMe || false;
 
     if (!phone || !mensagem || fromMe) {
+      return res.status(200).json({ ok: true });
+    }
+
+    // Não responde para o próprio número do gestor
+    if (phone === MEU_WHATSAPP || phone === '21973855107') {
       return res.status(200).json({ ok: true });
     }
 
@@ -52,38 +59,68 @@ const SDR_SYSTEM = 'Voce e um assistente de vendas da Veracity Seguros, especial
     const isFrio   = resposta.includes('[LEAD_FRIO]');
     resposta = resposta.replace('[LEAD_QUENTE]', '').replace('[LEAD_FRIO]', '').trim();
 
+    // Salva conversa
     await fetch(SUPABASE_URL + '/rest/v1/sdr_conversas', {
       method: 'POST',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone: phone, role: 'user', content: mensagem, created_at: new Date().toISOString() })
     });
-
     await fetch(SUPABASE_URL + '/rest/v1/sdr_conversas', {
       method: 'POST',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone: phone, role: 'assistant', content: resposta, created_at: new Date().toISOString() })
     });
 
+    // Envia resposta
     await fetch(ZAPI_URL + '/send-text', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'client-token': CLIENT_TOKEN },
       body: JSON.stringify({ phone: phone, message: resposta })
     });
 
+    // Se LEAD QUENTE
     if (isQuente && TWILIO_SID) {
-      var toNumber = phone.replace(/[^0-9]/g, '');
-      if (toNumber.length <= 11) toNumber = '+55' + toNumber;
-      else if (toNumber.charAt(0) !== '+') toNumber = '+' + toNumber;
+      // Verifica horário comercial (09h às 18h horário de Brasília)
+      var agora = new Date();
+      var horaBrasilia = agora.getUTCHours() - 3; // UTC-3
+      if (horaBrasilia < 0) horaBrasilia += 24;
+      var dentroDoHorario = horaBrasilia >= 9 && horaBrasilia < 18;
 
-      var twiml = '<?xml version="1.0" encoding="UTF-8"?><Response><Say language="pt-BR">Conectando com o consultor da Veracity Seguros.</Say></Response>';
-      var auth = Buffer.from(TWILIO_SID + ':' + TWILIO_TOKEN).toString('base64');
+      if (dentroDoHorario) {
+        // DISPARA LIGAÇÃO
+        var toNumber = phone.replace(/[^0-9]/g, '');
+        if (toNumber.length <= 11) toNumber = '+55' + toNumber;
+        else if (toNumber.charAt(0) !== '+') toNumber = '+' + toNumber;
 
-      await fetch('https://api.twilio.com/2010-04-01/Accounts/' + TWILIO_SID + '/Calls.json', {
-        method: 'POST',
-        headers: { 'Authorization': 'Basic ' + auth, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ To: toNumber, From: TWILIO_FROM, Twiml: twiml })
-      });
+        var twiml = '<?xml version="1.0" encoding="UTF-8"?><Response><Say language="pt-BR">Conectando com o consultor da Veracity Seguros.</Say></Response>';
+        var auth = Buffer.from(TWILIO_SID + ':' + TWILIO_TOKEN).toString('base64');
 
+        await fetch('https://api.twilio.com/2010-04-01/Accounts/' + TWILIO_SID + '/Calls.json', {
+          method: 'POST',
+          headers: { 'Authorization': 'Basic ' + auth, 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ To: toNumber, From: TWILIO_FROM, Twiml: twiml })
+        });
+
+      } else {
+        // FORA DO HORÁRIO — avisa o Rodrigo no WhatsApp
+        var historicoTexto = historico.slice(-4).map(function(h) {
+          return (h.role === 'user' ? 'Cliente' : 'SDR') + ': ' + h.content;
+        }).join('\n');
+
+        var avisoMsg = '🔥 *LEAD QUENTE fora do horário!*\n\n'
+          + '*Número:* ' + phone + '\n'
+          + '*Hora:* ' + agora.toLocaleTimeString('pt-BR', {timeZone:'America/Sao_Paulo'}) + '\n\n'
+          + '*Conversa:*\n' + historicoTexto + '\n\n'
+          + '📞 Ligue amanhã às 09h!';
+
+        await fetch(ZAPI_URL + '/send-text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'client-token': CLIENT_TOKEN },
+          body: JSON.stringify({ phone: MEU_WHATSAPP, message: avisoMsg })
+        });
+      }
+
+      // Atualiza status no Supabase
       await fetch(SUPABASE_URL + '/rest/v1/sdr_leads?phone=eq.' + phone, {
         method: 'PATCH',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
