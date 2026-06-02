@@ -171,7 +171,54 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({ ok: true, resposta: resposta, isQuente: isQuente, isFrio: isFrio, isAgendado: isAgendado });
+} else if (req.method === 'GET' || (body && body.action === 'followup')) {
+    // ── FOLLOW-UP AUTOMÁTICO ──
+    var agora2 = new Date();
+    var horaBrasilia2 = agora2.getUTCHours() - 3;
+    if (horaBrasilia2 < 0) horaBrasilia2 += 24;
+    if (horaBrasilia2 < 9 || horaBrasilia2 >= 18) {
+      return res.status(200).json({ ok: true, msg: 'Fora do horario comercial' });
+    }
 
+    var MSGS_FU = {
+      1: 'Oi! Passei por aqui ontem mas nao vi sua resposta 😊 Ainda tenho aquela novidade especial de Copa para voce. Vale a pena conhecer!',
+      2: 'Ultima chance! 🏆 Nossa condicao exclusiva no Bradesco encerra essa semana — primeira mensalidade por nossa conta. Posso te apresentar as opcoes?'
+    };
+
+    await fetch(SUPABASE_URL + '/rest/v1/rpc/agendar_followups', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+
+    var fuRes = await fetch(SUPABASE_URL + '/rest/v1/sdr_followup?enviado=eq.false&select=*&order=created_at.asc&limit=50', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    var followups = fuRes.ok ? (await fuRes.json()) : [];
+
+    var enviadosFU = 0;
+    for (var fi = 0; fi < followups.length; fi++) {
+      var fu = followups[fi];
+      var msgFU = MSGS_FU[fu.tentativa] || MSGS_FU[1];
+      var telFU = fu.phone.replace(/[^0-9]/g, '');
+      var telFullFU = telFU.startsWith('55') ? telFU : '55' + telFU;
+      var zFU = await fetch(ZAPI_URL + '/send-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'client-token': CLIENT_TOKEN },
+        body: JSON.stringify({ phone: telFullFU, message: msgFU })
+      });
+      var zFUData = await zFU.json();
+      if (zFU.ok && !zFUData.error) {
+        enviadosFU++;
+        await fetch(SUPABASE_URL + '/rest/v1/sdr_followup?id=eq.' + fu.id, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enviado: true, enviado_em: new Date().toISOString() })
+        });
+      }
+      if (fi < followups.length - 1) await new Promise(function(r) { setTimeout(r, 30000); });
+    }
+    return res.status(200).json({ ok: true, enviados: enviadosFU, total: followups.length });
   } catch(e) {
     console.error('Erro zapi-webhook:', e);
     return res.status(200).json({ ok: true });
