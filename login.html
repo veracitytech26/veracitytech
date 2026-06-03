@@ -2763,7 +2763,7 @@ function salvarNoHistorico(empresas) {
       if (!hist.find(h => h.cnpj === n.cnpj)) hist.unshift(n);
     });
     // Mantém máximo 500
-    hist = hist.slice(0, 500);
+    hist = hist.slice(0, 100000);
     localStorage.setItem('hist_empresas', JSON.stringify(hist));
   } catch(e) {}
 }
@@ -3641,7 +3641,7 @@ async function buscarAbertasHoje() {
       novos.forEach(function(n) {
         if (!hist.find(function(h) { return h.cnpj === n.cnpj; })) hist.unshift(n);
       });
-      hist = hist.slice(0, 500);
+      hist = hist.slice(0, 100000);
       localStorage.setItem('hist_empresas', JSON.stringify(hist));
     } catch(e) {}
     const btnExpAbertas = document.getElementById('btnExportAbertas');
@@ -6192,7 +6192,7 @@ function registrarResultadoConsultor(resultado) {
   try {
     var hist = JSON.parse(localStorage.getItem('historico_ligacoes') || '[]');
     hist.unshift({ id: Date.now().toString(), empresa: lead.empresa || lead.nome || '', socio: lead.socio || '', telefone: lead.telefone || '', resultado: resultado, anotacao: anotacao, duracao: _tcSegundos, data: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
-    hist = hist.slice(0, 500);
+    hist = hist.slice(0, 100000);
     localStorage.setItem('historico_ligacoes', JSON.stringify(hist));
   } catch(e) {}
   var statusCRM = { reuniao: 'negociacao', proposta: 'proposta', retorno: 'contato', sem_interesse: 'perdido' };
