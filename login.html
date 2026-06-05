@@ -450,7 +450,12 @@ async function inicializarTwilioSDK() {
       enableRingingState: true
     });
     _twilioDevice.on('ready', function() { console.log('Twilio Device pronto!'); });
-    _twilioDevice.on('error', function(e) { console.error('Twilio error:', e); });
+    _twilioDevice.on('error', function(e) { 
+  console.error('Twilio error:', e);
+  if (e && e.code === 20104) {
+    setTimeout(function() { inicializarTwilioSDK(); }, 2000);
+  }
+});
     _twilioDevice.on('connect', function(conn) { console.log('Conectado!'); simularLeadAtendeu(); });
     _twilioDevice.on('disconnect', function() { console.log('Desconectado'); });
 
