@@ -6498,6 +6498,17 @@ function dispararAbertasEmail() {
   if (!_contatosExterno.length) { alert('Nenhuma empresa com email encontrada!'); return; }
   mostrarAba('emailMkt');
 }
+  function dispararHistoricoSMS() {
+  var dados = JSON.parse(localStorage.getItem('veracity_historico') || '[]');
+  if (!dados.length) { alert('Nenhuma empresa no histórico!'); return; }
+  _contatosSMS = dados.map(function(e) {
+    var tel = (e.whatsapp || e.telefone || '').replace(/[^0-9]/g, '');
+    if (tel.startsWith('55') && tel.length > 11) tel = tel.slice(2);
+    return { nome: e.nome || e.empresa || 'empresa', telefone: tel };
+  }).filter(function(c) { return c.telefone && c.telefone.length >= 10; });
+  if (!_contatosSMS.length) { alert('Nenhuma empresa com celular no histórico!'); return; }
+  mostrarAba('sms');
+}
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
