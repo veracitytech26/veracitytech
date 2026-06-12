@@ -637,7 +637,68 @@ if (_twilioDevice.audio) {
       </div>
     </div>
   </div>
+<div id="abaDiscador" style="display:none;">
+  <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:#fff;">Power Dialer</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:4px;">Liga automaticamente para uma lista de contatos. Quando atender, estoura na tela.</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button id="btnIniciarDialer" onclick="iniciarPowerDialer()" style="background:#00E676;color:#080E1E;font-size:13px;font-weight:700;padding:10px 24px;border:none;cursor:pointer;">▶ INICIAR</button>
+        <button id="btnPausarDialer" onclick="pausarPowerDialer()" style="display:none;background:#FFB800;color:#080E1E;font-size:13px;font-weight:700;padding:10px 24px;border:none;cursor:pointer;">⏸ PAUSAR</button>
+        <button id="btnPararDialer" onclick="pararPowerDialer()" style="display:none;background:#FF4D4D;color:#fff;font-size:13px;font-weight:700;padding:10px 24px;border:none;cursor:pointer;">⏹ PARAR</button>
+      </div>
+    </div>
 
+    <!-- Status -->
+    <div id="dialerStatus" style="display:none;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.3);padding:16px 20px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#00E676;" id="dialerAtual">0</div>
+          <div style="font-size:10px;color:var(--gray);">ATUAL</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#fff;" id="dialerTotal">0</div>
+          <div style="font-size:10px;color:var(--gray);">TOTAL</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#00D4FF;" id="dialerAtendidas">0</div>
+          <div style="font-size:10px;color:var(--gray);">ATENDIDAS</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#FF4D4D;" id="dialerNaoAtendidas">0</div>
+          <div style="font-size:10px;color:var(--gray);">NAO ATENDIDAS</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:13px;color:#fff;" id="dialerMsgAtual">Aguardando...</div>
+    </div>
+
+    <!-- Configurações -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">TIMEOUT SEM RESPOSTA</label>
+        <select id="dialerTimeout" style="width:100%;background:#0D1530;border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+          <option value="15">15 segundos</option>
+          <option value="20" selected>20 segundos</option>
+          <option value="30">30 segundos</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">FONTE DOS CONTATOS</label>
+        <select id="dialerFonte" style="width:100%;background:#0D1530;border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+          <option value="busca">Busca atual</option>
+          <option value="historico">Histórico</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Lista de contatos -->
+    <div id="dialerLista" style="max-height:400px;overflow-y:auto;">
+      <div style="text-align:center;padding:40px;color:var(--gray);font-size:13px;">Selecione a fonte e clique em INICIAR para começar.</div>
+    </div>
+  </div>
+</div>
   <div id="abaCampanhas" style="display:none;">
   <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;margin-bottom:20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
