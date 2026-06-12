@@ -2781,6 +2781,15 @@ if(tabSMS) {
     tabSMS.style.color             = aba === 'sms' ? '#FFB800' : 'var(--gray)';
     tabSMS.style.background        = aba === 'sms' ? 'rgba(255,184,0,0.08)' : 'transparent';
 }
+  if(document.getElementById('abaDiscador')) {
+    document.getElementById('abaDiscador').style.display = aba === 'discador' ? 'block' : 'none';
+  }
+var tabDiscador = document.getElementById('tabDiscador');
+if(tabDiscador) {
+    tabDiscador.style.borderBottomColor = aba === 'discador' ? '#00E676' : 'transparent';
+    tabDiscador.style.color             = aba === 'discador' ? '#00E676' : 'var(--gray)';
+    tabDiscador.style.background        = aba === 'discador' ? 'rgba(0,230,118,0.08)' : 'transparent';
+}
   var tabEM = document.getElementById('tabEmailMkt');
   if(tabEM) {
     tabEM.style.borderBottomColor = aba === 'emailMkt' ? 'var(--cyan)' : 'transparent';
