@@ -6572,6 +6572,146 @@ function dispararAbertasEmail() {
   if (!_contatosSMS.length) { alert('Nenhuma empresa com celular no histórico!'); return; }
   mostrarAba('sms');
 }
+  var _dialerAtivo = false;
+var _dialerPausado = false;
+var _dialerLista = [];
+var _dialerIndex = 0;
+var _dialerAtendidas = 0;
+var _dialerNaoAtendidas = 0;
+var _dialerCallSid = null;
+
+function iniciarAbaPowerDialer() {
+  var fonte = document.getElementById('dialerFonte') ? document.getElementById('dialerFonte').value : 'busca';
+  var contatos = [];
+  if (fonte === 'historico') {
+    var hist = JSON.parse(localStorage.getItem('hist_empresas') || '[]');
+    hist.forEach(function(e) {
+      var tels = e.contato_telefonico || [];
+      var telObj = tels.find(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); }) || tels[0];
+      if (!telObj) return;
+      var tel = telObj.completo ? telObj.completo.replace(/[^0-9]/g, '') : ((telObj.ddd || '') + (telObj.numero || '')).replace(/[^0-9]/g, '');
+      if (tel.length >= 10) contatos.push({ nome: e.razao_social || '', empresa: e.razao_social || '', telefone: tel });
+    });
+  } else {
+    (currentResults || []).forEach(function(e) {
+      var tels = e.contato_telefonico || [];
+      var telObj = tels.find(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); }) || tels[0];
+      if (!telObj) return;
+      var tel = telObj.completo ? telObj.completo.replace(/[^0-9]/g, '') : ((telObj.ddd || '') + (telObj.numero || '')).replace(/[^0-9]/g, '');
+      if (tel.length >= 10) contatos.push({ nome: e.razao_social || '', empresa: e.razao_social || '', telefone: tel });
+    });
+  }
+  var lista = document.getElementById('dialerLista');
+  if (!contatos.length) {
+    if (lista) lista.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray);font-size:13px;">Nenhum contato com celular encontrado. Faca uma busca primeiro.</div>';
+    return;
+  }
+  _dialerLista = contatos;
+  if (lista) {
+    lista.innerHTML = contatos.map(function(c, i) {
+      return '<div id="dialerItem_' + i + '" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;">'
+        + '<div><div style="color:#fff;font-weight:600;">' + c.nome + '</div><div style="color:var(--gray);font-size:11px;">' + c.telefone + '</div></div>'
+        + '<div id="dialerItemStatus_' + i + '" style="font-size:11px;color:var(--gray);">Aguardando</div>'
+        + '</div>';
+    }).join('');
+  }
+  var total = document.getElementById('dialerTotal');
+  if (total) total.textContent = contatos.length;
+}
+
+async function iniciarPowerDialer() {
+  if (_dialerAtivo) return;
+  iniciarAbaPowerDialer();
+  if (!_dialerLista.length) return;
+  _dialerAtivo = true;
+  _dialerPausado = false;
+  _dialerIndex = 0;
+  _dialerAtendidas = 0;
+  _dialerNaoAtendidas = 0;
+  var status = document.getElementById('dialerStatus');
+  var btnIniciar = document.getElementById('btnIniciarDialer');
+  var btnPausar = document.getElementById('btnPausarDialer');
+  var btnParar = document.getElementById('btnPararDialer');
+  if (status) status.style.display = 'block';
+  if (btnIniciar) btnIniciar.style.display = 'none';
+  if (btnPausar) btnPausar.style.display = 'inline-block';
+  if (btnParar) btnParar.style.display = 'inline-block';
+  await rodarDialer();
+}
+
+async function rodarDialer() {
+  var timeout = parseInt(document.getElementById('dialerTimeout') ? document.getElementById('dialerTimeout').value : 20) * 1000;
+  while (_dialerAtivo && _dialerIndex < _dialerLista.length) {
+    if (_dialerPausado) {
+      await new Promise(function(r) { setTimeout(r, 1000); });
+      continue;
+    }
+    var c = _dialerLista[_dialerIndex];
+    var elAtual = document.getElementById('dialerAtual');
+    var elMsg = document.getElementById('dialerMsgAtual');
+    var elItem = document.getElementById('dialerItemStatus_' + _dialerIndex);
+    if (elAtual) elAtual.textContent = _dialerIndex + 1;
+    if (elMsg) elMsg.textContent = 'Ligando para ' + c.nome + ' — ' + c.telefone + '...';
+    if (elItem) elItem.innerHTML = '<span style="color:#FFB800;">Ligando...</span>';
+    try {
+      var sess = (await db.auth.getSession()).data.session;
+      var tok = sess ? sess.access_token : '';
+      var res = await fetch('/api/discador', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+        body: JSON.stringify({ action: 'ligar', telefone: c.telefone, lead_nome: c.nome, lead_empresa: c.empresa })
+      });
+      var data = await res.json();
+      if (data.ok) {
+        _dialerCallSid = data.call_sid;
+        // Aguarda timeout para ver se atendeu
+        await new Promise(function(r) { setTimeout(r, timeout); });
+        // Marca como não atendida (se atendeu a tela já estourou)
+        _dialerNaoAtendidas++;
+        var elNao = document.getElementById('dialerNaoAtendidas');
+        if (elNao) elNao.textContent = _dialerNaoAtendidas;
+        if (elItem) elItem.innerHTML = '<span style="color:#FF4D4D;">Nao atendeu</span>';
+      } else {
+        if (elItem) elItem.innerHTML = '<span style="color:#FF4D4D;">Erro</span>';
+      }
+    } catch(e) {
+      if (elItem) elItem.innerHTML = '<span style="color:#FF4D4D;">Erro</span>';
+    }
+    _dialerIndex++;
+    // Intervalo de 3 segundos entre ligações
+    if (_dialerAtivo && !_dialerPausado) {
+      await new Promise(function(r) { setTimeout(r, 3000); });
+    }
+  }
+  if (_dialerIndex >= _dialerLista.length) {
+    pararPowerDialer();
+    var elMsg = document.getElementById('dialerMsgAtual');
+    if (elMsg) elMsg.textContent = 'Lista concluida! ' + _dialerAtendidas + ' atendidas, ' + _dialerNaoAtendidas + ' nao atendidas.';
+  }
+}
+
+function pausarPowerDialer() {
+  _dialerPausado = !_dialerPausado;
+  var btn = document.getElementById('btnPausarDialer');
+  var elMsg = document.getElementById('dialerMsgAtual');
+  if (_dialerPausado) {
+    if (btn) btn.textContent = '▶ RETOMAR';
+    if (elMsg) elMsg.textContent = 'Pausado.';
+  } else {
+    if (btn) btn.textContent = '⏸ PAUSAR';
+  }
+}
+
+function pararPowerDialer() {
+  _dialerAtivo = false;
+  _dialerPausado = false;
+  var btnIniciar = document.getElementById('btnIniciarDialer');
+  var btnPausar = document.getElementById('btnPausarDialer');
+  var btnParar = document.getElementById('btnPararDialer');
+  if (btnIniciar) { btnIniciar.style.display = 'inline-block'; btnIniciar.textContent = '▶ INICIAR'; }
+  if (btnPausar) { btnPausar.style.display = 'none'; btnPausar.textContent = '⏸ PAUSAR'; }
+  if (btnParar) btnParar.style.display = 'none';
+}
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
