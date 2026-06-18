@@ -6572,7 +6572,7 @@ function dispararAbertasEmail() {
   mostrarAba('emailMkt');
 }
   function dispararHistoricoSMS() {
-  var dados = JSON.parse(localStorage.getItem('veracity_historico') || '[]');
+  var dados = JSON.parse(localStorage.getItem('hist_empresas') || '[]');
   if (!dados.length) { alert('Nenhuma empresa no histórico!'); return; }
   _contatosSMS = dados.map(function(e) {
     var tel = (e.whatsapp || e.telefone || '').replace(/[^0-9]/g, '');
