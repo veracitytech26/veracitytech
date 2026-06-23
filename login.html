@@ -6735,6 +6735,56 @@ function pararPowerDialer() {
   if (btnPausar) { btnPausar.style.display = 'none'; btnPausar.textContent = '⏸ PAUSAR'; }
   if (btnParar) btnParar.style.display = 'none';
 }
+  var _planilhaSMS = null;
+
+function importarPlanilhaSMS(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var info = document.getElementById('smsPlanilhaInfo');
+  var btnLimpar = document.getElementById('btnLimparPlanilhaSMS');
+  if (info) info.textContent = 'Lendo ' + file.name + '...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var texto = e.target.result;
+      var linhas = texto.split(/\r?\n/).filter(function(l) { return l.trim(); });
+      if (!linhas.length) { if(info) info.textContent = 'Arquivo vazio!'; return; }
+      var sep = linhas[0].includes(';') ? ';' : ',';
+      var header = linhas[0].toLowerCase().split(sep).map(function(h) { return h.trim().replace(/"/g,''); });
+      var iNome = header.indexOf('nome'); if(iNome<0) iNome=0;
+      var iTel  = header.findIndex(function(h){ return h.includes('tel') || h.includes('fone') || h.includes('whats') || h.includes('celular'); });
+      if (iTel < 0) iTel = 1;
+      var contatos = [];
+      for (var i = 1; i < linhas.length; i++) {
+        var cols = linhas[i].split(sep).map(function(c) { return c.trim().replace(/^"|"$/g,''); });
+        var tel = (cols[iTel] || '').replace(/[^0-9]/g,'');
+        if (!tel || tel.length < 10) continue;
+        contatos.push({ nome: cols[iNome] || 'Contato', telefone: tel });
+      }
+      if (!contatos.length) { if(info) info.textContent = 'Nenhum contato válido!'; return; }
+      _planilhaSMS = contatos;
+      _contatosSMS = contatos;
+      if (info) info.textContent = '✅ ' + contatos.length + ' contatos importados de ' + file.name;
+      if (btnLimpar) btnLimpar.style.display = 'inline-block';
+      atualizarPreviewSMS();
+    } catch(err) {
+      if (info) info.textContent = 'Erro: ' + err.message;
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function limparPlanilhaSMS() {
+  _planilhaSMS = null;
+  _contatosSMS = null;
+  var input = document.getElementById('smsPlanilha');
+  var info = document.getElementById('smsPlanilhaInfo');
+  var btnLimpar = document.getElementById('btnLimparPlanilhaSMS');
+  if (input) input.value = '';
+  if (info) info.textContent = 'Nenhum arquivo selecionado';
+  if (btnLimpar) btnLimpar.style.display = 'none';
+  atualizarPreviewSMS();
+}
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
