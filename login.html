@@ -6796,6 +6796,52 @@ function limparPlanilhaSMS() {
   if (btnLimpar) btnLimpar.style.display = 'none';
   atualizarPreviewSMS();
 }
+  function importarPlanilhaEmail(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var info = document.getElementById('emkPlanilhaInfo');
+  var btnLimpar = document.getElementById('btnLimparPlanilhaEmail');
+  if (info) info.textContent = 'Lendo ' + file.name + '...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var texto = e.target.result;
+      var linhas = texto.split(/\r?\n/).filter(function(l) { return l.trim(); });
+      if (!linhas.length) { if(info) info.textContent = 'Arquivo vazio!'; return; }
+      var sep = linhas[0].includes(';') ? ';' : ',';
+      var header = linhas[0].toLowerCase().split(sep).map(function(h) { return h.trim().replace(/"/g,''); });
+      var iNome = header.indexOf('nome'); if(iNome<0) iNome=0;
+      var iEmail = header.findIndex(function(h){ return h.includes('email') || h.includes('e-mail'); });
+      if (iEmail < 0) iEmail = 1;
+      var contatos = [];
+      for (var i = 1; i < linhas.length; i++) {
+        var cols = linhas[i].split(sep).map(function(c) { return c.trim().replace(/^"|"$/g,''); });
+        var email = (cols[iEmail] || '').trim();
+        if (!email || !email.includes('@')) continue;
+        contatos.push({ nome: cols[iNome] || 'Contato', email: email });
+      }
+      if (!contatos.length) { if(info) info.textContent = 'Nenhum contato válido!'; return; }
+      _contatosExterno = contatos;
+      if (info) info.textContent = '✅ ' + contatos.length + ' contatos importados de ' + file.name;
+      if (btnLimpar) btnLimpar.style.display = 'inline-block';
+      atualizarPreviewEmail();
+    } catch(err) {
+      if (info) info.textContent = 'Erro: ' + err.message;
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function limparPlanilhaEmail() {
+  _contatosExterno = null;
+  var input = document.getElementById('emkPlanilha');
+  var info = document.getElementById('emkPlanilhaInfo');
+  var btnLimpar = document.getElementById('btnLimparPlanilhaEmail');
+  if (input) input.value = '';
+  if (info) info.textContent = 'Nenhum arquivo selecionado';
+  if (btnLimpar) btnLimpar.style.display = 'none';
+  atualizarPreviewEmail();
+}
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
