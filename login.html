@@ -3901,12 +3901,13 @@ async function iniciarCampanha() {
   const contatos = [];
   fonteContatos.forEach(function(e) {
     var celNum = '';
-    if (e.whatsapp) {
-      // Formato historico: .whatsapp ja tem o numero
+    if (e.telefone) {
+      celNum = String(e.telefone).replace(/[^0-9]/g, '');
+      if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
+    } else if (e.whatsapp) {
       celNum = String(e.whatsapp).replace(/[^0-9]/g, '');
       if (celNum.startsWith('55') && celNum.length > 11) celNum = celNum.slice(2);
     } else {
-      // Formato busca: .contato_telefonico array
       var tels = e.contato_telefonico || [];
       var celObj = tels.find(function(t) { return t.tipo && (t.tipo.toLowerCase() === 'celular' || t.tipo.toLowerCase() === 'movel'); });
       var anyTel = celObj || tels[0];
