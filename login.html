@@ -6878,6 +6878,113 @@ function limparPlanilhaEmail() {
   if (btnLimpar) btnLimpar.style.display = 'none';
   atualizarPreviewEmail();
 }
+  function abrirModalCorretor() {
+  document.getElementById('corNome').value = '';
+  document.getElementById('corWhatsapp').value = '';
+  document.getElementById('corEmail').value = '';
+  document.getElementById('corSenha').value = '';
+  document.getElementById('modalCorretor').style.display = 'flex';
+}
+
+async function cadastrarCorretor() {
+  var nome = document.getElementById('corNome').value.trim();
+  var whatsapp = document.getElementById('corWhatsapp').value.trim().replace(/[^0-9]/g, '');
+  var email = document.getElementById('corEmail').value.trim();
+  var senha = document.getElementById('corSenha').value;
+
+  if (!nome) { alert('Digite o nome do corretor!'); return; }
+  if (!whatsapp || whatsapp.length < 10) { alert('Digite um WhatsApp válido!'); return; }
+  if (!email) { alert('Digite o email de login!'); return; }
+  if (!senha || senha.length < 8) { alert('A senha deve ter no mínimo 8 caracteres!'); return; }
+
+  if (!whatsapp.startsWith('55')) whatsapp = '55' + whatsapp;
+
+  try {
+    var sess = (await db.auth.getSession()).data.session;
+    var tok = sess ? sess.access_token : SUPABASE_KEY;
+
+    // Cria conta de login (signUp normal)
+    var { data, error } = await db.auth.signUp({
+      email: email,
+      password: senha,
+      options: { data: { full_name: nome, tipo_usuario: 'corretor' } }
+    });
+
+    if (error) { alert('Erro ao criar login: ' + error.message); return; }
+
+    var corretorUserId = data.user ? data.user.id : null;
+
+    // Cria perfil na tabela profiles
+    if (corretorUserId) {
+      await fetch(SUPABASE_URL + '/rest/v1/profiles', {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({
+          id: corretorUserId,
+          email: email,
+          name: nome,
+          plan: 'trial',
+          phone: whatsapp,
+          tipo_usuario: 'corretor',
+          credits_total: 0,
+          credits_used: 0,
+          created_at: new Date().toISOString()
+        })
+      });
+    }
+
+    // Cria registro na tabela corretores
+    await fetch(SUPABASE_URL + '/rest/v1/corretores', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: nome,
+        whatsapp: whatsapp,
+        disponivel: false,
+        profile_id: corretorUserId
+      })
+    });
+
+    alert('Corretor cadastrado com sucesso! Ele já pode fazer login com o email e senha informados.');
+    document.getElementById('modalCorretor').style.display = 'none';
+    carregarCorretores();
+
+  } catch(e) {
+    alert('Erro ao cadastrar: ' + e.message);
+  }
+}
+
+async function carregarCorretores() {
+  var div = document.getElementById('listaCorretores');
+  if (!div) return;
+  try {
+    var sess = (await db.auth.getSession()).data.session;
+    var tok = sess ? sess.access_token : SUPABASE_KEY;
+    var res = await fetch(SUPABASE_URL + '/rest/v1/corretores?order=created_at.asc', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + tok }
+    });
+    var corretores = res.ok ? (await res.json()) : [];
+
+    if (!corretores.length) {
+      div.innerHTML = '<div style="text-align:center;padding:24px;color:var(--gray);font-size:13px;">Nenhum corretor cadastrado ainda.</div>';
+      return;
+    }
+
+    div.innerHTML = corretores.map(function(c) {
+      var statusCor = c.disponivel ? '#00E676' : '#FF4D4D';
+      var statusTxt = c.disponivel ? 'DISPONÍVEL' : 'INDISPONÍVEL';
+      var ultimoLead = c.ultimo_lead_em ? new Date(c.ultimo_lead_em).toLocaleString('pt-BR') : 'Nunca recebeu';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);margin-bottom:8px;flex-wrap:wrap;gap:10px;">'
+        + '<div><div style="font-size:13px;font-weight:700;color:#fff;">' + c.nome + '</div>'
+        + '<div style="font-size:11px;color:var(--gray);margin-top:2px;">' + c.whatsapp + ' · ' + c.total_leads_recebidos + ' leads recebidos</div>'
+        + '<div style="font-size:10px;color:var(--gray);margin-top:2px;">Último: ' + ultimoLead + '</div></div>'
+        + '<span style="background:' + statusCor + '22;color:' + statusCor + ';font-size:10px;font-weight:700;padding:4px 10px;border:1px solid ' + statusCor + ';">' + statusTxt + '</span>'
+        + '</div>';
+    }).join('');
+  } catch(e) {
+    div.innerHTML = '<div style="color:#FF4D4D;text-align:center;padding:20px;">Erro: ' + e.message + '</div>';
+  }
+}
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
