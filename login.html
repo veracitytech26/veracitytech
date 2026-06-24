@@ -2863,7 +2863,7 @@ if(tabDiscador) {
   if (aba === 'financeiro') renderFinanceiro();
   if (aba === 'cotacao') renderCotacoes();
   if (aba === 'perfil') preencherFormPerfil();
-  if (aba === 'admin') carregarUsuarios();
+  if (aba === 'admin') { carregarUsuarios(); carregarCorretores(); }
 }
 
 function getHistorico() {
