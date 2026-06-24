@@ -1093,6 +1093,42 @@ if (_twilioDevice.audio) {
 
 
 <div id="abaAdmin" style="display:none;">
+  <div style="background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.3);padding:24px;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#00E676;">👥 Gestão de Corretores</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:4px;">Cadastre seu time e acompanhe a distribuição de leads</div>
+      </div>
+      <button onclick="abrirModalCorretor()" style="background:#00E676;color:#080E1E;font-size:13px;font-weight:700;padding:10px 24px;border:none;cursor:pointer;">+ NOVO CORRETOR</button>
+    </div>
+    <div id="listaCorretores">
+      <div style="text-align:center;padding:24px;color:var(--gray);font-size:13px;">Carregando corretores...</div>
+    </div>
+  </div>
+
+  <div id="modalCorretor" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.9);align-items:center;justify-content:center;">
+    <div style="background:#0D1530;border:1px solid rgba(0,230,118,0.4);padding:32px;max-width:440px;width:92%;position:relative;">
+      <button onclick="document.getElementById('modalCorretor').style.display='none'" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">✕</button>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:20px;">Cadastrar Novo Corretor</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">NOME COMPLETO</label>
+        <input id="corNome" type="text" placeholder="Ex: João Silva" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">WHATSAPP</label>
+        <input id="corWhatsapp" type="text" placeholder="Ex: 21999999999" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">E-MAIL DE LOGIN</label>
+        <input id="corEmail" type="email" placeholder="email@exemplo.com" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-size:10px;font-weight:700;color:#8896B3;letter-spacing:2px;display:block;margin-bottom:6px;">SENHA DE ACESSO</label>
+        <input id="corSenha" type="text" placeholder="Mínimo 8 caracteres" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <button onclick="cadastrarCorretor()" style="width:100%;background:#00E676;color:#080E1E;font-size:14px;font-weight:700;padding:14px;border:none;cursor:pointer;">CADASTRAR CORRETOR</button>
+    </div>
+  </div>
   <div style="background:rgba(13,21,48,0.8);border:1px solid var(--border);padding:24px;margin-bottom:20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <div>
