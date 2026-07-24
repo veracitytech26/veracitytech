@@ -1056,6 +1056,11 @@ window.addEventListener('load', function() {
 
   // Ativar plano
   document.getElementById('btnAtivar').addEventListener('click', ativarPlano);
+  document.getElementById('tabLeads').addEventListener('click', function(){ mostrarAba('leads'); });
+  document.getElementById('tabCorretores').addEventListener('click', function(){ mostrarAba('corretores'); });
+  document.getElementById('btnAtualizarLeads').addEventListener('click', carregarLeads);
+  document.getElementById('btnAtualizarCorretores').addEventListener('click', carregarCorretoresAdmin);
+  document.getElementById('btnAtualizarConversas').addEventListener('click', carregarLeads);
 });
 </script>
 </body>
