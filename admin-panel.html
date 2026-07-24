@@ -882,7 +882,118 @@ function renderFinanceiro() {
   }
   document.getElementById('tabelaFinanceiro').innerHTML = '<table><thead><tr><th>CLIENTE<\/th><th>PLANO<\/th><th>RECEITA/MES<\/th><th>USO<\/th><th>DESDE<\/th><\/tr><\/thead><tbody>' + rows + '<\/tbody><\/table>';
 }
+// ── LEADS & SDR ──
+async function carregarLeads() {
+  try {
+    var headers = {'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Accept': 'application/json'};
+    var resLD = await fetch(SUPABASE_URL + '/rest/v1/leads_distribuidos?select=*,corretores(nome,whatsapp)&order=distribuido_em.desc&limit=50', {headers: headers});
+    var leads = await resLD.json();
+    if (!Array.isArray(leads)) leads = [];
+    var resSDR = await fetch(SUPABASE_URL + '/rest/v1/sdr_leads?select=*&order=updated_at.desc&limit=100', {headers: headers});
+    var sdrLeads = await resSDR.json();
+    if (!Array.isArray(sdrLeads)) sdrLeads = [];
+    var hoje = new Date().toISOString().split('T')[0];
+    var leadsHoje = sdrLeads.filter(function(l){ return l.updated_at && l.updated_at.startsWith(hoje); });
+    var quentes = sdrLeads.filter(function(l){ return l.status === 'quente'; });
+    var agendados = sdrLeads.filter(function(l){ return l.status === 'agendado'; });
+    var frios = sdrLeads.filter(function(l){ return l.status === 'frio'; });
+    document.getElementById('ldHoje').textContent = leadsHoje.length;
+    document.getElementById('ldQuentes').textContent = quentes.length;
+    document.getElementById('ldAgendados').textContent = agendados.length;
+    document.getElementById('ldFrios').textContent = frios.length;
+    var div = document.getElementById('tabelaLeads');
+    if (!leads.length) {
+      div.innerHTML = '<div class="empty">Nenhum lead distribuido ainda.</div>';
+    } else {
+      var rows = '';
+      leads.forEach(function(l) {
+        var data = l.distribuido_em ? new Date(l.distribuido_em).toLocaleString('pt-BR') : '-';
+        var corretor = l.corretores ? l.corretores.nome : 'Desconhecido';
+        var statusCor = l.status === 'aguardando_resposta' ? 'var(--yellow)' : l.status === 'em_atendimento' ? 'var(--green)' : l.status === 'encerrado' ? 'var(--gray)' : 'var(--red)';
+        var statusTxt = l.status === 'aguardando_resposta' ? 'AGUARDANDO' : l.status === 'em_atendimento' ? 'EM ATENDIMENTO' : l.status === 'encerrado' ? 'ENCERRADO' : (l.status||'-').toUpperCase();
+        rows += '<tr><td style="font-size:12px;color:var(--white);">' + esc(l.lead_phone||'-') + '</td>';
+        rows += '<td style="font-size:12px;color:var(--white);">' + esc(l.lead_empresa||'-') + '</td>';
+        rows += '<td style="font-size:12px;color:var(--cyan);">' + esc(corretor) + '</td>';
+        rows += '<td><span style="font-size:10px;font-weight:700;padding:3px 8px;background:' + statusCor + '22;color:' + statusCor + ';border:1px solid ' + statusCor + ';">' + statusTxt + '</span></td>';
+        rows += '<td style="font-size:11px;color:var(--gray);">' + data + '</td></tr>';
+      });
+      div.innerHTML = '<table><thead><tr><th>NUMERO</th><th>EMPRESA</th><th>CORRETOR</th><th>STATUS</th><th>DATA</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+    var divC = document.getElementById('tabelaConversas');
+    if (!sdrLeads.length) {
+      divC.innerHTML = '<div class="empty">Nenhuma conversa ainda.</div>';
+    } else {
+      var rowsC = '';
+      sdrLeads.slice(0, 20).forEach(function(l) {
+        var data = l.updated_at ? new Date(l.updated_at).toLocaleString('pt-BR') : '-';
+        var statusCor = l.status === 'quente' ? 'var(--green)' : l.status === 'agendado' ? 'var(--yellow)' : l.status === 'frio' ? 'var(--red)' : 'var(--gray)';
+        rowsC += '<tr><td style="font-size:12px;color:var(--white);">' + esc(l.phone||'-') + '</td>';
+        rowsC += '<td style="font-size:12px;color:var(--gray);">' + esc(l.empresa||'-') + '</td>';
+        rowsC += '<td><span style="font-size:10px;font-weight:700;padding:3px 8px;background:' + statusCor + '22;color:' + statusCor + ';border:1px solid ' + statusCor + ';">' + (l.status||'novo').toUpperCase() + '</span></td>';
+        rowsC += '<td style="font-size:12px;color:var(--yellow);">' + (l.status === 'agendado' && l.horario ? esc(l.horario) : '-') + '</td>';
+        rowsC += '<td style="font-size:11px;color:var(--gray);">' + data + '</td></tr>';
+      });
+      divC.innerHTML = '<table><thead><tr><th>NUMERO</th><th>EMPRESA</th><th>STATUS SDR</th><th>HORARIO</th><th>ATUALIZADO</th></tr></thead><tbody>' + rowsC + '</tbody></table>';
+    }
+  } catch(e) {
+    document.getElementById('tabelaLeads').innerHTML = '<div class="empty">Erro: ' + e.message + '</div>';
+  }
+}
 
+async function carregarCorretoresAdmin() {
+  try {
+    var headers = {'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Accept': 'application/json'};
+    var res = await fetch(SUPABASE_URL + '/rest/v1/corretores?select=*&order=disponivel.desc,ultimo_lead_em.desc', {headers: headers});
+    var corretores = await res.json();
+    if (!Array.isArray(corretores)) corretores = [];
+    var div = document.getElementById('tabelaCorretoresAdmin');
+    if (!corretores.length) { div.innerHTML = '<div class="empty">Nenhum corretor cadastrado.</div>'; return; }
+    var rows = '';
+    corretores.forEach(function(c) {
+      var statusCor = c.disponivel ? 'var(--green)' : 'var(--red)';
+      var statusTxt = c.disponivel ? 'DISPONIVEL' : 'INDISPONIVEL';
+      var ultimoLead = c.ultimo_lead_em ? new Date(c.ultimo_lead_em).toLocaleString('pt-BR') : 'Nunca';
+      rows += '<tr><td style="font-size:13px;font-weight:700;color:var(--white);">' + esc(c.nome) + '</td>';
+      rows += '<td style="font-size:12px;color:var(--gray);">' + esc(c.whatsapp||'-') + '</td>';
+      rows += '<td><span style="font-size:10px;font-weight:700;padding:3px 10px;background:' + statusCor + '22;color:' + statusCor + ';border:1px solid ' + statusCor + ';">' + statusTxt + '</span></td>';
+      rows += '<td style="font-size:13px;font-weight:700;color:var(--cyan);">' + (c.total_leads_recebidos||0) + '</td>';
+      rows += '<td style="font-size:11px;color:var(--gray);">' + ultimoLead + '</td>';
+      rows += '<td><div style="display:flex;gap:6px;">';
+      if (c.disponivel) {
+        rows += '<button class="btn btn-red" onclick="toggleCorretorAdmin(\'' + c.id + '\',false)" style="padding:5px 10px;font-size:10px;">Desativar</button>';
+      } else {
+        rows += '<button class="btn btn-green" onclick="toggleCorretorAdmin(\'' + c.id + '\',true)" style="padding:5px 10px;font-size:10px;">Ativar</button>';
+      }
+      rows += '</div></td></tr>';
+    });
+    div.innerHTML = '<table><thead><tr><th>NOME</th><th>WHATSAPP</th><th>STATUS</th><th>LEADS</th><th>ULTIMO LEAD</th><th>ACOES</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    var divP = document.getElementById('tabelaPerformance');
+    var resLD = await fetch(SUPABASE_URL + '/rest/v1/leads_distribuidos?select=corretor_id,status', {headers: headers});
+    var leadsD = await resLD.json();
+    if (!Array.isArray(leadsD)) leadsD = [];
+    var perfMap = {};
+    corretores.forEach(function(c){ perfMap[c.id] = {nome: c.nome, total: 0, encerrados: 0, aguardando: 0}; });
+    leadsD.forEach(function(l){ if(perfMap[l.corretor_id]){ perfMap[l.corretor_id].total++; if(l.status==='encerrado') perfMap[l.corretor_id].encerrados++; if(l.status==='aguardando_resposta') perfMap[l.corretor_id].aguardando++; } });
+    var rowsP = '';
+    Object.values(perfMap).forEach(function(p){
+      var tx = p.total > 0 ? Math.round((p.encerrados/p.total)*100) : 0;
+      rowsP += '<tr><td style="font-size:13px;font-weight:700;color:var(--white);">' + esc(p.nome) + '</td>';
+      rowsP += '<td style="font-size:13px;color:var(--cyan);">' + p.total + '</td>';
+      rowsP += '<td style="font-size:13px;color:var(--yellow);">' + p.aguardando + '</td>';
+      rowsP += '<td style="font-size:13px;color:var(--green);">' + p.encerrados + '</td>';
+      rowsP += '<td style="font-size:13px;color:var(--white);">' + tx + '%</td></tr>';
+    });
+    divP.innerHTML = '<table><thead><tr><th>CORRETOR</th><th>TOTAL LEADS</th><th>AGUARDANDO</th><th>ENCERRADOS</th><th>TAXA</th></tr></thead><tbody>' + rowsP + '</tbody></table>';
+  } catch(e) {
+    document.getElementById('tabelaCorretoresAdmin').innerHTML = '<div class="empty">Erro: ' + e.message + '</div>';
+  }
+}
+
+async function toggleCorretorAdmin(id, disponivel) {
+  var headers = {'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json'};
+  await fetch(SUPABASE_URL + '/rest/v1/corretores?id=eq.' + id, {method:'PATCH', headers:headers, body:JSON.stringify({disponivel:disponivel})});
+  carregarCorretoresAdmin();
+}
 // ── EVENTOS ──
 window.addEventListener('load', function() {
   // Auth
