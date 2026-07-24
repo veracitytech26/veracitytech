@@ -209,7 +209,46 @@ tr:hover td{background:rgba(255,255,255,0.015);}
         <div id="tabelaFinanceiro"></div>
       </div>
     </div>
+<!-- LEADS & SDR -->
+<div id="abaLeads" style="display:none;">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">LEADS HOJE</div><div class="stat-val" id="ldHoje" style="color:var(--cyan);">-</div><div class="stat-sub">qualificados pelo SDR</div></div>
+    <div class="stat-card"><div class="stat-label">LEADS QUENTES</div><div class="stat-val" id="ldQuentes" style="color:var(--green);">-</div><div class="stat-sub">prontos para atender</div></div>
+    <div class="stat-card"><div class="stat-label">AGENDADOS</div><div class="stat-val" id="ldAgendados" style="color:var(--yellow);">-</div><div class="stat-sub">ligacao marcada</div></div>
+    <div class="stat-card"><div class="stat-label">FRIOS</div><div class="stat-val" id="ldFrios" style="color:var(--red);">-</div><div class="stat-sub">nao tiveram interesse</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-head">
+      <div><div class="section-title">Leads Distribuidos</div><div class="section-sub">Historico de distribuicao para corretores</div></div>
+      <button class="btn btn-cyan" id="btnAtualizarLeads" style="padding:8px 16px;">Atualizar</button>
+    </div>
+    <div id="tabelaLeads"><div class="loading">Carregando...</div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-head">
+      <div><div class="section-title">Conversas do SDR IA</div><div class="section-sub">Ultimas conversas qualificadas</div></div>
+      <button class="btn btn-ghost" id="btnAtualizarConversas" style="padding:8px 16px;">Atualizar</button>
+    </div>
+    <div id="tabelaConversas"><div class="loading">Carregando...</div></div>
+  </div>
+</div>
 
+<!-- CORRETORES -->
+<div id="abaCorretores" style="display:none;">
+  <div class="section-card">
+    <div class="section-head">
+      <div><div class="section-title">Status dos Corretores</div><div class="section-sub">Disponibilidade e performance</div></div>
+      <button class="btn btn-cyan" id="btnAtualizarCorretores" style="padding:8px 16px;">Atualizar</button>
+    </div>
+    <div id="tabelaCorretoresAdmin"><div class="loading">Carregando...</div></div>
+  </div>
+  <div class="section-card" style="margin-top:16px;">
+    <div class="section-head">
+      <div><div class="section-title">Performance por Corretor</div><div class="section-sub">Leads recebidos e resultados</div></div>
+    </div>
+    <div id="tabelaPerformance"><div class="loading">Carregando...</div></div>
+  </div>
+</div>
     <!-- NOVO CLIENTE -->
     <div id="abaAddCliente" style="display:none;">
       <div class="section-card" style="max-width:500px;">
