@@ -433,6 +433,15 @@ function mostrarAba(aba) {
   if (aba === 'financeiro') renderFinanceiro();
   if (aba === 'visaoGeral') renderVisaoGeral();
   if (aba === 'metricas') carregarMetricas();
+  if (aba === 'leads') carregarLeads();
+  if (aba === 'corretores') carregarCorretoresAdmin();
+  var abas2 = ['Leads','Corretores'];
+  abas2.forEach(function(a) {
+    var el = document.getElementById('aba'+a);
+    if (el) el.style.display = aba.toLowerCase() === a.toLowerCase() ? 'block' : 'none';
+    var btn = document.getElementById('tab'+a);
+    if (btn) { btn.classList.remove('active'); if(aba.toLowerCase()===a.toLowerCase()) btn.classList.add('active'); }
+  });
 }
 
 // ── INIT ──
