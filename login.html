@@ -6988,6 +6988,25 @@ async function carregarCorretores() {
     div.innerHTML = '<div style="color:#FF4D4D;text-align:center;padding:20px;">Erro: ' + e.message + '</div>';
   }
 }
+  document.addEventListener('DOMContentLoaded', function() {
+  var link = document.getElementById('linkEsqueciSenha');
+  if (link) {
+    link.addEventListener('click', async function(e) {
+      e.preventDefault();
+      var email = document.getElementById('loginEmail') || document.getElementById('email');
+      var emailVal = email ? email.value.trim() : '';
+      if (!emailVal) { alert('Digite seu e-mail primeiro.'); return; }
+      var { error } = await db.auth.resetPasswordForEmail(emailVal, {
+        redirectTo: 'https://veracitytech.com.br/reset-password.html'
+      });
+      if (error) {
+        alert('Erro: ' + error.message);
+      } else {
+        alert('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+      }
+    });
+  }
+});
   async function init() {
   await setupDB();
   const { data: { session } } = await db.auth.getSession();
