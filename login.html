@@ -4196,108 +4196,136 @@ function mostrarSubAba(aba) {
 }
 
 
-function carregarCRM() {
+async function carregarCRM() {
   try {
-    const leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
+    var sess = (await db.auth.getSession()).data.session;
+    if (!sess) return;
+    var tok = sess.access_token;
+
+    // Busca corretor_id do usuário logado
+    var corrRes = await fetch(SUPABASE_URL + '/rest/v1/corretores?profile_id=eq.' + sess.user.id + '&select=id', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + tok }
+    });
+    var corretores = corrRes.ok ? (await corrRes.json()) : [];
+    var corretorId = corretores.length ? corretores[0].id : null;
+
+    // Admin vê todos, corretor vê só os seus
+    var url = SUPABASE_URL + '/rest/v1/crm_leads?order=data_criacao.desc';
+    if (corretorId && !currentProfile.is_admin) {
+      url += '&corretor_id=eq.' + corretorId;
+    }
+
+    var res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + tok } });
+    var leads = res.ok ? (await res.json()) : [];
+
     const colunas = ['contato','negociacao','proposta','fechamento','perdido'];
-    colunas.forEach(col => {
+    colunas.forEach(function(col) {
       const el = document.getElementById('crm_' + col);
       if (!el) return;
-      const filtrados = leads.filter(l => l.status === col);
+      const filtrados = leads.filter(function(l) { return l.status === col; });
       if (!filtrados.length) {
         el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-size:12px;">Arraste leads aqui</div>';
         return;
       }
       el.innerHTML = filtrados.map(function(l) {
-        return '<div draggable="true" ondragstart="dragLead(event,\''+l.id+'\')" style="background:#0D1530;border:1px solid rgba(255,255,255,0.08);padding:10px;margin-bottom:8px;cursor:grab;">'
-          + '<div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;">'+l.empresa+'</div>'
-          + '<div style="font-size:11px;color:var(--gray);">'+(l.contato||'')+'</div>'
-+ (l.telefone ? '<a href="https://wa.me/55'+l.telefone.replace(/[^0-9]/g,'')+'" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;text-decoration:none;margin-top:6px;">WhatsApp</a>' : '')
-+ (l.telefone ? btnLigar(l.empresa, l.empresa, l.telefone) : '')          + (l.nota ? '<div style="font-size:10px;color:var(--gray);margin-top:6px;font-style:italic;">'+l.nota+'</div>' : '')
+        var tel = (l.telefone || '').replace(/[^0-9]/g, '');
+        return '<div draggable="true" ondragstart="dragLead(event,\'' + l.id + '\')" style="background:#0D1530;border:1px solid rgba(255,255,255,0.08);padding:10px;margin-bottom:8px;cursor:grab;">'
+          + '<div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;">' + (l.empresa || '-') + '</div>'
+          + '<div style="font-size:11px;color:var(--gray);">' + (l.contato || '') + '</div>'
+          + (tel ? '<a href="https://wa.me/55' + tel + '" target="_blank" style="display:inline-block;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;text-decoration:none;margin-top:6px;">WhatsApp</a> ' : '')
+          + (tel ? btnLigar(l.empresa, l.empresa, tel) : '')
+          + (l.nota ? '<div style="font-size:10px;color:var(--gray);margin-top:6px;font-style:italic;">' + l.nota + '</div>' : '')
           + '</div>';
       }).join('');
     });
-  } catch(e) {}
+  } catch(e) { console.error('Erro CRM:', e); }
 }
 
 let _dragId = null;
 function dragLead(event, id) { _dragId = id; }
 var _dragIdPendente = null;
-function dropLead(event, novoStatus) {
+
+async function dropLead(event, novoStatus) {
   if (!_dragId) return;
   var col = novoStatus;
   if (!col && event.currentTarget && event.currentTarget.dataset) col = event.currentTarget.dataset.col;
   if (!col) return;
+
   if (col === 'fechamento') {
     _dragIdPendente = _dragId;
     _dragId = null;
-    try {
-      var leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
-      var lead = leads.find(function(l) { return l.id === _dragIdPendente; });
-      abrirModalVendaFechada(lead);
-    } catch(e) {}
+    var sess = (await db.auth.getSession()).data.session;
+    var res = await fetch(SUPABASE_URL + '/rest/v1/crm_leads?id=eq.' + _dragIdPendente + '&select=*', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + sess.access_token }
+    });
+    var leads = res.ok ? (await res.json()) : [];
+    abrirModalVendaFechada(leads[0]);
     return;
   }
-  try {
-    var leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
-    var lead = leads.find(function(l) { return l.id === _dragId; });
-    if (lead) lead.status = col;
-    localStorage.setItem('crm_leads', JSON.stringify(leads));
-    carregarCRM();
-  } catch(e) {}
+
+  var sess = (await db.auth.getSession()).data.session;
+  await fetch(SUPABASE_URL + '/rest/v1/crm_leads?id=eq.' + _dragId, {
+    method: 'PATCH',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: col })
+  });
   _dragId = null;
+  carregarCRM();
 }
 
-function adicionarLeadManual() {
+async function adicionarLeadManual() {
   const empresa = document.getElementById('leadEmpresa').value.trim();
   const contato = document.getElementById('leadContato').value.trim();
   const telefone = document.getElementById('leadTelefone').value.trim();
   const origem = document.getElementById('leadOrigem').value.trim();
   const nota = document.getElementById('leadNota').value.trim();
   if (!empresa) { alert('Digite o nome da empresa!'); return; }
-  try {
-    const leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
-    leads.unshift({
-      id: Date.now().toString(),
-      empresa, contato, telefone, origem, nota,
-      status: 'contato',
-      data: new Date().toLocaleDateString('pt-BR')
-    });
-    localStorage.setItem('crm_leads', JSON.stringify(leads));
-    document.getElementById('leadEmpresa').value = '';
-    document.getElementById('leadContato').value = '';
-    document.getElementById('leadTelefone').value = '';
-    document.getElementById('leadOrigem').value = '';
-    document.getElementById('leadNota').value = '';
-    mostrarSubAba('crm');
-    carregarCRM();
-    alert('Lead adicionado ao pipeline!');
-  } catch(e) {}
+
+  var sess = (await db.auth.getSession()).data.session;
+  var corrRes = await fetch(SUPABASE_URL + '/rest/v1/corretores?profile_id=eq.' + sess.user.id + '&select=id', {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + sess.access_token }
+  });
+  var corretores = corrRes.ok ? (await corrRes.json()) : [];
+  var corretorId = corretores.length ? corretores[0].id : null;
+
+  await fetch(SUPABASE_URL + '/rest/v1/crm_leads', {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ empresa, contato, telefone, origem, nota, status: 'contato', corretor_id: corretorId })
+  });
+
+  document.getElementById('leadEmpresa').value = '';
+  document.getElementById('leadContato').value = '';
+  document.getElementById('leadTelefone').value = '';
+  document.getElementById('leadOrigem').value = '';
+  document.getElementById('leadNota').value = '';
+  mostrarSubAba('crm');
+  carregarCRM();
+  alert('Lead adicionado ao pipeline!');
 }
 
-// ── HISTÓRICO → CRM ────────────────────────────────────────────────────────
-function adicionarHistAoCRM(nome, whatsapp, email) {
-  try {
-    var leads = JSON.parse(localStorage.getItem('crm_leads') || '[]');
-    if (leads.find(function(l) { return l.empresa === nome; })) {
-      if (confirm('Esta empresa já está no CRM. Ir para o CRM agora?')) {
-        irParaCRM();
-      }
-      return;
-    }
-    leads.unshift({
-      id: Date.now().toString(),
+async function adicionarHistAoCRM(nome, whatsapp, email) {
+  var sess = (await db.auth.getSession()).data.session;
+  var corrRes = await fetch(SUPABASE_URL + '/rest/v1/corretores?profile_id=eq.' + sess.user.id + '&select=id', {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + sess.access_token }
+  });
+  var corretores = corrRes.ok ? (await corrRes.json()) : [];
+  var corretorId = corretores.length ? corretores[0].id : null;
+
+  await fetch(SUPABASE_URL + '/rest/v1/crm_leads', {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       empresa: nome,
       contato: '',
       telefone: whatsapp ? whatsapp.replace(/^55/, '') : '',
       origem: 'historico',
       nota: email ? 'E-mail: ' + email : '',
       status: 'contato',
-      data: new Date().toLocaleDateString('pt-BR')
-    });
-    localStorage.setItem('crm_leads', JSON.stringify(leads));
-    irParaCRM();
-  } catch(e) { alert('Erro ao adicionar ao CRM.'); }
+      corretor_id: corretorId
+    })
+  });
+  irParaCRM();
 }
 
 function adicionarHistAoCRMIdx(idx) {
@@ -4309,7 +4337,6 @@ function adicionarHistAoCRMIdx(idx) {
 
 function irParaCRM() {
   mostrarAba('campanhas');
-  // Wait for carregarCampanhas + renderCampanhas to build the DOM, then switch sub-tab
   setTimeout(function() {
     mostrarSubAba('crm');
     carregarCRM();
