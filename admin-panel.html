@@ -1174,6 +1174,142 @@ async function carregarHistoricoOficial() {
     div.innerHTML = '<table><thead><tr><th>CAMPANHA</th><th>TOTAL</th><th>ENVIADOS</th><th>FALHAS</th><th>TAXA</th><th>DATA</th></tr></thead><tbody>' + rows + '</tbody></table>';
   } catch(e) { div.innerHTML = '<div class="empty">Erro: ' + e.message + '</div>'; }
 }
+  // ── API OFICIAL ──
+var _contatosOficial=[];
+var _disparoOficialAtivo=false;
+var _disparoOficialIndex=0;
+var _disparoOficialTimer=null;
+
+async function carregarTemplatesOficial(){
+  var sel=document.getElementById('templateSid');
+  sel.innerHTML='<option value="">Carregando...</option>';
+  try{
+    var sess=(await db.auth.getSession()).data.session;
+    var token=sess?sess.access_token:SERVICE_KEY;
+    var res=await fetch('/api/twilio-disparo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'listar_templates'})});
+    var data=await res.json();
+    if(!data.ok||!data.templates||!data.templates.length){sel.innerHTML='<option value="">Nenhum template aprovado</option>';return;}
+    sel.innerHTML='<option value="">Selecione um template...</option>';
+    data.templates.forEach(function(t){var opt=document.createElement('option');opt.value=t.sid;opt.textContent=t.nome+' ['+t.categoria+']';opt.dataset.body=t.body||'';opt.dataset.cat=t.categoria||'';sel.appendChild(opt);});
+    sel.onchange=function(){var opt=sel.options[sel.selectedIndex];var prev=document.getElementById('templatePreview');if(opt&&opt.dataset.body){prev.style.display='block';prev.innerHTML='<div style="font-size:10px;color:var(--cyan);margin-bottom:4px;">'+esc(opt.dataset.cat||'')+'</div>'+esc(opt.dataset.body).replace(/\n/g,'<br>');}else{prev.style.display='none';}};
+  }catch(e){sel.innerHTML='<option value="">Erro: '+e.message+'</option>';}
+}
+
+function importarPlanilhaOficial(input){
+  var file=input.files[0];if(!file)return;
+  var info=document.getElementById('planilhaOficialInfo');info.textContent='Lendo '+file.name+'...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var texto=e.target.result;var linhas=texto.split(/\r?\n/).filter(function(l){return l.trim();});
+      if(!linhas.length){info.textContent='Arquivo vazio!';return;}
+      var sep=linhas[0].includes(';')?';':',';
+      var header=linhas[0].toLowerCase().split(sep).map(function(h){return h.trim().replace(/"/g,'');});
+      var iN=header.findIndex(function(h){return h.includes('nome')||h.includes('socio');});
+      var iE=header.findIndex(function(h){return h.includes('empresa')||h.includes('razao')||h.includes('cnpj');});
+      var iT=header.findIndex(function(h){return h.includes('tel')||h.includes('fone')||h.includes('whats')||h.includes('celular');});
+      if(iN<0)iN=0;if(iE<0)iE=1;if(iT<0)iT=2;
+      var contatos=[];
+      for(var i=1;i<linhas.length;i++){var cols=linhas[i].split(sep).map(function(c){return c.trim().replace(/^"|"$/g,'');});var tel=(cols[iT]||'').replace(/[^0-9]/g,'');if(!tel||tel.length<10)continue;contatos.push({nome:cols[iN]||'Cliente',empresa:cols[iE]||'Empresa',telefone:tel});}
+      if(!contatos.length){info.textContent='Nenhum contato valido!';return;}
+      _contatosOficial=contatos;info.textContent='✅ '+contatos.length+' contatos importados de '+file.name;
+    }catch(err){info.textContent='Erro: '+err.message;}
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+async function iniciarDisparoOficial(){
+  var templateSid=document.getElementById('templateSid').value;
+  var intervalo=parseInt(document.getElementById('intervaloOficial').value)*1000;
+  var nomeCamp=document.getElementById('nomeCampanhaOficial').value.trim()||'Campanha API Oficial';
+  if(!templateSid){alert('Selecione um template!');return;}
+  if(!_contatosOficial.length){alert('Importe uma planilha primeiro!');return;}
+  if(!confirm('Disparar para '+_contatosOficial.length+' contatos?'))return;
+  _disparoOficialAtivo=true;_disparoOficialIndex=0;
+  var enviados=0,entregues=0,falhas=0;
+  var campId=nomeCamp+'_'+Date.now();
+  document.getElementById('disparoOficialStatus').style.display='block';
+  document.getElementById('disparoOficialNome').textContent=nomeCamp;
+  document.getElementById('dispOfTotal').textContent=_contatosOficial.length;
+  var sess=(await db.auth.getSession()).data.session;
+  var token=sess?sess.access_token:SERVICE_KEY;
+  async function enviarProximo(){
+    if(!_disparoOficialAtivo||_disparoOficialIndex>=_contatosOficial.length){_disparoOficialAtivo=false;document.getElementById('disparoOficialNome').textContent+=' — CONCLUÍDO ✓';return;}
+    var contato=_contatosOficial[_disparoOficialIndex];_disparoOficialIndex++;
+    try{var r=await fetch('/api/twilio-disparo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'enviar_um',telefone:contato.telefone,nome:contato.nome,empresa:contato.empresa,template_sid:templateSid,campanha_id:campId})});var d=await r.json();enviados++;if(d.ok)entregues++;else falhas++;}catch(e){falhas++;enviados++;}
+    document.getElementById('dispOfEnviados').textContent=enviados;
+    document.getElementById('dispOfEntregues').textContent=entregues;
+    document.getElementById('dispOfFalhas').textContent=falhas;
+    document.getElementById('dispOfBarra').style.width=Math.round((_disparoOficialIndex/_contatosOficial.length)*100)+'%';
+    if(_disparoOficialAtivo&&_disparoOficialIndex<_contatosOficial.length){_disparoOficialTimer=setTimeout(enviarProximo,intervalo);}
+    else{_disparoOficialAtivo=false;document.getElementById('disparoOficialNome').textContent+=' — CONCLUÍDO ✓';}
+  }
+  enviarProximo();
+}
+
+function pararDisparoOficial(){_disparoOficialAtivo=false;if(_disparoOficialTimer)clearTimeout(_disparoOficialTimer);document.getElementById('disparoOficialNome').textContent+=' — PAUSADO';}
+
+async function carregarHistoricoOficial(){
+  var div=document.getElementById('historicoOficial');div.innerHTML='<div class="loading">Carregando...</div>';
+  try{
+    var sess=(await db.auth.getSession()).data.session;var token=sess?sess.access_token:SERVICE_KEY;
+    var res=await fetch('/api/twilio-disparo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'historico'})});
+    var data=await res.json();var hist=data.historico||[];
+    if(!hist.length){div.innerHTML='<div class="empty">Nenhum disparo realizado ainda.</div>';return;}
+    var campanhas={};
+    hist.forEach(function(h){var c=h.campanha_id||'sem_campanha';if(!campanhas[c])campanhas[c]={nome:c,total:0,enviados:0,falhas:0,data:h.enviado_em};campanhas[c].total++;if(h.status==='enviado')campanhas[c].enviados++;else campanhas[c].falhas++;});
+    var rows='';
+    Object.values(campanhas).sort(function(a,b){return new Date(b.data)-new Date(a.data);}).forEach(function(c){var dt=new Date(c.data).toLocaleString('pt-BR');var tx=c.total>0?Math.round((c.enviados/c.total)*100):0;rows+='<tr><td style="font-size:12px;color:var(--white);">'+esc(c.nome)+'</td><td style="color:var(--cyan);">'+c.total+'</td><td style="color:var(--green);">'+c.enviados+'</td><td style="color:#FF4D4D;">'+c.falhas+'</td><td style="color:var(--cyan);">'+tx+'%</td><td style="font-size:11px;color:var(--gray);">'+dt+'</td></tr>';});
+    div.innerHTML='<table><thead><tr><th>CAMPANHA</th><th>TOTAL</th><th>ENVIADOS</th><th>FALHAS</th><th>TAXA</th><th>DATA</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }catch(e){div.innerHTML='<div class="empty">Erro: '+e.message+'</div>';}
+}
+
+async function carregarLeads(){
+  try{
+    var h={'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Accept':'application/json'};
+    var rLD=await fetch(SUPABASE_URL+'/rest/v1/leads_distribuidos?select=*,corretores(nome,whatsapp)&order=distribuido_em.desc&limit=50',{headers:h});
+    var leads=await rLD.json();if(!Array.isArray(leads))leads=[];
+    var rSDR=await fetch(SUPABASE_URL+'/rest/v1/sdr_leads?select=*&order=updated_at.desc&limit=100',{headers:h});
+    var sdrLeads=await rSDR.json();if(!Array.isArray(sdrLeads))sdrLeads=[];
+    var hoje=new Date().toISOString().split('T')[0];
+    document.getElementById('ldHoje').textContent=sdrLeads.filter(function(l){return l.updated_at&&l.updated_at.startsWith(hoje);}).length;
+    document.getElementById('ldQuentes').textContent=sdrLeads.filter(function(l){return l.status==='quente';}).length;
+    document.getElementById('ldAgendados').textContent=sdrLeads.filter(function(l){return l.status==='agendado';}).length;
+    document.getElementById('ldFrios').textContent=sdrLeads.filter(function(l){return l.status==='frio';}).length;
+    var div=document.getElementById('tabelaLeads');
+    if(!leads.length){div.innerHTML='<div class="empty">Nenhum lead distribuido ainda.</div>';}
+    else{var rows='';leads.forEach(function(l){var data=l.distribuido_em?new Date(l.distribuido_em).toLocaleString('pt-BR'):'-';var corretor=l.corretores?l.corretores.nome:'Desconhecido';var sc=l.status==='em_contato'?'var(--cyan)':l.status==='encerrado'?'var(--gray)':'var(--yellow)';rows+='<tr><td style="font-size:12px;color:var(--white);">'+esc(l.lead_phone||'-')+'</td><td style="font-size:12px;color:var(--white);">'+esc(l.lead_empresa||l.lead_nome||'-')+'</td><td style="font-size:12px;color:var(--cyan);">'+esc(corretor)+'</td><td><span style="font-size:10px;font-weight:700;padding:3px 8px;background:'+sc+'22;color:'+sc+';border:1px solid '+sc+';">'+(l.status||'-').toUpperCase()+'</span></td><td style="font-size:11px;color:var(--gray);">'+data+'</td></tr>';});div.innerHTML='<table><thead><tr><th>NUMERO</th><th>EMPRESA</th><th>CORRETOR</th><th>STATUS</th><th>DATA</th></tr></thead><tbody>'+rows+'</tbody></table>';}
+    var divC=document.getElementById('tabelaConversas');
+    if(!sdrLeads.length){divC.innerHTML='<div class="empty">Nenhuma conversa ainda.</div>';}
+    else{var rowsC='';sdrLeads.slice(0,20).forEach(function(l){var data=l.updated_at?new Date(l.updated_at).toLocaleString('pt-BR'):'-';var sc=l.status==='quente'?'var(--green)':l.status==='agendado'?'var(--yellow)':l.status==='frio'?'var(--red)':'var(--gray)';rowsC+='<tr><td style="font-size:12px;color:var(--white);">'+esc(l.phone||'-')+'</td><td style="font-size:12px;color:var(--gray);">'+esc(l.empresa||l.nome||'-')+'</td><td><span style="font-size:10px;font-weight:700;padding:3px 8px;background:'+sc+'22;color:'+sc+';border:1px solid '+sc+';">'+(l.status||'novo').toUpperCase()+'</span></td><td style="font-size:11px;color:var(--gray);">'+data+'</td></tr>';});divC.innerHTML='<table><thead><tr><th>NUMERO</th><th>EMPRESA/NOME</th><th>STATUS SDR</th><th>ATUALIZADO</th></tr></thead><tbody>'+rowsC+'</tbody></table>';}
+  }catch(e){document.getElementById('tabelaLeads').innerHTML='<div class="empty">Erro: '+e.message+'</div>';}
+}
+
+async function carregarCorretoresAdmin(){
+  try{
+    var h={'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Accept':'application/json'};
+    var res=await fetch(SUPABASE_URL+'/rest/v1/corretores?select=*&order=disponivel.desc,ultimo_lead_em.desc',{headers:h});
+    var corretores=await res.json();if(!Array.isArray(corretores))corretores=[];
+    var div=document.getElementById('tabelaCorretoresAdmin');
+    if(!corretores.length){div.innerHTML='<div class="empty">Nenhum corretor cadastrado.</div>';return;}
+    var rows='';
+    corretores.forEach(function(c){var sc=c.disponivel?'var(--green)':'var(--red)';var st=c.disponivel?'DISPONIVEL':'INDISPONIVEL';var ul=c.ultimo_lead_em?new Date(c.ultimo_lead_em).toLocaleString('pt-BR'):'Nunca';rows+='<tr><td style="font-size:13px;font-weight:700;color:var(--white);">'+esc(c.nome)+'</td><td style="font-size:12px;color:var(--gray);">'+esc(c.whatsapp||'-')+'</td><td><span style="font-size:10px;font-weight:700;padding:3px 10px;background:'+sc+'22;color:'+sc+';border:1px solid '+sc+';">'+st+'</span></td><td style="font-size:13px;font-weight:700;color:var(--cyan);">'+(c.total_leads_recebidos||0)+'</td><td style="font-size:11px;color:var(--gray);">'+ul+'</td><td><div style="display:flex;gap:6px;">'+(c.disponivel?'<button class="btn btn-red" onclick="toggleCorretorAdmin(\''+c.id+'\',false)" style="padding:5px 10px;font-size:10px;">Desativar</button>':'<button class="btn btn-green" onclick="toggleCorretorAdmin(\''+c.id+'\',true)" style="padding:5px 10px;font-size:10px;">Ativar</button>')+'</div></td></tr>';});
+    div.innerHTML='<table><thead><tr><th>NOME</th><th>WHATSAPP</th><th>STATUS</th><th>LEADS</th><th>ULTIMO LEAD</th><th>ACOES</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    var divP=document.getElementById('tabelaPerformance');
+    var rLD=await fetch(SUPABASE_URL+'/rest/v1/leads_distribuidos?select=corretor_id,status',{headers:h});
+    var leadsD=await rLD.json();if(!Array.isArray(leadsD))leadsD=[];
+    var perfMap={};corretores.forEach(function(c){perfMap[c.id]={nome:c.nome,total:0,encerrados:0,aguardando:0};});
+    leadsD.forEach(function(l){if(perfMap[l.corretor_id]){perfMap[l.corretor_id].total++;if(l.status==='encerrado')perfMap[l.corretor_id].encerrados++;if(l.status==='em_contato')perfMap[l.corretor_id].aguardando++;}});
+    var rowsP='';Object.values(perfMap).forEach(function(p){var tx=p.total>0?Math.round((p.encerrados/p.total)*100):0;rowsP+='<tr><td style="font-size:13px;font-weight:700;color:var(--white);">'+esc(p.nome)+'</td><td style="color:var(--cyan);">'+p.total+'</td><td style="color:var(--yellow);">'+p.aguardando+'</td><td style="color:var(--green);">'+p.encerrados+'</td><td style="color:var(--white);">'+tx+'%</td></tr>';});
+    divP.innerHTML='<table><thead><tr><th>CORRETOR</th><th>TOTAL LEADS</th><th>EM CONTATO</th><th>ENCERRADOS</th><th>TAXA</th></tr></thead><tbody>'+rowsP+'</tbody></table>';
+  }catch(e){document.getElementById('tabelaCorretoresAdmin').innerHTML='<div class="empty">Erro: '+e.message+'</div>';}
+}
+
+async function toggleCorretorAdmin(id,disponivel){
+  var h={'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Content-Type':'application/json'};
+  await fetch(SUPABASE_URL+'/rest/v1/corretores?id=eq.'+id,{method:'PATCH',headers:h,body:JSON.stringify({disponivel:disponivel})});
+  carregarCorretoresAdmin();
+}
 // ── EVENTOS ──
 window.addEventListener('load', function() {
   // Auth
