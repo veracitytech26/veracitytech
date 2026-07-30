@@ -250,6 +250,82 @@ tr:hover td{background:rgba(255,255,255,0.015);}
     <div id="tabelaPerformance"><div class="loading">Carregando...</div></div>
   </div>
 </div>
+    <!-- API OFICIAL -->
+<div id="abaApiOficial" style="display:none;">
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Disparar Campanha — WhatsApp API Oficial</div>
+        <div class="section-sub">Templates aprovados pela Meta · Sem risco de bloqueio</div>
+      </div>
+      <button class="btn btn-cyan" id="btnCarregarTemplates" onclick="carregarTemplatesOficial()" style="padding:8px 16px;">Carregar Templates</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div>
+        <label class="form-label">TEMPLATE</label>
+        <select id="templateSid" class="form-select" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+          <option value="">Clique em Carregar Templates primeiro</option>
+        </select>
+        <div id="templatePreview" style="margin-top:10px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);font-size:12px;color:var(--gray);min-height:60px;display:none;"></div>
+      </div>
+      <div>
+        <label class="form-label">IMPORTAR PLANILHA</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <label style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:12px;font-weight:700;padding:9px 18px;cursor:pointer;">
+            SELECIONAR .CSV ou .XLSX
+            <input type="file" id="planilhaOficial" accept=".csv,.xlsx,.xls" style="display:none;" onchange="importarPlanilhaOficial(this)">
+          </label>
+          <span id="planilhaOficialInfo" style="font-size:12px;color:var(--gray);">Nenhum arquivo selecionado</span>
+        </div>
+        <div style="font-size:11px;color:var(--gray);margin-top:6px;">Colunas: <strong style="color:#fff;">nome</strong>, <strong style="color:#fff;">empresa</strong>, <strong style="color:#fff;">telefone</strong></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div>
+        <label class="form-label">INTERVALO ENTRE ENVIOS</label>
+        <select id="intervaloOficial" class="form-select" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+          <option value="5">5 segundos</option>
+          <option value="10" selected>10 segundos (recomendado)</option>
+          <option value="15">15 segundos</option>
+          <option value="30">30 segundos (seguro)</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">NOME DA CAMPANHA</label>
+        <input type="text" id="nomeCampanhaOficial" class="form-input" placeholder="Ex: Campanha MEI Julho" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button onclick="iniciarDisparoOficial()" style="width:100%;background:var(--cyan);color:var(--navy);font-size:13px;font-weight:700;padding:12px;border:none;cursor:pointer;">INICIAR DISPARO</button>
+      </div>
+    </div>
+
+    <div id="disparoOficialStatus" style="display:none;padding:16px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;color:#fff;" id="disparoOficialNome">-</div>
+        <button onclick="pararDisparoOficial()" style="background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.3);color:#FF4D4D;font-size:11px;font-weight:700;padding:6px 14px;cursor:pointer;">PARAR</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--cyan);" id="dispOfEnviados">0</div><div style="font-size:10px;color:var(--gray);">ENVIADOS</div></div>
+        <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--green);" id="dispOfEntregues">0</div><div style="font-size:10px;color:var(--gray);">ENTREGUES</div></div>
+        <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:#FF4D4D;" id="dispOfFalhas">0</div><div style="font-size:10px;color:var(--gray);">FALHAS</div></div>
+        <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--yellow);" id="dispOfTotal">0</div><div style="font-size:10px;color:var(--gray);">TOTAL</div></div>
+      </div>
+      <div style="margin-top:12px;background:rgba(255,255,255,0.06);height:8px;border-radius:4px;">
+        <div id="dispOfBarra" style="height:8px;border-radius:4px;background:var(--cyan);width:0%;transition:width 0.3s;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-head">
+      <div><div class="section-title">Histórico de Disparos</div></div>
+      <button class="btn btn-ghost" onclick="carregarHistoricoOficial()" style="padding:8px 16px;">Atualizar</button>
+    </div>
+    <div id="historicoOficial"><div class="loading">Clique em Atualizar para carregar.</div></div>
+  </div>
+</div>
     <!-- NOVO CLIENTE -->
     <div id="abaAddCliente" style="display:none;">
       <div class="section-card" style="max-width:500px;">
