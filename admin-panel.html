@@ -1240,6 +1240,7 @@ window.addEventListener('load', function() {
 
   // Ativar plano
   document.getElementById('btnAtivar').addEventListener('click', ativarPlano);
+  document.getElementById('tabApiOficial').addEventListener('click', function(){ mostrarAba('apiOficial'); });
   document.getElementById('tabLeads').addEventListener('click', function(){ mostrarAba('leads'); });
   document.getElementById('tabCorretores').addEventListener('click', function(){ mostrarAba('corretores'); });
   document.getElementById('btnAtualizarLeads').addEventListener('click', carregarLeads);
