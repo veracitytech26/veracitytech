@@ -512,6 +512,14 @@ function mostrarAba(aba) {
   if (aba === 'metricas') carregarMetricas();
   if (aba === 'leads') carregarLeads();
   if (aba === 'corretores') carregarCorretoresAdmin();
+  if (aba === 'apiOficial') carregarHistoricoOficial();
+var abasExtra = ['ApiOficial'];
+abasExtra.forEach(function(a) {
+  var el = document.getElementById('aba'+a);
+  if (el) el.style.display = aba.toLowerCase() === a.toLowerCase().replace('api','api') ? 'block' : 'none';
+  var btn = document.getElementById('tab'+a);
+  if (btn) { btn.classList.remove('active'); if(aba === 'apiOficial') btn.classList.add('active'); }
+});
   var abas2 = ['Leads','Corretores'];
   abas2.forEach(function(a) {
     var el = document.getElementById('aba'+a);
