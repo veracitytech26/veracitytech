@@ -1080,6 +1080,104 @@ async function toggleCorretorAdmin(id, disponivel) {
   await fetch(SUPABASE_URL + '/rest/v1/corretores?id=eq.' + id, {method:'PATCH', headers:headers, body:JSON.stringify({disponivel:disponivel})});
   carregarCorretoresAdmin();
 }
+  var _contatosOficial = [];
+var _disparoOficialAtivo = false;
+var _disparoOficialIndex = 0;
+var _disparoOficialTimer = null;
+
+async function carregarTemplatesOficial() {
+  var sel = document.getElementById('templateSid');
+  sel.innerHTML = '<option value="">Carregando...</option>';
+  try {
+    var sess = (await db.auth.getSession()).data.session;
+    var res = await fetch('/api/twilio-disparo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sess.access_token },
+      body: JSON.stringify({ action: 'listar_templates' })
+    });
+    var data = await res.json();
+    if (!data.ok || !data.templates.length) {
+      sel.innerHTML = '<option value="">Nenhum template aprovado encontrado</option>';
+      return;
+    }
+    sel.innerHTML = '<option value="">Selecione um template...</option>';
+    data.templates.forEach(function(t) {
+      sel.innerHTML += '<option value="' + t.sid + '" data-body="' + esc(t.body) + '" data-cat="' + t.categoria + '">' + t.nome + ' [' + t.categoria + ']</option>';
+    });
+    sel.onchange = function() {
+      var opt = sel.options[sel.selectedIndex];
+      var prev = document.getElementById('templatePreview');
+      if (opt && opt.dataset.body) {
+        prev.style.display = 'block';
+        prev.innerHTML = '<div style="font-size:10px;color:var(--cyan);margin-bottom:4px;">' + (opt.dataset.cat || '') + '</div>' + esc(opt.dataset.body).replace(/\n/g,'<br>');
+      } else {
+        prev.style.display = 'none';
+      }
+    };
+  } catch(e) {
+    sel.innerHTML = '<option value="">Erro: ' + e.message + '</option>';
+  }
+}
+
+function importarPlanilhaOficial(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var info = document.getElementById('planilhaOficialInfo');
+  info.textContent = 'Lendo ' + file.name + '...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var texto = e.target.result;
+      var linhas = texto.split(/\r?\n/).filter(function(l) { return l.trim(); });
+      if (!linhas.length) { info.textContent = 'Arquivo vazio!'; return; }
+      var sep = linhas[0].includes(';') ? ';' : ',';
+      var header = linhas[0].toLowerCase().split(sep).map(function(h) { return h.trim().replace(/"/g,''); });
+      var iNome    = header.findIndex(function(h){ return h.includes('nome') || h.includes('socio'); });
+      var iEmpresa = header.findIndex(function(h){ return h.includes('empresa') || h.includes('razao') || h.includes('cnpj'); });
+      var iTel     = header.findIndex(function(h){ return h.includes('tel') || h.includes('fone') || h.includes('whats') || h.includes('celular'); });
+      if (iNome < 0) iNome = 0;
+      if (iEmpresa < 0) iEmpresa = 1;
+      if (iTel < 0) iTel = 2;
+      var contatos = [];
+      for (var i = 1; i < linhas.length; i++) {
+        var cols = linhas[i].split(sep).map(function(c) { return c.trim().replace(/^"|"$/g,''); });
+        var tel = (cols[iTel] || '').replace(/[^0-9]/g,'');
+        if (!tel || tel.length < 10) continue;
+        contatos.push({ nome: cols[iNome] || 'Cliente', empresa: cols[iEmpresa] || 'Empresa', telefone: tel });
+      }
+      if (!contatos.length) { info.textContent = 'Nenhum contato valido!'; return; }
+      _contatosOficial = contatos;
+      info.textContent = '✅ ' + contatos.length + ' contatos importados de ' + file.name;
+    } catch(err) {
+      info.textContent = 'Erro: ' + err.message;
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+async function iniciarDisparoOficial() {
+  var templateSid = document.getElementById('templateSid').value;
+  var intervalo = parseInt(document.getElementById('intervaloOficial').value) * 1000;
+  var nomeCamp = document.getElementById('nomeCampanhaOficial').value.trim() || 'Campanha API Oficial';
+
+  if (!templateSid) { alert('Selecione um template!'); return; }
+  if (!_contatosOficial.length) { alert('Importe uma planilha primeiro!'); return; }
+  if (!confirm('Disparar para ' + _contatosOficial.length + ' contatos usando o template selecionado?')) return;
+
+  _disparoOficialAtivo = true;
+  _disparoOficialIndex = 0;
+  var enviados = 0, entregues = 0, falhas = 0;
+  var campId = nomeCamp + '_' + Date.now();
+
+  document.getElementById('disparoOficialStatus').style.display = 'block';
+  document.getElementById('disparoOficialNome').textContent = nomeCamp;
+  document.getElementById('dispOfTotal').textContent = _contatosOficial.length;
+
+  var sess = (await db.auth.getSession()).data.session;
+
+  async function enviarProximo() {
+    if (!_disparoOficialAtivo || _disparoOficialIndex >= _contatosOficial.length) {
+      _disparoOficialAtivo = false;
 // ── EVENTOS ──
 window.addEventListener('load', function() {
   // Auth
