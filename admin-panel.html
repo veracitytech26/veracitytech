@@ -1185,7 +1185,73 @@ async function iniciarDisparoOficial() {
 
   async function enviarProximo() {
     if (!_disparoOficialAtivo || _disparoOficialIndex >= _contatosOficial.length) {
+     _disparoOficialAtivo = false;
+      document.getElementById('disparoOficialNome').textContent += ' — CONCLUÍDO';
+      return;
+    }
+    var contato = _contatosOficial[_disparoOficialIndex];
+    _disparoOficialIndex++;
+    try {
+      var r = await fetch('/api/twilio-disparo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sess.access_token },
+        body: JSON.stringify({ action: 'enviar_um', telefone: contato.telefone, nome: contato.nome, empresa: contato.empresa, template_sid: templateSid, campanha_id: campId })
+      });
+      var d = await r.json();
+      enviados++;
+      if (d.ok) entregues++; else falhas++;
+    } catch(e) { falhas++; enviados++; }
+    document.getElementById('dispOfEnviados').textContent = enviados;
+    document.getElementById('dispOfEntregues').textContent = entregues;
+    document.getElementById('dispOfFalhas').textContent = falhas;
+    document.getElementById('dispOfBarra').style.width = Math.round((_disparoOficialIndex / _contatosOficial.length) * 100) + '%';
+    if (_disparoOficialAtivo && _disparoOficialIndex < _contatosOficial.length) {
+      _disparoOficialTimer = setTimeout(enviarProximo, intervalo);
+    } else {
       _disparoOficialAtivo = false;
+      document.getElementById('disparoOficialNome').textContent += ' — CONCLUÍDO ✓';
+    }
+  }
+  enviarProximo();
+}
+
+function pararDisparoOficial() {
+  _disparoOficialAtivo = false;
+  if (_disparoOficialTimer) clearTimeout(_disparoOficialTimer);
+  document.getElementById('disparoOficialNome').textContent += ' — PAUSADO';
+}
+
+async function carregarHistoricoOficial() {
+  var div = document.getElementById('historicoOficial');
+  div.innerHTML = '<div class="loading">Carregando...</div>';
+  try {
+    var sess = (await db.auth.getSession()).data.session;
+    var res = await fetch('/api/twilio-disparo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sess.access_token },
+      body: JSON.stringify({ action: 'historico' })
+    });
+    var data = await res.json();
+    var hist = data.historico || [];
+    if (!hist.length) { div.innerHTML = '<div class="empty">Nenhum disparo realizado ainda.</div>'; return; }
+    var campanhas = {};
+    hist.forEach(function(h) {
+      var c = h.campanha_id || 'sem_campanha';
+      if (!campanhas[c]) campanhas[c] = { nome: c, total: 0, enviados: 0, falhas: 0, data: h.enviado_em };
+      campanhas[c].total++;
+      if (h.status === 'enviado') campanhas[c].enviados++;
+      else campanhas[c].falhas++;
+    });
+    var rows = '';
+    Object.values(campanhas).sort(function(a,b){ return new Date(b.data) - new Date(a.data); }).forEach(function(c) {
+      var dt = new Date(c.data).toLocaleString('pt-BR');
+      var tx = c.total > 0 ? Math.round((c.enviados/c.total)*100) : 0;
+      rows += '<tr><td style="font-size:12px;color:var(--white);">' + esc(c.nome) + '</td><td style="color:var(--cyan);">' + c.total + '</td><td style="color:var(--green);">' + c.enviados + '</td><td style="color:#FF4D4D;">' + c.falhas + '</td><td style="color:var(--cyan);">' + tx + '%</td><td style="font-size:11px;color:var(--gray);">' + dt + '</td></tr>';
+    });
+    div.innerHTML = '<table><thead><tr><th>CAMPANHA</th><th>TOTAL</th><th>ENVIADOS</th><th>FALHAS</th><th>TAXA</th><th>DATA</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  } catch(e) { div.innerHTML = '<div class="empty">Erro: ' + e.message + '</div>'; }
+}
+
 // ── EVENTOS ──
 window.addEventListener('load', function() {
   // Auth
