@@ -453,7 +453,7 @@ var CORES  = {starter:'6B8EFF', pro:'00D4FF'};
 var todosClientes = [];
 var clienteEditando = null;
 var clienteExcluindo = null;
-
+var db = supabase.createClient(SUPABASE_URL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MTEyOTUsImV4cCI6MjA5MjM4NzI5NX0.sUmFeXhXsx7D7BKPrKrXFHSVuqhFdIKgOCdfUQumECY');
 // ── HELPERS ──
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 function fmt(n){ return Number(n||0).toLocaleString('pt-BR'); }
