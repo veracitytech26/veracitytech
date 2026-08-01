@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
       // Retorna todos os templates que têm aprovação WhatsApp (qualquer status)
       const templates = contents
-        .filter(t => t)
+        .filter(t => t.friendly_name)
         .map(t => ({
           sid: t.sid,
           nome: t.friendly_name,
