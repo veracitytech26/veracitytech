@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veracity Intelligence — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#080E1E;--dark:#0D1530;--blue:#1240AB;--cyan:#00D4FF;--white:#FFFFFF;--gray:#8896B3;--border:rgba(255,255,255,0.07);--green:#00E676;--red:#FF4D4D;--yellow:#FFB800;--gold:#C8992A;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
+#loginScreen{display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.login-box{background:var(--dark);border:1px solid var(--border);padding:48px;width:400px;position:relative;}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--cyan));}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+.login-sub{font-size:10px;letter-spacing:5px;color:var(--red);font-weight:700;margin-bottom:32px;}
+.login-label{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;display:block;margin-bottom:8px;}
+.login-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--white);padding:12px 16px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px;}
+.login-btn{width:100%;background:var(--cyan);color:var(--navy);font-size:13px;font-weight:700;letter-spacing:2px;padding:14px;border:none;cursor:pointer;}
+.login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none;}
+#dashboard{display:none;}
+.topbar{background:var(--dark);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;display:flex;align-items:center;gap:10px;}
+.topbar-logo span{color:var(--red);font-size:9px;letter-spacing:4px;display:block;font-family:'DM Sans',sans-serif;font-weight:700;}
+.topbar-right{display:flex;gap:12px;align-items:center;}
+.admin-badge{background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.2);color:var(--red);font-size:10px;font-weight:700;padding:4px 12px;letter-spacing:2px;}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--gray);font-size:12px;padding:7px 16px;cursor:pointer;}
+.logout-btn:hover{color:var(--white);}
+.container{max-width:1400px;margin:0 auto;padding:32px;}
+.tabs{display:flex;gap:0;margin-bottom:32px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--gray);font-size:12px;font-weight:700;letter-spacing:2px;padding:14px 22px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.tab-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(0,212,255,0.05);}
+.tab-btn:hover:not(.active){color:var(--white);}
+.tab-btn.war-room-tab{color:var(--gold);}
+.tab-btn.war-room-tab.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(200,153,42,0.05);}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--dark);border:1px solid var(--border);padding:24px;position:relative;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));}
+.stat-label{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:12px;}
+.stat-val{font-size:28px;font-weight:700;color:var(--white);}
+.stat-sub{font-size:12px;color:var(--gray);margin-top:6px;}
+.section-card{background:var(--dark);border:1px solid var(--border);padding:24px;margin-bottom:24px;}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.section-title{font-size:15px;font-weight:700;}
+.section-sub{font-size:12px;color:var(--gray);margin-top:2px;}
+.btn{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:1px;padding:6px 14px;border:none;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.btn-cyan{background:var(--cyan);color:var(--navy);}
+.btn-red{background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.3);color:var(--red);}
+.btn-yellow{background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.3);color:var(--yellow);}
+.btn-green{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:var(--green);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--gray);}
+.btn-ghost:hover{color:var(--white);}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:10px 14px;font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;border-bottom:1px solid var(--border);}
+td{padding:12px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+tr:hover td{background:rgba(255,255,255,0.015);}
+.badge{font-size:10px;font-weight:700;padding:3px 10px;letter-spacing:1px;}
+.badge-trial{background:rgba(136,150,179,0.1);color:var(--gray);border:1px solid rgba(136,150,179,0.2);}
+.badge-starter{background:rgba(18,64,171,0.2);color:#6B8EFF;border:1px solid rgba(18,64,171,0.3);}
+.badge-pro{background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.2);}
+.badge-bloqueado{background:rgba(255,77,77,0.15);color:var(--red);border:1px solid rgba(255,77,77,0.4);font-size:9px;padding:2px 7px;}
+.row-bloqueado td{opacity:0.5;}
+.actions{display:flex;gap:5px;flex-wrap:wrap;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;justify-content:center;align-items:center;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--dark);border:1px solid var(--border);padding:32px;width:480px;position:relative;max-height:90vh;overflow-y:auto;}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--cyan));}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:20px;}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;}
+.form-group{margin-bottom:16px;}
+.form-label{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:2px;display:block;margin-bottom:6px;}
+.form-input,.form-select{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--white);padding:10px 14px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.form-select option{background:#0D1530;}
+.modal-btns{display:flex;gap:10px;margin-top:20px;}
+.modal-msg{margin-top:12px;font-size:13px;text-align:center;display:none;}
+.search-input{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--white);padding:9px 14px;font-size:13px;width:260px;outline:none;font-family:'DM Sans',sans-serif;}
+.loading{text-align:center;padding:48px;color:var(--gray);}
+.empty{text-align:center;padding:48px;color:var(--gray);}
+.confirm-box{background:rgba(255,77,77,0.06);border:1px solid rgba(255,77,77,0.2);padding:16px;margin-bottom:16px;}
+.confirm-box p{font-size:13px;color:#B8C4D8;line-height:1.6;}
+.bar-wrap{background:rgba(255,255,255,0.06);height:8px;border-radius:4px;margin-top:6px;}
+.bar-fill{height:8px;border-radius:4px;background:var(--cyan);}
+
+/* ── WAR ROOM STYLES ── */
+.wr-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.wr-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.wr-card{background:var(--dark);border:1px solid var(--border);padding:20px;position:relative;}
+.wr-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--cyan));}
+.wr-label{font-size:10px;font-weight:700;color:var(--gray);letter-spacing:3px;margin-bottom:8px;}
+.wr-val{font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:1;color:var(--white);}
+.wr-sub{font-size:12px;color:var(--gray);margin-top:4px;}
+.wr-meta-card{background:var(--dark);border:1px solid var(--border);padding:20px;position:relative;margin-bottom:16px;}
+.wr-meta-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--cyan),var(--green));}
+.wr-barra-wrap{background:rgba(255,255,255,0.06);height:14px;border-radius:7px;overflow:hidden;margin-top:10px;}
+.wr-barra-fill{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width 1s ease;}
+.wr-rank-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.wr-rank-item:last-child{border-bottom:none;}
+.wr-rank-num{font-family:'Bebas Neue',sans-serif;font-size:28px;width:32px;text-align:center;}
+.wr-feed-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.wr-feed-item:last-child{border-bottom:none;}
+.wr-online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:wrPulse 2s infinite;margin-right:6px;}
+@keyframes wrPulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.wr-funil-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+.wr-funil-row:last-child{border-bottom:none;}
+.wr-relogio{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--cyan);}
+/* Notificação venda */
+.wr-venda-alert{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(135deg,#00E676,#00B050);border-radius:16px;padding:32px 48px;text-align:center;z-index:9999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 0 80px rgba(0,230,118,0.5);}
+.wr-venda-alert.show{display:block;transform:translate(-50%,-50%) scale(1);}
+.wr-alert-titulo{font-family:'Bebas Neue',sans-serif;font-size:48px;color:#080E1E;letter-spacing:4px;}
+.wr-alert-valor{font-family:'Bebas Neue',sans-serif;font-size:64px;color:#080E1E;line-height:1;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">VERACITY</div>
+    <div class="login-sub">ADMIN PANEL · ACESSO RESTRITO</div>
+    <label class="login-label">E-MAIL</label>
+    <input type="email" id="adminEmail" class="login-input" placeholder="admin@veracitytech.com.br">
+    <label class="login-label">SENHA</label>
+    <input type="password" id="adminPass" class="login-input" placeholder="••••••••">
+    <button class="login-btn" id="btnLogin">ENTRAR NO PAINEL</button>
+    <div class="login-error" id="loginError">E-mail ou senha incorretos.</div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">VERACITY <span>ADMIN PANEL</span></div>
+    <div class="topbar-right">
+      <div class="admin-badge">ADMINISTRADOR</div>
+      <button class="logout-btn" id="btnLogout">SAIR</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabVisaoGeral">Visão Geral</button>
+      <button class="tab-btn" id="tabClientes">Clientes</button>
+      <button class="tab-btn" id="tabMetricas">Metricas</button>
+      <button class="tab-btn" id="tabFinanceiro">Financeiro</button>
+      <button class="tab-btn" id="tabAddCliente">Novo Cliente</button>
+      <button class="tab-btn" id="tabApiOficial">API Oficial</button>
+      <button class="tab-btn" id="tabLeads">Leads & SDR</button>
+      <button class="tab-btn" id="tabCorretores">Corretores</button>
+      <button class="tab-btn war-room-tab" id="tabWarRoom">⚡ WAR ROOM</button>
+    </div>
+
+    <!-- VISAO GERAL -->
+    <div id="abaVisaoGeral">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">TOTAL CLIENTES</div><div class="stat-val" id="vgTotal" style="color:var(--cyan);">-</div><div class="stat-sub">cadastros na plataforma</div></div>
+        <div class="stat-card"><div class="stat-label">PLANOS PAGOS</div><div class="stat-val" id="vgPagos" style="color:var(--green);">-</div><div class="stat-sub">assinantes ativos</div></div>
+        <div class="stat-card"><div class="stat-label">MRR ESTIMADO</div><div class="stat-val" id="vgMrr" style="color:var(--green);">R$ 0</div><div class="stat-sub">receita mensal recorrente</div></div>
+        <div class="stat-card"><div class="stat-label">ARR ESTIMADO</div><div class="stat-val" id="vgArr">R$ 0</div><div class="stat-sub">receita anual recorrente</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">TRIALS ATIVOS</div><div class="stat-val" id="vgTrials">-</div><div class="stat-sub">em período de teste</div></div>
+        <div class="stat-card"><div class="stat-label">CONSULTAS TOTAIS</div><div class="stat-val" id="vgConsultas">-</div><div class="stat-sub">empresas buscadas</div></div>
+        <div class="stat-card"><div class="stat-label">CONVERSÃO TRIAL</div><div class="stat-val" id="vgConversao">-</div><div class="stat-sub">trial convertido em pago</div></div>
+        <div class="stat-card"><div class="stat-label">BLOQUEADOS</div><div class="stat-val" id="vgBloqueados" style="color:var(--red);">-</div><div class="stat-sub">acesso suspenso</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="section-card"><div class="section-head"><div class="section-title">Distribuição por Plano</div></div><div id="vgDistPlanos"></div></div>
+        <div class="section-card"><div class="section-head"><div class="section-title">Últimos Cadastros</div></div><div id="vgUltimosClientes"></div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div><div class="section-title">Projeção de Receita</div><div class="section-sub">Com base no ticket médio atual</div></div></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;" id="vgProjecao"></div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div id="abaClientes" style="display:none;">
+      <div class="section-card">
+        <div class="section-head">
+          <div><div class="section-title">Clientes da Plataforma</div><div class="section-sub" id="totalClientes">Carregando...</div></div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="text" class="search-input" id="searchCliente" placeholder="Buscar por nome ou e-mail...">
+            <button class="btn btn-cyan" id="btnAtualizar" style="padding:9px 18px;">Atualizar</button>
+          </div>
+        </div>
+        <div id="tabelaClientes"><div class="loading">Carregando clientes...</div></div>
+      </div>
+    </div>
+
+    <!-- METRICAS -->
+    <div id="abaMetricas" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">EMAILS ENVIADOS</div><div class="stat-val" id="mtEmails" style="color:var(--cyan);">-</div><div class="stat-sub">total geral da plataforma</div></div>
+        <div class="stat-card"><div class="stat-label">DISPAROS WHATSAPP</div><div class="stat-val" id="mtDisparos" style="color:var(--green);">-</div><div class="stat-sub">mensagens enviadas</div></div>
+        <div class="stat-card"><div class="stat-label">VENDAS FECHADAS</div><div class="stat-val" id="mtVendas" style="color:var(--yellow);">-</div><div class="stat-sub">pelos corretores</div></div>
+        <div class="stat-card"><div class="stat-label">RECEITA GERADA</div><div class="stat-val" id="mtReceita" style="color:var(--green);">R$ 0</div><div class="stat-sub">valor total das vendas</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">PACOTES AVULSOS</div><div class="stat-val" id="mtPacotes">-</div><div class="stat-sub">comprados na plataforma</div></div>
+        <div class="stat-card"><div class="stat-label">RECEITA PACOTES</div><div class="stat-val" id="mtReceitaPacotes" style="color:var(--green);">R$ 0</div><div class="stat-sub">total em pacotes avulsos</div></div>
+        <div class="stat-card"><div class="stat-label">MEDIA EMAILS/USUARIO</div><div class="stat-val" id="mtMediaEmails">-</div><div class="stat-sub">por corretor</div></div>
+        <div class="stat-card"><div class="stat-label">MEDIA DISPAROS/USUARIO</div><div class="stat-val" id="mtMediaDisparos">-</div><div class="stat-sub">por corretor</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="section-card"><div class="section-head"><div class="section-title">Ultimas Campanhas de Email</div></div><div id="mtTabelaEmails"><div class="loading">Carregando...</div></div></div>
+        <div class="section-card"><div class="section-head"><div class="section-title">Ultimas Campanhas WhatsApp</div></div><div id="mtTabelaDisparos"><div class="loading">Carregando...</div></div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div class="section-title">Vendas Fechadas pelos Corretores</div><button class="btn btn-cyan" id="btnAtualizarMetricas" style="padding:8px 16px;">Atualizar</button></div>
+        <div id="mtTabelaVendas"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
+    <!-- FINANCEIRO -->
+    <div id="abaFinanceiro" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">MRR ESTIMADO</div><div class="stat-val" id="finMRR" style="color:var(--green);">R$ 0</div><div class="stat-sub">receita mensal recorrente</div></div>
+        <div class="stat-card"><div class="stat-label">ARR ESTIMADO</div><div class="stat-val" id="finARR">R$ 0</div><div class="stat-sub">receita anual</div></div>
+        <div class="stat-card"><div class="stat-label">TICKET MÉDIO</div><div class="stat-val" id="finTicket">R$ 0</div><div class="stat-sub">por cliente/mês</div></div>
+        <div class="stat-card"><div class="stat-label">VALUATION EST.</div><div class="stat-val" id="finValuation" style="color:var(--cyan);">R$ 0</div><div class="stat-sub">10x MRR anual</div></div>
+      </div>
+      <div class="section-card"><div class="section-head"><div><div class="section-title">Receita por Plano</div><div class="section-sub">Distribuição do MRR</div></div></div><div id="finDistReceita"></div></div>
+      <div class="section-card"><div class="section-head"><div><div class="section-title">Receita por Cliente</div><div class="section-sub">Clientes com planos pagos</div></div><div id="finTotalReceita" style="font-size:20px;font-weight:700;color:var(--green);"></div></div><div id="tabelaFinanceiro"></div></div>
+    </div>
+
+    <!-- LEADS & SDR -->
+    <div id="abaLeads" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">LEADS HOJE</div><div class="stat-val" id="ldHoje" style="color:var(--cyan);">-</div><div class="stat-sub">qualificados pelo SDR</div></div>
+        <div class="stat-card"><div class="stat-label">LEADS QUENTES</div><div class="stat-val" id="ldQuentes" style="color:var(--green);">-</div><div class="stat-sub">prontos para atender</div></div>
+        <div class="stat-card"><div class="stat-label">AGENDADOS</div><div class="stat-val" id="ldAgendados" style="color:var(--yellow);">-</div><div class="stat-sub">ligacao marcada</div></div>
+        <div class="stat-card"><div class="stat-label">FRIOS</div><div class="stat-val" id="ldFrios" style="color:var(--red);">-</div><div class="stat-sub">nao tiveram interesse</div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div><div class="section-title">Leads Distribuidos</div><div class="section-sub">Historico de distribuicao para corretores</div></div><button class="btn btn-cyan" id="btnAtualizarLeads" style="padding:8px 16px;">Atualizar</button></div>
+        <div id="tabelaLeads"><div class="loading">Carregando...</div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div><div class="section-title">Conversas do SDR IA</div><div class="section-sub">Ultimas conversas qualificadas</div></div><button class="btn btn-ghost" id="btnAtualizarConversas" style="padding:8px 16px;">Atualizar</button></div>
+        <div id="tabelaConversas"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
+    <!-- CORRETORES -->
+    <div id="abaCorretores" style="display:none;">
+      <div class="section-card">
+        <div class="section-head"><div><div class="section-title">Status dos Corretores</div><div class="section-sub">Disponibilidade e performance</div></div><button class="btn btn-cyan" id="btnAtualizarCorretores" style="padding:8px 16px;">Atualizar</button></div>
+        <div id="tabelaCorretoresAdmin"><div class="loading">Carregando...</div></div>
+      </div>
+      <div class="section-card" style="margin-top:16px;">
+        <div class="section-head"><div><div class="section-title">Performance por Corretor</div><div class="section-sub">Leads recebidos e resultados</div></div></div>
+        <div id="tabelaPerformance"><div class="loading">Carregando...</div></div>
+      </div>
+    </div>
+
+    <!-- API OFICIAL -->
+    <div id="abaApiOficial" style="display:none;">
+      <div class="section-card">
+        <div class="section-head">
+          <div><div class="section-title">Disparar Campanha — WhatsApp API Oficial</div><div class="section-sub">Templates aprovados pela Meta · Sem risco de bloqueio</div></div>
+          <button class="btn btn-cyan" id="btnCarregarTemplates" onclick="carregarTemplatesOficial()" style="padding:8px 16px;">Carregar Templates</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+          <div>
+            <label class="form-label">TEMPLATE</label>
+            <select id="templateSid" class="form-select" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+              <option value="">Clique em Carregar Templates primeiro</option>
+            </select>
+            <div id="templatePreview" style="margin-top:10px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);font-size:12px;color:var(--gray);min-height:60px;display:none;"></div>
+          </div>
+          <div>
+            <label class="form-label">IMPORTAR PLANILHA</label>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <label style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:12px;font-weight:700;padding:9px 18px;cursor:pointer;">
+                SELECIONAR .CSV ou .XLSX
+                <input type="file" id="planilhaOficial" accept=".csv,.xlsx,.xls" style="display:none;" onchange="importarPlanilhaOficial(this)">
+              </label>
+              <span id="planilhaOficialInfo" style="font-size:12px;color:var(--gray);">Nenhum arquivo selecionado</span>
+            </div>
+            <div style="font-size:11px;color:var(--gray);margin-top:6px;">Colunas: <strong style="color:#fff;">nome</strong>, <strong style="color:#fff;">empresa</strong>, <strong style="color:#fff;">telefone</strong></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div>
+            <label class="form-label">INTERVALO ENTRE ENVIOS</label>
+            <select id="intervaloOficial" class="form-select" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+              <option value="5">5 segundos</option>
+              <option value="10" selected>10 segundos (recomendado)</option>
+              <option value="15">15 segundos</option>
+              <option value="30">30 segundos (seguro)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">NOME DA CAMPANHA</label>
+            <input type="text" id="nomeCampanhaOficial" class="form-input" placeholder="Ex: Campanha MEI Julho" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#fff;padding:10px 14px;font-size:13px;outline:none;">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button onclick="iniciarDisparoOficial()" style="width:100%;background:var(--cyan);color:var(--navy);font-size:13px;font-weight:700;padding:12px;border:none;cursor:pointer;">INICIAR DISPARO</button>
+          </div>
+        </div>
+        <div id="disparoOficialStatus" style="display:none;padding:16px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:13px;font-weight:700;color:#fff;" id="disparoOficialNome">-</div>
+            <button onclick="pararDisparoOficial()" style="background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.3);color:#FF4D4D;font-size:11px;font-weight:700;padding:6px 14px;cursor:pointer;">PARAR</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--cyan);" id="dispOfEnviados">0</div><div style="font-size:10px;color:var(--gray);">ENVIADOS</div></div>
+            <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--green);" id="dispOfEntregues">0</div><div style="font-size:10px;color:var(--gray);">ENTREGUES</div></div>
+            <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:#FF4D4D;" id="dispOfFalhas">0</div><div style="font-size:10px;color:var(--gray);">FALHAS</div></div>
+            <div style="text-align:center;"><div style="font-size:22px;font-weight:700;color:var(--yellow);" id="dispOfTotal">0</div><div style="font-size:10px;color:var(--gray);">TOTAL</div></div>
+          </div>
+          <div style="margin-top:12px;background:rgba(255,255,255,0.06);height:8px;border-radius:4px;">
+            <div id="dispOfBarra" style="height:8px;border-radius:4px;background:var(--cyan);width:0%;transition:width 0.3s;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><div><div class="section-title">Histórico de Disparos</div></div><button class="btn btn-ghost" onclick="carregarHistoricoOficial()" style="padding:8px 16px;">Atualizar</button></div>
+        <div id="historicoOficial"><div class="loading">Clique em Atualizar para carregar.</div></div>
+      </div>
+    </div>
+
+    <!-- NOVO CLIENTE -->
+    <div id="abaAddCliente" style="display:none;">
+      <div class="section-card" style="max-width:500px;">
+        <div class="section-title" style="margin-bottom:24px;">Ativar Plano Manualmente</div>
+        <div class="form-group"><label class="form-label">E-MAIL DO CLIENTE</label><input type="email" id="newEmail" class="form-input" placeholder="email@empresa.com.br"></div>
+        <div class="form-group"><label class="form-label">PLANO</label><select id="newPlano" class="form-select"><option value="trial">Trial — 10 créditos</option><option value="starter">Starter — 300 créditos — R$ 190/mês</option><option value="pro">Pro — 600 créditos — R$ 279/mês</option></select></div>
+        <div class="form-group"><label class="form-label">CRÉDITOS EXTRAS (opcional)</label><input type="number" id="newCreditos" class="form-input" placeholder="0"></div>
+        <button class="btn btn-cyan" id="btnAtivar" style="width:100%;padding:14px;justify-content:center;font-size:13px;">Ativar Plano</button>
+        <div id="ativarMsg" class="modal-msg"></div>
+      </div>
+    </div>
+
+    <!-- WAR ROOM -->
+    <div id="abaWarRoom" style="display:none;">
+      <!-- Header War Room -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:16px 20px;background:var(--dark);border:1px solid var(--border);position:relative;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--cyan),var(--green));"></div>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--gold);">⚡ WAR ROOM <span style="color:var(--gray);font-size:14px;letter-spacing:2px;">· AO VIVO</span></div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px;">Atualiza automaticamente a cada 15 segundos</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:24px;">
+          <div style="text-align:center;">
+            <div class="wr-relogio" id="wrRelogio">00:00:00</div>
+            <div style="font-size:11px;color:var(--gray);" id="wrData"></div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--gray);letter-spacing:2px;margin-bottom:6px;">STATUS</div>
+            <div style="font-size:12px;"><span class="wr-online-dot"></span>SDR ESTEVÃO</div>
+            <div style="font-size:12px;margin-top:3px;"><span class="wr-online-dot"></span>API OFICIAL</div>
+          </div>
+          <button class="btn btn-ghost" onclick="buscarDadosWarRoom()" style="padding:8px 16px;">Atualizar</button>
+        </div>
+      </div>
+
+      <!-- META DO DIA -->
+      <div class="wr-meta-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-size:10px;font-weight:700;color:var(--gray);letter-spacing:3px;">META DO DIA</div>
+          <div style="font-size:12px;color:var(--gray);">Meta: R$ 20.000 · Ticket médio: R$ 1.250 · Comissão 180%</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="display:flex;gap:32px;align-items:baseline;">
+            <div>
+              <div style="font-size:10px;color:var(--gray);letter-spacing:2px;margin-bottom:2px;">REALIZADO</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--green);line-height:1;" id="wrMetaRealizado">R$ 0</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--gray);letter-spacing:2px;margin-bottom:2px;">PROGRESSO</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--cyan);line-height:1;" id="wrMetaPct">0%</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--gray);letter-spacing:2px;margin-bottom:2px;">VENDAS</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--white);line-height:1;" id="wrVendasHoje">0</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:var(--gray);letter-spacing:2px;">FALTAM</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--yellow);line-height:1;" id="wrMetaFalta">R$ 20.000</div>
+            <div style="font-size:11px;color:var(--gray);margin-top:2px;" id="wrProjecaoMes">Projeção mensal: R$ 0</div>
+          </div>
+        </div>
+        <div class="wr-barra-wrap">
+          <div class="wr-barra-fill" id="wrMetaBarra" style="width:0%;"></div>
+        </div>
+      </div>
+
+      <!-- CARDS PRINCIPAIS -->
+      <div class="wr-grid">
+        <!-- DISPAROS + LEADS -->
+        <div class="wr-card">
+          <div class="wr-label">DISPAROS DE HOJE</div>
+          <div class="wr-val" id="wrDisparosHoje" style="color:var(--cyan);">0</div>
+          <div class="wr-sub">mensagens API Oficial</div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:12px;color:var(--gray);">Entregues</div>
+              <div style="font-size:13px;font-weight:700;color:var(--green);" id="wrEntregues">0</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <div style="font-size:12px;color:var(--gray);">Falhas</div>
+              <div style="font-size:13px;font-weight:700;color:var(--red);" id="wrFalhas">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEADS -->
+        <div class="wr-card">
+          <div class="wr-label">LEADS HOJE</div>
+          <div class="wr-val" id="wrLeadsHoje" style="color:var(--yellow);">0</div>
+          <div class="wr-sub">recebidos pelo SDR</div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:12px;color:var(--gray);">Quentes</div>
+              <div style="font-size:13px;font-weight:700;color:var(--green);" id="wrLeadsQuentes">0</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <div style="font-size:12px;color:var(--gray);">Em atendimento</div>
+              <div style="font-size:13px;font-weight:700;color:var(--cyan);" id="wrLeadsAtendimento">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FATURAMENTO -->
+        <div class="wr-card">
+          <div class="wr-label">FATURAMENTO DO DIA</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;color:var(--gold);" id="wrFaturamento">R$ 0</div>
+          <div class="wr-sub">comissão 180%</div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:12px;color:var(--gray);">Ticket médio</div>
+              <div style="font-size:13px;font-weight:700;color:var(--white);" id="wrTicketMedio">R$ 0</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <div style="font-size:12px;color:var(--gray);">Visitantes no site agora</div>
+              <div style="font-size:13px;font-weight:700;color:var(--green);" id="wrVisitantes">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RANKING + FEED + FUNIL -->
+      <div class="wr-grid-2">
+        <!-- RANKING -->
+        <div class="wr-card">
+          <div class="wr-label">🏆 RANKING DOS CORRETORES — HOJE</div>
+          <div id="wrRanking" style="margin-top:8px;">
+            <div class="wr-rank-item">
+              <div class="wr-rank-num" style="color:var(--gold);">1</div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;">—</div><div style="font-size:12px;color:var(--gray);">aguardando vendas</div></div>
+              <div style="text-align:right;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green);">R$ 0</div><div style="font-size:10px;color:var(--gray);">0 vendas</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FUNIL + FEED -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- FUNIL -->
+          <div class="wr-card">
+            <div class="wr-label">FUNIL DO DIA</div>
+            <div style="margin-top:8px;">
+              <div class="wr-funil-row"><div style="font-size:12px;color:var(--gray);">📤 Disparados</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;" id="wrFDisparados">0</div></div>
+              <div class="wr-funil-row"><div style="font-size:12px;color:var(--gray);">👆 Clicaram (est.)</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--cyan);" id="wrFClicaram">0</div></div>
+              <div class="wr-funil-row"><div style="font-size:12px;color:var(--gray);">📋 Leads recebidos</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--yellow);" id="wrFLeads">0</div></div>
+              <div class="wr-funil-row"><div style="font-size:12px;color:var(--gray);">🤖 SDR qualificou</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);" id="wrFQualificados">0</div></div>
+              <div class="wr-funil-row" style="border:none;"><div style="font-size:12px;color:var(--green);font-weight:700;">✅ Vendas fechadas</div><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);" id="wrFVendas">0</div></div>
+            </div>
+          </div>
+          <!-- FEED -->
+          <div class="wr-card">
+            <div class="wr-label">⚡ ÚLTIMAS ATIVIDADES</div>
+            <div id="wrFeed" style="margin-top:8px;">
+              <div class="wr-feed-item">
+                <div style="font-size:20px;">🎯</div>
+                <div><div style="font-size:13px;font-weight:700;">Sistema pronto</div><div style="font-size:11px;color:var(--gray);">Monitorando em tempo real</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-bg" id="modalEditar">
+  <div class="modal">
+    <button class="modal-close" id="btnFecharEditar">x</button>
+    <h3>Editar Cliente</h3>
+    <input type="hidden" id="editId">
+    <div class="form-group"><label class="form-label">NOME</label><input type="text" id="editNome" class="form-input"></div>
+    <div class="form-group"><label class="form-label">PLANO</label><select id="editPlano" class="form-select"><option value="trial">Trial</option><option value="starter">Starter — R$ 190/mês</option><option value="pro">Pro — R$ 279/mês</option></select></div>
+    <div class="form-group"><label class="form-label">CRÉDITOS TOTAIS (BUSCA)</label><input type="number" id="editCreditos" class="form-input"></div>
+    <div class="form-group"><label class="form-label">CRÉDITOS USADOS (BUSCA)</label><input type="number" id="editUsados" class="form-input"></div>
+    <div class="form-group"><label class="form-label">CRÉDITOS DE EMAIL</label><input type="number" id="editEmailCredits" class="form-input" placeholder="0"></div>
+    <div style="border-top:1px solid var(--border);margin:20px 0 16px;padding-top:16px;">
+      <div style="font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:3px;margin-bottom:16px;">ADD-ONS</div>
+      <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;">
+        <div><label class="form-label" style="margin-bottom:2px;">VERACITY DISPARO</label><div style="font-size:11px;color:var(--gray);">WhatsApp em massa — R$ 350/mês</div></div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="editDisparo" style="width:16px;height:16px;cursor:pointer;"><span style="font-size:12px;color:var(--gray);">Ativo</span></label>
+      </div>
+      <div class="form-group" id="grupoVencDisparo" style="display:none;"><label class="form-label">VENCIMENTO VERACITY DISPARO</label><input type="date" id="editDisparoVenc" class="form-input"></div>
+      <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+        <div><label class="form-label" style="margin-bottom:2px;">SDR COM IA</label><div style="font-size:11px;color:var(--gray);">Atendimento automático via WhatsApp</div></div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="editSdr" style="width:16px;height:16px;cursor:pointer;"><span style="font-size:12px;color:var(--gray);">Ativo</span></label>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+        <div><label class="form-label" style="margin-bottom:2px;">EMAIL MARKETING</label><div style="font-size:11px;color:var(--gray);">Disparo de email em massa</div></div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="editEmailMkt" style="width:16px;height:16px;cursor:pointer;"><span style="font-size:12px;color:var(--gray);">Ativo</span></label>
+      </div>
+      <div class="form-group" id="grupoVencEmail" style="display:none;"><label class="form-label">VENCIMENTO EMAIL MARKETING</label><input type="date" id="editEmailMktVenc" class="form-input"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-cyan" id="btnSalvar" style="flex:1;padding:12px;justify-content:center;">Salvar</button>
+      <button class="btn btn-ghost" id="btnCancelarEditar" style="padding:12px 20px;">Cancelar</button>
+    </div>
+    <div id="editMsg" class="modal-msg"></div>
+  </div>
+</div>
+
+<!-- MODAL EXCLUIR -->
+<div class="modal-bg" id="modalExcluir">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" id="btnFecharExcluir">x</button>
+    <h3>Confirmar Exclusão</h3>
+    <div class="confirm-box">
+      <p>Você está prestes a excluir permanentemente:</p>
+      <p style="margin-top:10px;font-size:15px;font-weight:700;color:var(--white);" id="excluirNome">-</p>
+      <p style="font-size:12px;color:var(--gray);" id="excluirEmail">-</p>
+      <p style="margin-top:12px;color:var(--red);font-size:12px;">Esta ação não pode ser desfeita.</p>
+    </div>
+    <input type="hidden" id="excluirId">
+    <div class="modal-btns">
+      <button class="btn btn-red" id="btnConfirmarExcluir" style="flex:1;padding:12px;justify-content:center;">Excluir definitivamente</button>
+      <button class="btn btn-ghost" id="btnCancelarExcluir" style="padding:12px 20px;">Cancelar</button>
+    </div>
+    <div id="excluirMsg" class="modal-msg"></div>
+  </div>
+</div>
+
+<!-- NOTIFICAÇÃO VENDA -->
+<div class="wr-venda-alert" id="wrVendaAlert">
+  <div style="font-size:64px;">🎉</div>
+  <div class="wr-alert-titulo">VENDA FECHADA!</div>
+  <div style="font-size:18px;color:#080E1E;font-weight:700;margin-top:4px;" id="wrAlertCorretor">Corretor</div>
+  <div class="wr-alert-valor" id="wrAlertValor">R$ 0</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var ADMIN_EMAIL = 'admin@veracitytech.com.br';
+var ADMIN_PASS = 'veracitytech26';
+var SUPABASE_URL = 'https://nfusabwpxpdcqedrehrc.supabase.co';
+var SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjgxMTI5NSwiZXhwIjoyMDkyMzg3Mjk1fQ.iA7c0NPmLSkWe__qA8hLJnO3nD2Wwyvro5CKKez3UsI';
+var PLANOS = {trial:{label:'Trial',creditos:10}, starter:{label:'Starter',creditos:300}, pro:{label:'Pro',creditos:600}};
+var PRECOS = {trial:0, starter:190, pro:279};
+var CORES  = {starter:'6B8EFF', pro:'00D4FF'};
+var todosClientes = [];
+var clienteEditando = null;
+var clienteExcluindo = null;
+var db = supabase.createClient(SUPABASE_URL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MTEyOTUsImV4cCI6MjA5MjM4NzI5NX0.sUmFeXhXsx7D7BKPrKrXFHSVuqhFdIKgOCdfUQumECY');
+var WR_META_DIA = 20000;
+var WR_TICKET_MEDIO = 1250;
+var WR_COMISSAO = 1.80;
+var wrUltimaVendaCount = 0;
+var wrTimer = null;
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+function fmt(n){ return Number(n||0).toLocaleString('pt-BR'); }
+function fmtR(n){ return 'R$ ' + fmt(Math.round(n||0)); }
+
+function apiCall(path, opts) {
+  var headers = {'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Accept':'application/json','Content-Type':'application/json'};
+  return fetch(SUPABASE_URL + path, Object.assign({headers:headers}, opts||{}));
+}
+
+// ── AUTH ──
+function verificarAuth() {
+  var auth = sessionStorage.getItem('adminAuth');
+  var email = sessionStorage.getItem('adminEmail');
+  if (auth === '1' && email === ADMIN_EMAIL) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    init();
+  }
+}
+function fazerLogin() {
+  var email = document.getElementById('adminEmail').value.trim().toLowerCase();
+  var pass = document.getElementById('adminPass').value;
+  var erro = document.getElementById('loginError');
+  if (!email || !pass) { erro.style.display='block'; erro.textContent='Preencha e-mail e senha.'; return; }
+  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+    sessionStorage.setItem('adminAuth','1');
+    sessionStorage.setItem('adminEmail', email);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    init();
+  } else {
+    erro.style.display = 'block';
+    erro.textContent = 'E-mail ou senha incorretos.';
+    document.getElementById('adminPass').value = '';
+  }
+}
+function logout() { sessionStorage.clear(); location.reload(); }
+
+// ── TABS ──
+function mostrarAba(aba) {
+  var todas = ['VisaoGeral','Clientes','Metricas','Financeiro','AddCliente','ApiOficial','Leads','Corretores','WarRoom'];
+  todas.forEach(function(a) {
+    var el = document.getElementById('aba'+a);
+    if (el) el.style.display = 'none';
+    var btn = document.getElementById('tab'+a);
+    if (btn) btn.classList.remove('active');
+  });
+  var cap = aba.charAt(0).toUpperCase() + aba.slice(1);
+  var el = document.getElementById('aba'+cap);
+  if (el) el.style.display = 'block';
+  var btn = document.getElementById('tab'+cap);
+  if (btn) btn.classList.add('active');
+  if (aba === 'financeiro') renderFinanceiro();
+  if (aba === 'visaoGeral') renderVisaoGeral();
+  if (aba === 'metricas') carregarMetricas();
+  if (aba === 'leads') carregarLeads();
+  if (aba === 'corretores') carregarCorretoresAdmin();
+  if (aba === 'apiOficial') carregarHistoricoOficial();
+  if (aba === 'warRoom') iniciarWarRoom();
+  if (aba !== 'warRoom' && wrTimer) { clearInterval(wrTimer); wrTimer = null; }
+}
+
+// ── INIT ──
+function init() {
+  carregarClientes().then(function() { renderVisaoGeral(); });
+  iniciarRelogioWR();
+}
+
+// ── WAR ROOM ──
+function iniciarRelogioWR() {
+  setInterval(function() {
+    var agora = new Date();
+    var h = String(agora.getHours()).padStart(2,'0');
+    var m = String(agora.getMinutes()).padStart(2,'0');
+    var s = String(agora.getSeconds()).padStart(2,'0');
+    var el = document.getElementById('wrRelogio');
+    if (el) el.textContent = h + ':' + m + ':' + s;
+    var dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    var elD = document.getElementById('wrData');
+    if (elD) elD.textContent = dias[agora.getDay()] + ', ' + agora.getDate() + ' ' + meses[agora.getMonth()];
+  }, 1000);
+}
+
+function iniciarWarRoom() {
+  buscarDadosWarRoom();
+  if (wrTimer) clearInterval(wrTimer);
+  wrTimer = setInterval(buscarDadosWarRoom, 15000);
+}
+
+async function buscarDadosWarRoom() {
+  try {
+    var h = {'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Accept':'application/json'};
+    var hoje = new Date().toISOString().split('T')[0];
+    var [rVendas, rLeads, rDisparos, rCorretores, rLeadsD] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/metricas_vendas?select=*&created_at=gte.' + hoje + 'T00:00:00&order=created_at.desc', {headers:h}),
+      fetch(SUPABASE_URL + '/rest/v1/sdr_leads?select=*&order=updated_at.desc&limit=50', {headers:h}),
+      fetch(SUPABASE_URL + '/rest/v1/campanhas_api_oficial?select=id,status&enviado_em=gte.' + hoje + 'T00:00:00', {headers:h}),
+      fetch(SUPABASE_URL + '/rest/v1/corretores?select=*', {headers:h}),
+      fetch(SUPABASE_URL + '/rest/v1/leads_distribuidos?select=*,corretores(nome)&distribuido_em=gte.' + hoje + 'T00:00:00&order=distribuido_em.desc&limit=10', {headers:h})
+    ]);
+    var vendas = rVendas.ok ? await rVendas.json() : [];
+    var sdrLeads = rLeads.ok ? await rLeads.json() : [];
+    var disparos = rDisparos.ok ? await rDisparos.json() : [];
+    var corretores = rCorretores.ok ? await rCorretores.json() : [];
+    var leadsD = rLeadsD.ok ? await rLeadsD.json() : [];
+    if (!Array.isArray(vendas)) vendas = [];
+    if (!Array.isArray(sdrLeads)) sdrLeads = [];
+    if (!Array.isArray(disparos)) disparos = [];
+    if (!Array.isArray(corretores)) corretores = [];
+    if (!Array.isArray(leadsD)) leadsD = [];
+
+    var totalVendas = vendas.length;
+    var totalFat = vendas.reduce(function(s,v){ return s + ((parseFloat(v.valor)||WR_TICKET_MEDIO) * WR_COMISSAO); }, 0);
+    var hoje2 = new Date().toISOString().split('T')[0];
+    var leadsHoje = sdrLeads.filter(function(l){ return l.updated_at && l.updated_at.startsWith(hoje2); });
+    var quentes = sdrLeads.filter(function(l){ return l.status === 'quente'; });
+    var atendimento = leadsD.filter(function(l){ return l.status === 'em_contato'; });
+    var entregues = disparos.filter(function(d){ return d.status === 'enviado'; });
+    var falhas = disparos.filter(function(d){ return d.status !== 'enviado'; });
+
+    // Notificação nova venda
+    if (totalVendas > wrUltimaVendaCount && wrUltimaVendaCount > 0) {
+      var ultimaVenda = vendas[0];
+      mostrarAlertaVenda(ultimaVenda);
+    }
+    wrUltimaVendaCount = totalVendas;
+
+    // Ranking por corretor
+    var rankMap = {};
+    corretores.forEach(function(c){ rankMap[c.id] = {nome:c.nome, vendas:0, valor:0}; });
+    vendas.forEach(function(v){
+      if (v.corretor_id && rankMap[v.corretor_id]) {
+        rankMap[v.corretor_id].vendas++;
+        rankMap[v.corretor_id].valor += (parseFloat(v.valor)||WR_TICKET_MEDIO) * WR_COMISSAO;
+      }
+    });
+    var ranking = Object.values(rankMap).sort(function(a,b){ return b.vendas - a.vendas; });
+
+    // Atualiza UI
+    var pct = WR_META_DIA > 0 ? Math.min(Math.round((totalFat/WR_META_DIA)*100),100) : 0;
+    document.getElementById('wrMetaRealizado').textContent = fmtR(totalFat);
+    document.getElementById('wrMetaPct').textContent = pct + '%';
+    document.getElementById('wrMetaBarra').style.width = pct + '%';
+    document.getElementById('wrMetaFalta').textContent = fmtR(Math.max(0, WR_META_DIA - totalFat));
+    document.getElementById('wrVendasHoje').textContent = totalVendas;
+    var diasMes = new Date().getDate();
+    var projecao = diasMes > 0 ? Math.round((totalFat/diasMes)*30) : 0;
+    document.getElementById('wrProjecaoMes').textContent = 'Projeção mensal: ' + fmtR(projecao);
+    document.getElementById('wrDisparosHoje').textContent = fmt(disparos.length);
+    document.getElementById('wrEntregues').textContent = fmt(entregues.length);
+    document.getElementById('wrFalhas').textContent = fmt(falhas.length);
+    document.getElementById('wrLeadsHoje').textContent = fmt(leadsHoje.length);
+    document.getElementById('wrLeadsQuentes').textContent = fmt(quentes.length);
+    document.getElementById('wrLeadsAtendimento').textContent = fmt(atendimento.length);
+    document.getElementById('wrFaturamento').textContent = fmtR(totalFat);
+    document.getElementById('wrTicketMedio').textContent = totalVendas > 0 ? fmtR(totalFat/totalVendas) : 'R$ 0';
+    document.getElementById('wrFDisparados').textContent = fmt(disparos.length);
+    document.getElementById('wrFClicaram').textContent = fmt(Math.round(disparos.length * 0.22));
+    document.getElementById('wrFLeads').textContent = fmt(leadsHoje.length);
+    document.getElementById('wrFQualificados').textContent = fmt(quentes.length);
+    document.getElementById('wrFVendas').textContent = fmt(totalVendas);
+
+    // Visitantes simulados
+    document.getElementById('wrVisitantes').textContent = Math.floor(Math.random() * 8);
+
+    // Ranking
+    var rankColors = ['var(--gold)','#C0C0C0','#CD7F32','var(--gray)'];
+    var rankHTML = '';
+    if (!ranking.length || ranking.every(function(r){ return r.vendas === 0; })) {
+      rankHTML = '<div style="padding:20px;text-align:center;color:var(--gray);font-size:13px;">Aguardando primeiras vendas do dia...</div>';
+    } else {
+      ranking.slice(0,4).forEach(function(c,i) {
+        rankHTML += '<div class="wr-rank-item">' +
+          '<div class="wr-rank-num" style="color:' + rankColors[i] + ';">' + (i+1) + '</div>' +
+          '<div style="flex:1;"><div style="font-size:14px;font-weight:700;">' + esc(c.nome) + '</div>' +
+          '<div style="font-size:12px;color:var(--gray);">' + c.vendas + ' venda(s) hoje</div></div>' +
+          '<div style="text-align:right;"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--green);">' + fmtR(c.valor) + '</div>' +
+          '<div style="font-size:10px;color:var(--gray);">' + c.vendas + ' vendas</div></div></div>';
+      });
+    }
+    document.getElementById('wrRanking').innerHTML = rankHTML;
+
+    // Feed
+    var feedHTML = '';
+    if (!leadsD.length) {
+      feedHTML = '<div class="wr-feed-item"><div style="font-size:20px;">🎯</div><div><div style="font-size:13px;font-weight:700;">Aguardando atividades...</div><div style="font-size:11px;color:var(--gray);">Sistema monitorando</div></div></div>';
+    } else {
+      leadsD.slice(0,5).forEach(function(l) {
+        var hora = l.distribuido_em ? new Date(l.distribuido_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+        var corretor = l.corretores ? l.corretores.nome : 'Corretor';
+        var emoji = l.status === 'encerrado' ? '💰' : '📞';
+        feedHTML += '<div class="wr-feed-item">' +
+          '<div style="font-size:20px;">' + emoji + '</div>' +
+          '<div style="flex:1;"><div style="font-size:13px;font-weight:700;">' + esc(l.lead_nome||l.lead_empresa||'Lead') + '</div>' +
+          '<div style="font-size:11px;color:var(--gray);">' + esc(corretor) + ' · ' + hora + '</div></div></div>';
+      });
+    }
+    document.getElementById('wrFeed').innerHTML = feedHTML;
+
+  } catch(e) { console.error('War Room erro:', e); }
+}
+
+function mostrarAlertaVenda(venda) {
+  var alert = document.getElementById('wrVendaAlert');
+  document.getElementById('wrAlertCorretor').textContent = 'Venda registrada!';
+  document.getElementById('wrAlertValor').textContent = fmtR((parseFloat(venda&&venda.valor)||WR_TICKET_MEDIO) * WR_COMISSAO);
+  alert.classList.add('show');
+  setTimeout(function(){ alert.classList.remove('show'); }, 5000);
+}
+
+// ── CARREGAR CLIENTES ──
+async function carregarClientes() {
+  try {
+    var res = await apiCall('/rest/v1/profiles?select=*&order=created_at.desc');
+    todosClientes = await res.json();
+    if (!Array.isArray(todosClientes)) todosClientes = [];
+    document.getElementById('totalClientes').textContent = todosClientes.length + ' clientes cadastrados';
+    renderClientes(todosClientes);
+  } catch(e) {
+    document.getElementById('tabelaClientes').innerHTML = '<div class="empty">Erro ao carregar: ' + e.message + '<\/div>';
+  }
+}
+
+function renderClientes(lista) {
+  var div = document.getElementById('tabelaClientes');
+  if (!lista.length) { div.innerHTML = '<div class="empty">Nenhum cliente encontrado.<\/div>'; return; }
+  var rows = '';
+  for (var i = 0; i < lista.length; i++) {
+    var c = lista[i];
+    var plano = c.plan || 'trial';
+    var total = c.credits_total || 0;
+    var usado = c.credits_used || 0;
+    var disp = total - usado;
+    var pct = total > 0 ? Math.round((usado/total)*100) : 0;
+    var data = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '-';
+    var bl = c.bloqueado ? true : false;
+    var planoLabel = (PLANOS[plano] ? PLANOS[plano].label : plano).toUpperCase();
+    var row = '<tr' + (bl ? ' class="row-bloqueado"' : '') + '>';
+    row += '<td><div style="font-weight:700;color:var(--white);">' + esc(c.name||'-');
+    if (bl) row += ' <span class="badge badge-bloqueado">BLOQUEADO<\/span>';
+    row += '<\/div><div style="font-size:11px;color:var(--gray);margin-top:2px;">' + esc(c.email||'-') + '<\/div>';
+    var addons = '';
+    if (c.addon_disparo) { var vd=c.disparo_vencimento?new Date(c.disparo_vencimento):null;var vvd=vd&&vd<new Date();addons+='<span style="font-size:9px;font-weight:700;padding:2px 6px;background:rgba(0,212,255,0.1);color:'+(vvd?'#FF4D4D':'#00D4FF')+';border:1px solid '+(vvd?'rgba(255,77,77,0.3)':'rgba(0,212,255,0.3)')+';margin-right:3px;">'+(vvd?'DISPARO VENCIDO':'DISPARO')+'<\/span>'; }
+    if (c.addon_sdr) addons += '<span style="font-size:9px;font-weight:700;padding:2px 6px;background:rgba(0,230,118,0.1);color:#00E676;border:1px solid rgba(0,230,118,0.3);margin-right:3px;">SDR IA<\/span>';
+    if (c.addon_email_mkt) { var ve=c.email_mkt_vencimento?new Date(c.email_mkt_vencimento):null;var vve=ve&&ve<new Date();addons+='<span style="font-size:9px;font-weight:700;padding:2px 6px;background:rgba(255,184,0,0.1);color:'+(vve?'#FF4D4D':'#FFB800')+';border:1px solid '+(vve?'rgba(255,77,77,0.3)':'rgba(255,184,0,0.3)')+';">'+(vve?'EMAIL VENCIDO':'EMAIL MKT')+'<\/span>'; }
+    if (addons) row += '<div style="margin-top:5px;">' + addons + '<\/div>';
+    row += '<\/td>';
+    row += '<td><span class="badge badge-' + plano + '">' + planoLabel + '<\/span><\/td>';
+    row += '<td><div style="font-size:13px;color:var(--white);">' + fmt(disp) + ' disponíveis<\/div><div style="font-size:11px;color:var(--gray);">' + fmt(usado) + ' / ' + fmt(total) + ' (' + pct + '%)<\/div><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%;"><\/div><\/div><\/td>';
+    row += '<td style="font-size:12px;color:var(--gray);">' + data + '<\/td>';
+    row += '<td><div class="actions"><button class="btn btn-cyan" data-id="' + i + '" data-action="editar" style="padding:6px 12px;font-size:10px;">Editar<\/button><button class="btn btn-ghost" data-id="' + i + '" data-action="zerar" style="padding:6px 12px;font-size:10px;">Zerar créditos<\/button>';
+    if (bl) { row += '<button class="btn btn-green" data-id="' + i + '" data-action="desbloquear" style="padding:6px 12px;font-size:10px;">Desbloquear<\/button>'; }
+    else { row += '<button class="btn btn-yellow" data-id="' + i + '" data-action="bloquear" style="padding:6px 12px;font-size:10px;">Bloquear<\/button>'; }
+    row += '<button class="btn btn-red" data-id="' + i + '" data-action="excluir" style="padding:6px 12px;font-size:10px;">Excluir<\/button><\/div><\/td><\/tr>';
+    rows += row;
+  }
+  div.innerHTML = '<table><thead><tr><th>CLIENTE<\/th><th>PLANO<\/th><th>CREDITOS<\/th><th>CADASTRO<\/th><th>ACOES<\/th><\/tr><\/thead><tbody>' + rows + '<\/tbody><\/table>';
+}
+
+function filtrarClientes() {
+  var t = document.getElementById('searchCliente').value.toLowerCase();
+  renderClientes(todosClientes.filter(function(c){ return (c.email||'').toLowerCase().includes(t)||(c.name||'').toLowerCase().includes(t); }));
+}
+
+function abrirEditar(idx) {
+  var c = todosClientes[idx]; clienteEditando = c;
+  document.getElementById('editId').value = c.id;
+  document.getElementById('editNome').value = c.name || '';
+  document.getElementById('editPlano').value = c.plan || 'trial';
+  document.getElementById('editCreditos').value = c.credits_total || 0;
+  document.getElementById('editUsados').value = c.credits_used || 0;
+  document.getElementById('editEmailCredits').value = c.email_credits || 0;
+  document.getElementById('editDisparo').checked = c.addon_disparo || false;
+  document.getElementById('editSdr').checked = c.addon_sdr || false;
+  document.getElementById('editEmailMkt').checked = c.addon_email_mkt || false;
+  document.getElementById('grupoVencDisparo').style.display = c.addon_disparo ? 'block' : 'none';
+  document.getElementById('grupoVencEmail').style.display = c.addon_email_mkt ? 'block' : 'none';
+  document.getElementById('editDisparoVenc').value = c.disparo_vencimento ? c.disparo_vencimento.split('T')[0] : '';
+  document.getElementById('editEmailMktVenc').value = c.email_mkt_vencimento ? c.email_mkt_vencimento.split('T')[0] : '';
+  document.getElementById('editMsg').style.display = 'none';
+  document.getElementById('modalEditar').classList.add('show');
+}
+
+async function salvarEdicao() {
+  var id = document.getElementById('editId').value;
+  var msg = document.getElementById('editMsg');
+  try {
+    var res = await apiCall('/rest/v1/profiles?id=eq.' + id, {method:'PATCH', body:JSON.stringify({name:document.getElementById('editNome').value,plan:document.getElementById('editPlano').value,credits_total:parseInt(document.getElementById('editCreditos').value)||0,credits_used:parseInt(document.getElementById('editUsados').value)||0,email_credits:parseInt(document.getElementById('editEmailCredits').value)||0,addon_disparo:document.getElementById('editDisparo').checked,addon_sdr:document.getElementById('editSdr').checked,addon_email_mkt:document.getElementById('editEmailMkt').checked,disparo_vencimento:document.getElementById('editDisparoVenc').value||null,email_mkt_vencimento:document.getElementById('editEmailMktVenc').value||null})});
+    if (res.ok) { msg.style.display='block';msg.style.color='var(--green)';msg.textContent='Salvo!';setTimeout(function(){document.getElementById('modalEditar').classList.remove('show');carregarClientes();},1200); }
+    else throw new Error('Erro ao salvar');
+  } catch(e) { msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Erro: '+e.message; }
+}
+
+async function zerarCreditos(idx) {
+  var c = todosClientes[idx];
+  if (!confirm('Zerar créditos usados de '+(c.name||c.email)+'?')) return;
+  await apiCall('/rest/v1/profiles?id=eq.'+c.id,{method:'PATCH',body:JSON.stringify({credits_used:0})});
+  carregarClientes();
+}
+
+async function toggleBloquear(idx, bloquear) {
+  var c = todosClientes[idx];
+  if (!confirm((bloquear?'Bloquear':'Desbloquear')+' acesso de '+(c.name||c.email)+'?')) return;
+  await apiCall('/rest/v1/profiles?id=eq.'+c.id,{method:'PATCH',body:JSON.stringify({bloqueado:bloquear})});
+  await carregarClientes(); renderVisaoGeral();
+}
+
+function abrirExcluir(idx) {
+  var c = todosClientes[idx]; clienteExcluindo = c;
+  document.getElementById('excluirId').value = c.id;
+  document.getElementById('excluirNome').textContent = c.name || '(sem nome)';
+  document.getElementById('excluirEmail').textContent = c.email || '-';
+  document.getElementById('excluirMsg').style.display = 'none';
+  document.getElementById('modalExcluir').classList.add('show');
+}
+
+async function confirmarExclusao() {
+  var id = document.getElementById('excluirId').value;
+  var msg = document.getElementById('excluirMsg');
+  try {
+    await apiCall('/rest/v1/profiles?id=eq.'+id,{method:'DELETE'});
+    try { await apiCall('/auth/v1/admin/users/'+id,{method:'DELETE'}); } catch(e2) {}
+    msg.style.display='block';msg.style.color='var(--green)';msg.textContent='Excluído.';
+    setTimeout(function(){document.getElementById('modalExcluir').classList.remove('show');carregarClientes();},1500);
+  } catch(e) { msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Erro: '+e.message; }
+}
+
+async function ativarPlano() {
+  var email = document.getElementById('newEmail').value.trim();
+  var plano = document.getElementById('newPlano').value;
+  var extras = parseInt(document.getElementById('newCreditos').value)||0;
+  var msg = document.getElementById('ativarMsg');
+  if (!email) { msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Digite o e-mail!';return; }
+  var creditos = (PLANOS[plano]?PLANOS[plano].creditos:10)+extras;
+  try {
+    var res = await apiCall('/rest/v1/profiles?email=eq.'+encodeURIComponent(email));
+    var lista = await res.json();
+    if (lista&&lista.length>0) {
+      await apiCall('/rest/v1/profiles?email=eq.'+encodeURIComponent(email),{method:'PATCH',body:JSON.stringify({plan:plano,credits_total:creditos,credits_used:0})});
+      msg.style.display='block';msg.style.color='var(--green)';msg.textContent='Plano '+plano.toUpperCase()+' ativado!';
+      carregarClientes();
+    } else { msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Cliente não encontrado.'; }
+  } catch(e) { msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Erro: '+e.message; }
+}
+
+function renderVisaoGeral() {
+  var total = todosClientes.length;
+  var pagos = todosClientes.filter(function(c){ return c.plan&&c.plan!=='trial'; });
+  var trials = todosClientes.filter(function(c){ return !c.plan||c.plan==='trial'; });
+  var bloqueados = todosClientes.filter(function(c){ return c.bloqueado; });
+  var consultas = todosClientes.reduce(function(s,c){ return s+(c.credits_used||0); },0);
+  var mrr = pagos.reduce(function(s,c){ return s+(PRECOS[c.plan]||0); },0);
+  var conversao = total>0?Math.round((pagos.length/total)*100):0;
+  document.getElementById('vgTotal').textContent = total;
+  document.getElementById('vgPagos').textContent = pagos.length;
+  document.getElementById('vgTrials').textContent = trials.length;
+  document.getElementById('vgBloqueados').textContent = bloqueados.length;
+  document.getElementById('vgConsultas').textContent = fmt(consultas);
+  document.getElementById('vgMrr').textContent = 'R$ '+fmt(mrr);
+  document.getElementById('vgArr').textContent = 'R$ '+fmt(mrr*12);
+  document.getElementById('vgConversao').textContent = conversao+'%';
+  var dist={};todosClientes.forEach(function(c){var p=c.plan||'trial';dist[p]=(dist[p]||0)+1;});
+  var dh='';Object.keys(dist).sort(function(a,b){return dist[b]-dist[a];}).forEach(function(p){var qtd=dist[p];var pct=total>0?Math.round((qtd/total)*100):0;var rec=(PRECOS[p]||0)*qtd;var label=PLANOS[p]?PLANOS[p].label:p;dh+='<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;color:var(--white);font-weight:700;">'+label+' ('+qtd+')<\/span><span style="font-size:12px;color:var(--gray);">R$ '+fmt(rec)+'/mês · '+pct+'%<\/span><\/div><div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;"><\/div><\/div><\/div>';});
+  document.getElementById('vgDistPlanos').innerHTML = dh||'<div class="empty">Sem dados<\/div>';
+  var ul='';todosClientes.slice(0,5).forEach(function(c){var data=c.created_at?new Date(c.created_at).toLocaleDateString('pt-BR'):'-';var plano=c.plan||'trial';var label=PLANOS[plano]?PLANOS[plano].label:plano;ul+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);"><div><div style="font-size:13px;font-weight:700;color:var(--white);">'+esc(c.name||'-')+'<\/div><div style="font-size:11px;color:var(--gray);">'+esc(c.email||'-')+'<\/div><\/div><div style="text-align:right;"><span class="badge badge-'+plano+'">'+label.toUpperCase()+'<\/span><div style="font-size:11px;color:var(--gray);margin-top:4px;">'+data+'<\/div><\/div><\/div>';});
+  document.getElementById('vgUltimosClientes').innerHTML = ul||'<div class="empty">Nenhum cliente ainda<\/div>';
+  var ticket=pagos.length>0?Math.round(mrr/pagos.length):190;var ph='';[50,100,200,500].forEach(function(n){ph+='<div style="background:var(--dark);border:1px solid var(--border);padding:20px;text-align:center;position:relative;"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan));"><\/div><div style="font-size:10px;color:var(--gray);letter-spacing:3px;margin-bottom:10px;">'+n+' CLIENTES<\/div><div style="font-size:24px;font-weight:700;color:var(--white);">R$ '+fmt(ticket*n)+'<\/div><div style="font-size:11px;color:var(--gray);margin-top:4px;">por mês<\/div><\/div>';});
+  document.getElementById('vgProjecao').innerHTML = ph;
+}
+
+async function carregarMetricas() {
+  try {
+    var h={'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Accept':'application/json'};
+    var [rE,rD,rP,rV]=await Promise.all([fetch(SUPABASE_URL+'/rest/v1/metricas_emails?select=*&order=created_at.desc',{headers:h}),fetch(SUPABASE_URL+'/rest/v1/metricas_disparos?select=*&order=created_at.desc',{headers:h}),fetch(SUPABASE_URL+'/rest/v1/metricas_pacotes?select=*&order=created_at.desc',{headers:h}),fetch(SUPABASE_URL+'/rest/v1/metricas_vendas?select=*&order=created_at.desc',{headers:h})]);
+    var emails=await rE.json();var disparos=await rD.json();var pacotes=await rP.json();var vendas=await rV.json();
+    if(!Array.isArray(emails))emails=[];if(!Array.isArray(disparos))disparos=[];if(!Array.isArray(pacotes))pacotes=[];if(!Array.isArray(vendas))vendas=[];
+    document.getElementById('mtEmails').textContent=fmt(emails.reduce(function(s,e){return s+(e.total_enviados||0);},0));
+    document.getElementById('mtDisparos').textContent=fmt(disparos.reduce(function(s,d){return s+(d.total_enviados||0);},0));
+    document.getElementById('mtVendas').textContent=fmt(vendas.length);
+    document.getElementById('mtReceita').textContent='R$ '+vendas.reduce(function(s,v){return s+(parseFloat(v.valor)||0);},0).toLocaleString('pt-BR',{minimumFractionDigits:2});
+    document.getElementById('mtPacotes').textContent=fmt(pacotes.length);
+    document.getElementById('mtReceitaPacotes').textContent='R$ '+pacotes.reduce(function(s,p){return s+(parseFloat(p.valor)||0);},0).toLocaleString('pt-BR',{minimumFractionDigits:2});
+    var u=todosClientes.length||1;
+    document.getElementById('mtMediaEmails').textContent=fmt(Math.round(emails.reduce(function(s,e){return s+(e.total_enviados||0);},0)/u));
+    document.getElementById('mtMediaDisparos').textContent=fmt(Math.round(disparos.reduce(function(s,d){return s+(d.total_enviados||0);},0)/u));
+    document.getElementById('mtTabelaEmails').innerHTML=!emails.length?'<div class="empty">Nenhum email ainda<\/div>':'<table><thead><tr><th>ASSUNTO<\/th><th>ENVIADOS<\/th><th>ERROS<\/th><th>DATA<\/th><\/tr><\/thead><tbody>'+emails.slice(0,10).map(function(e){return'<tr><td>'+esc(e.assunto||'-')+'<\/td><td style="color:var(--green);">'+fmt(e.total_enviados)+'<\/td><td style="color:var(--red);">'+fmt(e.total_erros)+'<\/td><td style="color:var(--gray);">'+(e.created_at?new Date(e.created_at).toLocaleDateString('pt-BR'):'-')+'<\/td><\/tr>';}).join('')+'<\/tbody><\/table>';
+    document.getElementById('mtTabelaDisparos').innerHTML=!disparos.length?'<div class="empty">Nenhum disparo ainda<\/div>':'<table><thead><tr><th>CAMPANHA<\/th><th>ENVIADOS<\/th><th>ERROS<\/th><th>DATA<\/th><\/tr><\/thead><tbody>'+disparos.slice(0,10).map(function(d){return'<tr><td>'+esc(d.campanha_nome||'-')+'<\/td><td style="color:var(--green);">'+fmt(d.total_enviados)+'<\/td><td style="color:var(--red);">'+fmt(d.total_erros)+'<\/td><td style="color:var(--gray);">'+(d.created_at?new Date(d.created_at).toLocaleDateString('pt-BR'):'-')+'<\/td><\/tr>';}).join('')+'<\/tbody><\/table>';
+    document.getElementById('mtTabelaVendas').innerHTML=!vendas.length?'<div class="empty">Nenhuma venda registrada ainda.<\/div>':'<table><thead><tr><th>EMPRESA<\/th><th>CNPJ<\/th><th>VALOR<\/th><th>DATA<\/th><\/tr><\/thead><tbody>'+vendas.map(function(v){return'<tr><td>'+esc(v.empresa_nome||'-')+'<\/td><td>'+esc(v.empresa_cnpj||'-')+'<\/td><td style="color:var(--green);">R$ '+parseFloat(v.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'<\/td><td style="color:var(--gray);">'+(v.created_at?new Date(v.created_at).toLocaleDateString('pt-BR'):'-')+'<\/td><\/tr>';}).join('')+'<\/tbody><\/table>';
+  } catch(e) { document.getElementById('mtTabelaVendas').innerHTML='<div class="empty">Erro: '+e.message+'<\/div>'; }
+}
+
+function renderFinanceiro() {
+  var pagos=todosClientes.filter(function(c){return c.plan&&c.plan!=='trial';});
+  var mrr=pagos.reduce(function(s,c){return s+(PRECOS[c.plan]||0);},0);
+  var ticket=pagos.length>0?Math.round(mrr/pagos.length):0;
+  document.getElementById('finMRR').textContent='R$ '+fmt(mrr);
+  document.getElementById('finARR').textContent='R$ '+fmt(mrr*12);
+  document.getElementById('finTicket').textContent='R$ '+fmt(ticket);
+  document.getElementById('finValuation').textContent='R$ '+fmt(mrr*12*10);
+  document.getElementById('finTotalReceita').textContent='MRR: R$ '+fmt(mrr);
+  var dp={};pagos.forEach(function(c){var p=c.plan;if(!dp[p])dp[p]={qtd:0,receita:0};dp[p].qtd++;dp[p].receita+=(PRECOS[p]||0);});
+  var dh='';Object.keys(dp).sort(function(a,b){return dp[b].receita-dp[a].receita;}).forEach(function(p){var d=dp[p];var pct=mrr>0?Math.round((d.receita/mrr)*100):0;var cor=CORES[p]||'8896B3';var label=PLANOS[p]?PLANOS[p].label:p;dh+='<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;color:var(--white);font-weight:700;">'+label+' · '+d.qtd+' cliente(s)<\/span><span style="font-size:13px;color:var(--gray);">R$ '+fmt(d.receita)+' · '+pct+'%<\/span><\/div><div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;background:#'+cor+';"><\/div><\/div><\/div>';});
+  document.getElementById('finDistReceita').innerHTML=dh||'<div class="empty">Nenhum cliente pago ainda<\/div>';
+  if(!pagos.length){document.getElementById('tabelaFinanceiro').innerHTML='<div class="empty">Nenhum cliente pago ainda.<\/div>';return;}
+  pagos.sort(function(a,b){return(PRECOS[b.plan]||0)-(PRECOS[a.plan]||0);});
+  var rows='';pagos.forEach(function(c){var r=PRECOS[c.plan]||0;var t=c.credits_total||0;var u=c.credits_used||0;var pp=t>0?Math.round((u/t)*100):0;var cor2=CORES[c.plan]||'8896B3';var data=c.created_at?new Date(c.created_at).toLocaleDateString('pt-BR'):'-';var pl=(PLANOS[c.plan]?PLANOS[c.plan].label:c.plan).toUpperCase();rows+='<tr><td><div style="font-weight:700;color:var(--white);">'+esc(c.name||'-')+'<\/div><div style="font-size:11px;color:var(--gray);">'+esc(c.email||'-')+'<\/div><\/td><td><span class="badge badge-'+c.plan+'">'+pl+'<\/span><\/td><td style="font-size:16px;font-weight:700;color:var(--green);">R$ '+fmt(r)+'<\/td><td><div style="font-size:12px;color:var(--white);">'+fmt(u)+' / '+fmt(t)+' ('+pp+'%)<\/div><div class="bar-wrap" style="margin-top:4px;"><div class="bar-fill" style="height:4px;width:'+pp+'%;background:#'+cor2+';"><\/div><\/div><\/td><td style="font-size:12px;color:var(--gray);">'+data+'<\/td><\/tr>';});
+  document.getElementById('tabelaFinanceiro').innerHTML='<table><thead><tr><th>CLIENTE<\/th><th>PLANO<\/th><th>RECEITA/MES<\/th><th>USO<\/th><th>DESDE<\/th><\/tr><\/thead><tbody>'+rows+'<\/tbody><\/table>';
+}
+
+async function carregarLeads() {
+  try {
+    var h={'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Accept':'application/json'};
+    var rLD=await fetch(SUPABASE_URL+'/rest/v1/leads_distribuidos?select=*,corretores(nome,whatsapp)&order=distribuido_em.desc&limit=50',{headers:h});
+    var leads=await rLD.json();if(!Array.isArray(leads))leads=[];
+    var rSDR=await fetch(SUPABASE_URL+'/rest/v1/sdr_leads?select=*&order=updated_at.desc&limit=100',{headers:h});
+    var sdrLeads=await rSDR.json();if(!Array.isArray(sdrLeads))sdrLeads=[];
+    var hoje=new Date().toISOString().split('T')[0];
+    document.getElementById('ldHoje').textContent=sdrLeads.filter(function(l){return l.updated_at&&l.updated_at.startsWith(hoje);}).length;
+    document.getElementById('ldQuentes').textContent=sdrLeads.filter(function(l){return l.status==='quente';}).length;
+    document.getElementById('ldAgendados').textContent=sdrLeads.filter(function(l){return l.status==='agendado';}).length;
+    document.getElementById('ldFrios').textContent=sdrLeads.filter(function(l){return l.status==='frio';}).length;
+    var div=document.getElementById('tabelaLeads');
+    if(!leads.length){div.innerHTML='<div class="empty">Nenhum lead distribuido ainda.</div>';}
+    else{var rows='';leads.forEach(function(l){var data=l.distribuido_em?new Date(l.distribuido_em).toLocaleString('pt-BR'):'-';var corretor=l.corretores?l.corretores.nome:'Desconhecido';var sc=l.status==='aguardando_resposta'?'var(--yellow)':l.status==='em_atendimento'?'var(--green)':l.status==='encerrado'?'var(--gray)':'var(--red)';var st=l.status==='aguardando_resposta'?'AGUARDANDO':l.status==='em_atendimento'?'EM ATENDIMENTO':l.status==='encerrado'?'ENCERRADO':(l.status||'-').toUpperCase();rows+='<tr><td style="font-size:12px;color:var(--white);">'+esc(l.lead_phone||'-')+'</td><td style="font-size:12px;color:var(--white);">'+esc(l.lead_empresa||'-')+'</td><td style="font-size:12px;color:var(--cyan);">'+esc(corretor)+'</td><td><span style="font-size:10px;font-weight:700;padding:3px 8px;background:'+sc+'22;color:'+sc+';border:1px solid '+sc+';">'+st+'</span></td><td style="font-size:11px;color:var(--gray);">'+data+'</td></tr>';});div.innerHTML='<table><thead><tr><th>NUMERO</th><th>EMPRESA</th><th>CORRETOR</th><th>STATUS</th><th>DATA</th></tr></thead><tbody>'+rows+'</tbody></table>';}
+    var divC=document.getElementById('tabelaConversas');
+    if(!sdrLeads.length){divC.innerHTML='<div class="empty">Nenhuma conversa ainda.</div>';}
+    else{var rowsC='';sdrLeads.slice(0,20).forEach(function(l){var data=l.updated_at?new Date(l.updated_at).toLocaleString('pt-BR'):'-';var sc=l.status==='quente'?'var(--green)':l.status==='agendado'?'var(--yellow)':l.status==='frio'?'var(--red)':'var(--gray)';rowsC+='<tr><td style="font-size:12px;color:var(--white);">'+esc(l.phone||'-')+'</td><td style="font-size:12px;color:var(--gray);">'+esc(l.empresa||'-')+'</td><td><span style="font-size:10px;font-weight:700;padding:3px 8px;background:'+sc+'22;color:'+sc+';border:1px solid '+sc+';">'+(l.status||'novo').toUpperCase()+'</span></td><td style="font-size:12px;color:var(--yellow);">'+(l.status==='agendado'&&l.horario?esc(l.horario):'-')+'</td><td style="font-size:11px;color:var(--gray);">'+data+'</td></tr>';});divC.innerHTML='<table><thead><tr><th>NUMERO</th><th>EMPRESA</th><th>STATUS SDR</th><th>HORARIO</th><th>ATUALIZADO</th></tr></thead><tbody>'+rowsC+'</tbody></table>';}
+  } catch(e) { document.getElementById('tabelaLeads').innerHTML='<div class="empty">Erro: '+e.message+'</div>'; }
+}
+
+async function carregarCorretoresAdmin() {
+  try {
+    var h={'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Accept':'application/json'};
+    var res=await fetch(SUPABASE_URL+'/rest/v1/corretores?select=*&order=disponivel.desc,ultimo_lead_em.desc',{headers:h});
+    var corretores=await res.json();if(!Array.isArray(corretores))corretores=[];
+    var div=document.getElementById('tabelaCorretoresAdmin');
+    if(!corretores.length){div.innerHTML='<div class="empty">Nenhum corretor cadastrado.</div>';return;}
+    var rows='';corretores.forEach(function(c){var sc=c.disponivel?'var(--green)':'var(--red)';var st=c.disponivel?'DISPONIVEL':'INDISPONIVEL';var ul=c.ultimo_lead_em?new Date(c.ultimo_lead_em).toLocaleString('pt-BR'):'Nunca';rows+='<tr><td style="font-size:13px;font-weight:700;color:var(--white);">'+esc(c.nome)+'</td><td style="font-size:12px;color:var(--gray);">'+esc(c.whatsapp||'-')+'</td><td><span style="font-size:10px;font-weight:700;padding:3px 10px;background:'+sc+'22;color:'+sc+';border:1px solid '+sc+';">'+st+'</span></td><td style="font-size:13px;font-weight:700;color:var(--cyan);">'+(c.total_leads_recebidos||0)+'</td><td style="font-size:11px;color:var(--gray);">'+ul+'</td><td><div style="display:flex;gap:6px;">'+(c.disponivel?'<button class="btn btn-red" onclick="toggleCorretorAdmin(\''+c.id+'\',false)" style="padding:5px 10px;font-size:10px;">Desativar</button>':'<button class="btn btn-green" onclick="toggleCorretorAdmin(\''+c.id+'\',true)" style="padding:5px 10px;font-size:10px;">Ativar</button>')+'</div></td></tr>';});
+    div.innerHTML='<table><thead><tr><th>NOME</th><th>WHATSAPP</th><th>STATUS</th><th>LEADS</th><th>ULTIMO LEAD</th><th>ACOES</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    var divP=document.getElementById('tabelaPerformance');
+    var rLD=await fetch(SUPABASE_URL+'/rest/v1/leads_distribuidos?select=corretor_id,status',{headers:h});
+    var leadsD=await rLD.json();if(!Array.isArray(leadsD))leadsD=[];
+    var perfMap={};corretores.forEach(function(c){perfMap[c.id]={nome:c.nome,total:0,encerrados:0,aguardando:0};});
+    leadsD.forEach(function(l){if(perfMap[l.corretor_id]){perfMap[l.corretor_id].total++;if(l.status==='encerrado')perfMap[l.corretor_id].encerrados++;if(l.status==='aguardando_resposta')perfMap[l.corretor_id].aguardando++;}});
+    var rowsP='';Object.values(perfMap).forEach(function(p){var tx=p.total>0?Math.round((p.encerrados/p.total)*100):0;rowsP+='<tr><td style="font-size:13px;font-weight:700;color:var(--white);">'+esc(p.nome)+'</td><td style="color:var(--cyan);">'+p.total+'</td><td style="color:var(--yellow);">'+p.aguardando+'</td><td style="color:var(--green);">'+p.encerrados+'</td><td style="color:var(--white);">'+tx+'%</td></tr>';});
+    divP.innerHTML='<table><thead><tr><th>CORRETOR</th><th>TOTAL LEADS</th><th>AGUARDANDO</th><th>ENCERRADOS</th><th>TAXA</th></tr></thead><tbody>'+rowsP+'</tbody></table>';
+  } catch(e) { document.getElementById('tabelaCorretoresAdmin').innerHTML='<div class="empty">Erro: '+e.message+'</div>'; }
+}
+
+async function toggleCorretorAdmin(id,disponivel) {
+  var h={'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY,'Content-Type':'application/json'};
+  await fetch(SUPABASE_URL+'/rest/v1/corretores?id=eq.'+id,{method:'PATCH',headers:h,body:JSON.stringify({disponivel:disponivel})});
+  carregarCorretoresAdmin();
+}
+
+var _contatosOficial=[];var _disparoOficialAtivo=false;var _disparoOficialIndex=0;var _disparoOficialTimer=null;
+
+async function carregarTemplatesOficial(){
+  var sel=document.getElementById('templateSid');sel.innerHTML='<option value="">Carregando...</option>';
+  try{
+    var sess=(await db.auth.getSession()).data.session;var token=sess?sess.access_token:SERVICE_KEY;
+    var res=await fetch('/api/twilio-disparo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'listar_templates'})});
+    var data=await res.json();
+    if(!data.ok||!data.templates||!data.templates.length){sel.innerHTML='<option value="">Nenhum template aprovado</option>';return;}
+    sel.innerHTML='<option value="">Selecione um template...</option>';
+    data.templates.forEach(function(t){var opt=document.createElement('option');opt.value=t.sid;opt.textContent=t.nome+' ['+t.categoria+']';opt.dataset.body=t.body||'';opt.dataset.cat=t.categoria||'';sel.appendChild(opt);});
+    sel.onchange=function(){var opt=sel.options[sel.selectedIndex];var prev=document.getElementById('templatePreview');if(opt&&opt.dataset.body){prev.style.display='block';prev.innerHTML='<div style="font-size:10px;color:var(--cyan);margin-bottom:4px;">'+esc(opt.dataset.cat||'')+'</div>'+esc(opt.dataset.body).replace(/\n/g,'<br>');}else{prev.style.display='none';}};
+  }catch(e){sel.innerHTML='<option value="">Erro: '+e.message+'</option>';}
+}
+
+function importarPlanilhaOficial(input){
+  var file=input.files[0];if(!file)return;
+  var info=document.getElementById('planilhaOficialInfo');info.textContent='Lendo '+file.name+'...';
+  var reader=new FileReader();
+  reader.onload=function(e){try{var texto=e.target.result;var linhas=texto.split(/\r?\n/).filter(function(l){return l.trim();});if(!linhas.length){info.textContent='Arquivo vazio!';return;}var sep=linhas[0].includes(';')?';':',';var header=linhas[0].toLowerCase().split(sep).map(function(h){return h.trim().replace(/"/g,'');});var iN=header.findIndex(function(h){return h.includes('nome')||h.includes('socio');});var iE=header.findIndex(function(h){return h.includes('empresa')||h.includes('razao')||h.includes('cnpj');});var iT=header.findIndex(function(h){return h.includes('tel')||h.includes('fone')||h.includes('whats')||h.includes('celular');});if(iN<0)iN=0;if(iE<0)iE=1;if(iT<0)iT=2;var contatos=[];for(var i=1;i<linhas.length;i++){var cols=linhas[i].split(sep).map(function(c){return c.trim().replace(/^"|"$/g,'');});var tel=(cols[iT]||'').replace(/[^0-9]/g,'');if(!tel||tel.length<10)continue;contatos.push({nome:cols[iN]||'Cliente',empresa:cols[iE]||'Empresa',telefone:tel});}if(!contatos.length){info.textContent='Nenhum contato valido!';return;}_contatosOficial=contatos;info.textContent='✅ '+contatos.length+' contatos importados de '+file.name;}catch(err){info.textContent='Erro: '+err.message;}};
+  reader.readAsText(file,'UTF-8');
+}
+
+async function iniciarDisparoOficial(){
+  var templateSid=document.getElementById('templateSid').value;
+  var intervalo=parseInt(document.getElementById('intervaloOficial').value)*1000;
+  var nomeCamp=document.getElementById('nomeCampanhaOficial').value.trim()||'Campanha API Oficial';
+  if(!templateSid){alert('Selecione um template!');return;}
+  if(!_contatosOficial.length){alert('Importe uma planilha primeiro!');return;}
+  if(!confirm('Disparar para '+_contatosOficial.length+' contatos?'))return;
+  _disparoOficialAtivo=true;_disparoOficialIndex=0;var enviados=0,entregues=0,falhas=0;var campId=nomeCamp+'_'+Date.now();
+  document.getElementById('disparoOficialStatus').style.display='block';
+  document.getElementById('disparoOficialNome').textContent=nomeCamp;
+  document.getElementById('dispOfTotal').textContent=_contatosOficial.length;
+  var sess=(await db.auth.getSession()).data.session;var token=sess?sess.access_token:SERVICE_KEY;
+  async function enviarProximo(){
+    if(!_disparoOficialAtivo||_disparoOficialIndex>=_contatosOficial.length){_disparoOficialAtivo=false;document.getElementById('disparoOficialNome').textContent+=' — CONCLUÍDO ✓';return;}
+    var contato=_contatosOficial[_disparoOficialIndex];_disparoOficialIndex++;
+    try{var r=await fetch('/api/twilio-disparo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'enviar_um',telefone:contato.telefone,nome:contato.nome,empresa:contato.empresa,template_sid:templateSid,campanha_id:campId})});var d=await r.json();enviados++;if(d.ok)entregues++;else falhas++;}catch(e){falhas++;enviados++;}
+    document.getElementById('dispOfEnviados').textContent=enviados;document.getElementById('dispOfEntregues').textContent=entregues;document.getElementById('dispOfFalhas').textContent=falhas;
+    document.getElementById('dispOfBarra').style.width=Math.round((_disparoOficialIndex/_contatosOficial.length)*100)+'%';
+    if(_disparoOficialAtivo&&_disparoOficialIndex<_contatosOficial.length){_disparoOficialTimer=setTimeout(enviarProximo,intervalo);}else{_disparoOficialAtivo=false;document.getElementById('disparoOficialNome').textContent+=' — CONCLUÍDO ✓';}
+  }
+  enviarProximo();
+}
+
+function pararDisparoOficial(){_disparoOficialAtivo=false;if(_disparoOficialTimer)clearTimeout(_disparoOficialTimer);document.getElementById('disparoOficialNome').textContent+=' — PAUSADO';}
+
+async function carregarHistoricoOficial(){
+  var div=document.getElementById('historicoOficial');div.innerHTML='<div class="loading">Carregando...</div>';
+  try{
+    var sess=(await db.auth.getSession()).data.session;var token=sess?sess.access_token:SERVICE_KEY;
+    var res=await fetch('/api/twilio-disparo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'historico'})});
+    var data=await res.json();var hist=data.historico||[];
+    if(!hist.length){div.innerHTML='<div class="empty">Nenhum disparo realizado ainda.</div>';return;}
+    var campanhas={};hist.forEach(function(h){var c=h.campanha_id||'sem_campanha';if(!campanhas[c])campanhas[c]={nome:c,total:0,enviados:0,falhas:0,data:h.enviado_em};campanhas[c].total++;if(h.status==='enviado')campanhas[c].enviados++;else campanhas[c].falhas++;});
+    var rows='';Object.values(campanhas).sort(function(a,b){return new Date(b.data)-new Date(a.data);}).forEach(function(c){var dt=new Date(c.data).toLocaleString('pt-BR');var tx=c.total>0?Math.round((c.enviados/c.total)*100):0;rows+='<tr><td style="font-size:12px;color:var(--white);">'+esc(c.nome)+'</td><td style="color:var(--cyan);">'+c.total+'</td><td style="color:var(--green);">'+c.enviados+'</td><td style="color:#FF4D4D;">'+c.falhas+'</td><td style="color:var(--cyan);">'+tx+'%</td><td style="font-size:11px;color:var(--gray);">'+dt+'</td></tr>';});
+    div.innerHTML='<table><thead><tr><th>CAMPANHA</th><th>TOTAL</th><th>ENVIADOS</th><th>FALHAS</th><th>TAXA</th><th>DATA</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }catch(e){div.innerHTML='<div class="empty">Erro: '+e.message+'</div>';}
+}
+
+// ── EVENTOS ──
+window.addEventListener('load', function() {
+  verificarAuth();
+  document.getElementById('btnLogin').addEventListener('click', fazerLogin);
+  document.getElementById('adminPass').addEventListener('keydown', function(e){ if(e.key==='Enter') fazerLogin(); });
+  document.getElementById('adminEmail').addEventListener('keydown', function(e){ if(e.key==='Enter') fazerLogin(); });
+  document.getElementById('btnLogout').addEventListener('click', logout);
+  document.getElementById('tabVisaoGeral').addEventListener('click', function(){ mostrarAba('visaoGeral'); });
+  document.getElementById('tabClientes').addEventListener('click', function(){ mostrarAba('clientes'); });
+  document.getElementById('tabMetricas').addEventListener('click', function(){ mostrarAba('metricas'); });
+  document.getElementById('tabFinanceiro').addEventListener('click', function(){ mostrarAba('financeiro'); });
+  document.getElementById('tabAddCliente').addEventListener('click', function(){ mostrarAba('addCliente'); });
+  document.getElementById('tabApiOficial').addEventListener('click', function(){ mostrarAba('apiOficial'); });
+  document.getElementById('tabLeads').addEventListener('click', function(){ mostrarAba('leads'); });
+  document.getElementById('tabCorretores').addEventListener('click', function(){ mostrarAba('corretores'); });
+  document.getElementById('tabWarRoom').addEventListener('click', function(){ mostrarAba('warRoom'); });
+  document.getElementById('btnAtualizarMetricas').addEventListener('click', carregarMetricas);
+  document.getElementById('btnAtualizar').addEventListener('click', carregarClientes);
+  document.getElementById('searchCliente').addEventListener('input', filtrarClientes);
+  document.getElementById('tabelaClientes').addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    var idx = parseInt(btn.getAttribute('data-id'));
+    var action = btn.getAttribute('data-action');
+    if (action === 'editar') abrirEditar(idx);
+    else if (action === 'zerar') zerarCreditos(idx);
+    else if (action === 'bloquear') toggleBloquear(idx, true);
+    else if (action === 'desbloquear') toggleBloquear(idx, false);
+    else if (action === 'excluir') abrirExcluir(idx);
+  });
+  document.getElementById('btnFecharEditar').addEventListener('click', function(){ document.getElementById('modalEditar').classList.remove('show'); });
+  document.getElementById('btnCancelarEditar').addEventListener('click', function(){ document.getElementById('modalEditar').classList.remove('show'); });
+  document.getElementById('btnSalvar').addEventListener('click', salvarEdicao);
+  document.getElementById('editDisparo').addEventListener('change', function(){ document.getElementById('grupoVencDisparo').style.display = this.checked ? 'block' : 'none'; });
+  document.getElementById('editEmailMkt').addEventListener('change', function(){ document.getElementById('grupoVencEmail').style.display = this.checked ? 'block' : 'none'; });
+  document.getElementById('editPlano').addEventListener('change', function(){ document.getElementById('editCreditos').value = PLANOS[this.value] ? PLANOS[this.value].creditos : 10; });
+  document.getElementById('btnFecharExcluir').addEventListener('click', function(){ document.getElementById('modalExcluir').classList.remove('show'); });
+  document.getElementById('btnCancelarExcluir').addEventListener('click', function(){ document.getElementById('modalExcluir').classList.remove('show'); });
+  document.getElementById('btnConfirmarExcluir').addEventListener('click', confirmarExclusao);
+  document.getElementById('btnAtivar').addEventListener('click', ativarPlano);
+  document.getElementById('btnAtualizarLeads').addEventListener('click', carregarLeads);
+  document.getElementById('btnAtualizarCorretores').addEventListener('click', carregarCorretoresAdmin);
+  document.getElementById('btnAtualizarConversas').addEventListener('click', carregarLeads);
+});
+</script>
+</body>
+</html>
