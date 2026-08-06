@@ -157,7 +157,7 @@ export default async function handler(req, res) {
           headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
         });
         var dupData = checkDup.ok ? (await checkDup.json()) : [];
-        if (dupData.length > 1) return res.status(200).json({ ok: true, motivo: 'duplicata' });
+        if (dupData.length > 0 && dupInsert.status === 409) return res.status(200).json({ ok: true, motivo: 'duplicata' });
         // Limpa antigos
         var lim10 = new Date(Date.now() - 10 * 60 * 1000).toISOString();
         fetch(SUPABASE_URL + '/rest/v1/sdr_processados?created_at=lt.' + lim10, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
