@@ -164,7 +164,8 @@ export default async function handler(req, res) {
       } catch(e) {}
     }
 
-    if (!phone || !mensagem || fromMe) return res.status(200).json({ ok: true });
+    console.log('WEBHOOK:', JSON.stringify({phone, mensagem: mensagem.slice(0,50), fromMe, messageId}));
+if (!phone || !mensagem || fromMe) return res.status(200).json({ ok: true, debug: {phone, fromMe, temMensagem: !!mensagem} });
 
     var phoneLimpo = phone.replace(/[^0-9]/g, '').replace(/^55/, '');
     if (phoneLimpo === '21973855107') return res.status(200).json({ ok: true });
