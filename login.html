@@ -2268,7 +2268,7 @@ function showDashboard() {
     const meta = currentUser.user_metadata || {};
     document.getElementById('dashName').textContent = meta.full_name || currentUser.email;
     document.getElementById('dashAvatar').textContent = (meta.full_name || currentUser.email)[0].toUpperCase();
-    document.getElementById('dashPlan').textContent = 'PLANO GROWTH';
+    document.getElementById('dashPlan').textContent = 'PLANO ' + (PLANOS[meta.plan] || PLANOS.trial).nome;
     document.getElementById('statCredits').textContent = '2000';
     document.getElementById('statCreditsTotal').textContent = 'de 2.000 do plano';
     document.getElementById('creditsFill').style.width = '100%';
