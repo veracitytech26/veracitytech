@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veracity — Distribuição de Leads</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#080E1E;--dark:#0D1530;--cyan:#00D4FF;--gold:#C8992A;
+  --white:#FFFFFF;--gray:#8896B3;--green:#00E676;--red:#FF4D4D;
+  --border:rgba(255,255,255,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;padding:24px;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:5px;}
+.logo span{color:var(--gold);}
+.subtitle{font-size:11px;color:var(--gray);letter-spacing:2px;margin-top:2px;}
+.refresh-info{font-size:11px;color:var(--gray);display:flex;align-items:center;gap:8px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--dark);border:1px solid var(--border);border-radius:8px;padding:16px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--cyan));}
+.stat-label{font-size:9px;font-weight:700;color:var(--gray);letter-spacing:2px;margin-bottom:6px;}
+.stat-value{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--green);}
+
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-btn{background:var(--dark);border:1px solid var(--border);color:var(--gray);padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.filter-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(200,153,42,0.08);}
+.filter-btn:hover{border-color:var(--cyan);}
+
+.table-wrap{background:var(--dark);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead{background:rgba(255,255,255,0.03);}
+th{text-align:left;padding:12px 16px;font-size:10px;font-weight:700;color:var(--gray);letter-spacing:1.5px;border-bottom:1px solid var(--border);}
+td{padding:14px 16px;font-size:13px;border-bottom:1px solid var(--border);}
+tbody tr{transition:background 0.15s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody tr:last-child td{border-bottom:none;}
+.cliente-nome{font-weight:700;}
+.cliente-empresa{font-size:11px;color:var(--gray);margin-top:2px;}
+.corretor-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan);padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;}
+.corretor-badge.novo{background:rgba(255,184,0,0.08);border-color:rgba(255,184,0,0.3);color:#FFB800;}
+.status-pill{font-size:10px;font-weight:700;letter-spacing:0.5px;padding:4px 10px;border-radius:100px;text-transform:uppercase;}
+.status-novo{background:rgba(255,184,0,0.1);color:#FFB800;}
+.status-contato{background:rgba(0,212,255,0.1);color:var(--cyan);}
+.status-negociacao{background:rgba(179,136,255,0.1);color:#B388FF;}
+.status-proposta{background:rgba(179,136,255,0.1);color:#B388FF;}
+.status-fechado{background:rgba(0,230,118,0.1);color:var(--green);}
+.status-perdido{background:rgba(255,77,77,0.1);color:var(--red);}
+.hora{color:var(--gray);font-size:12px;white-space:nowrap;}
+.empty-state{padding:60px 20px;text-align:center;color:var(--gray);}
+.empty-state-icon{font-size:32px;margin-bottom:12px;opacity:0.4;}
+
+@media (max-width:700px){
+  th:nth-child(3), td:nth-child(3) { display:none; }
+  table, thead, tbody, th, td, tr { display:block; }
+  thead { display:none; }
+  tbody tr { border-bottom:1px solid var(--border); padding:14px 16px; }
+  td { border:none; padding:4px 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">VERACITY <span>SEGUROS</span></div>
+    <div class="subtitle">DISTRIBUIÇÃO DE LEADS · TEMPO REAL</div>
+  </div>
+  <div class="refresh-info"><span class="dot"></span>Atualiza a cada 5s</div>
+</div>
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-label">LEADS HOJE</div>
+    <div class="stat-value" id="statHoje">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">AGUARDANDO CONTATO</div>
+    <div class="stat-value" id="statNovos" style="color:#FFB800;">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">EM NEGOCIAÇÃO</div>
+    <div class="stat-value" id="statNegociacao" style="color:#B388FF;">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">FECHADOS HOJE</div>
+    <div class="stat-value" id="statFechados">0</div>
+  </div>
+</div>
+
+<div class="filter-bar" id="filtroCorretor">
+  <button class="filter-btn active" data-corretor="todos">Todos</button>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Corretor</th>
+        <th>Status</th>
+        <th>Recebido</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaLeads">
+      <tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">⏳</div>Carregando leads...</div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://nfusabwpxpdcqedrehrc.supabase.co';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mdXNhYndweHBkY3FlZHJlaHJjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjgxMTI5NSwiZXhwIjoyMDkyMzg3Mjk1fQ.iA7c0NPmLSkWe__qA8hLJnO3nD2Wwyvro5CKKez3UsI';
+
+let filtroAtivo = 'todos';
+let corretoresCache = [];
+
+function fmtHora(dataStr) {
+  if (!dataStr) return '—';
+  const d = new Date(dataStr);
+  const hoje = new Date();
+  const isHoje = d.toDateString() === hoje.toDateString();
+  const hora = d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  if (isHoje) return hora;
+  return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) + ' ' + hora;
+}
+
+function statusInfo(status) {
+  const map = {
+    'novo': {label: 'Novo', cls: 'status-novo'},
+    'contato': {label: 'Em Contato', cls: 'status-contato'},
+    'negociacao': {label: 'Negociação', cls: 'status-negociacao'},
+    'proposta': {label: 'Proposta', cls: 'status-proposta'},
+    'fechamento': {label: 'Fechado', cls: 'status-fechado'},
+    'fechado': {label: 'Fechado', cls: 'status-fechado'},
+    'perdido': {label: 'Perdido', cls: 'status-perdido'}
+  };
+  return map[status] || {label: status || '—', cls: ''};
+}
+
+async function carregar() {
+  try {
+    const h = {'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Accept': 'application/json'};
+    const hoje = new Date().toISOString().split('T')[0];
+
+    const [rCRM, rCorretores] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/crm_leads?select=*,corretores(nome)&order=data_criacao.desc&limit=200', {headers: h}),
+      fetch(SUPABASE_URL + '/rest/v1/corretores?select=*', {headers: h})
+    ]);
+
+    const crm = rCRM.ok ? await rCRM.json() : [];
+    const corretores = rCorretores.ok ? await rCorretores.json() : [];
+    corretoresCache = Array.isArray(corretores) ? corretores : [];
+
+    if (!Array.isArray(crm)) return;
+
+    // Stats
+    const leadsHoje = crm.filter(c => c.data_criacao && c.data_criacao.startsWith(hoje));
+    const novos = crm.filter(c => c.status === 'contato' || !c.status);
+    const negociacao = crm.filter(c => c.status === 'negociacao' || c.status === 'proposta');
+    const fechadosHoje = crm.filter(c => (c.status === 'fechamento' || c.status === 'fechado') && c.data_criacao && c.data_criacao.startsWith(hoje));
+
+    document.getElementById('statHoje').textContent = leadsHoje.length;
+    document.getElementById('statNovos').textContent = novos.length;
+    document.getElementById('statNegociacao').textContent = negociacao.length;
+    document.getElementById('statFechados').textContent = fechadosHoje.length;
+
+    // Filtro de corretores (botões)
+    const filtroWrap = document.getElementById('filtroCorretor');
+    const jaTemBotoes = filtroWrap.children.length > 1;
+    if (!jaTemBotoes && corretoresCache.length) {
+      corretoresCache.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.dataset.corretor = c.id;
+        btn.textContent = c.nome.split(' ')[0];
+        btn.onclick = () => setFiltro(c.id);
+        filtroWrap.appendChild(btn);
+      });
+      document.querySelector('[data-corretor="todos"]').onclick = () => setFiltro('todos');
+    }
+
+    // Filtra dados
+    let dados = crm;
+    if (filtroAtivo !== 'todos') {
+      dados = crm.filter(c => c.corretor_id === filtroAtivo);
+    }
+
+    // Renderiza tabela
+    const tbody = document.getElementById('tabelaLeads');
+    if (!dados.length) {
+      tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">📭</div>Nenhum lead encontrado</div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = dados.slice(0, 100).map(c => {
+      const nomeCorretor = c.corretores ? c.corretores.nome : null;
+      const badgeClass = nomeCorretor ? 'corretor-badge' : 'corretor-badge novo';
+      const badgeText = nomeCorretor ? nomeCorretor.split(' ')[0] : 'Não atribuído';
+      const st = statusInfo(c.status);
+      return `<tr>
+        <td>
+          <div class="cliente-nome">${c.empresa || c.nome_cliente || 'Sem nome'}</div>
+          ${c.telefone ? `<div class="cliente-empresa">${c.telefone}</div>` : ''}
+        </td>
+        <td><span class="${badgeClass}">${badgeText}</span></td>
+        <td><span class="status-pill ${st.cls}">${st.label}</span></td>
+        <td class="hora">${fmtHora(c.data_criacao)}</td>
+      </tr>`;
+    }).join('');
+
+  } catch(e) {
+    console.error('Erro ao carregar distribuição:', e);
+  }
+}
+
+function setFiltro(corretorId) {
+  filtroAtivo = corretorId;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-corretor="${corretorId}"]`).classList.add('active');
+  carregar();
+}
+
+carregar();
+setInterval(carregar, 5000);
+</script>
+</body>
+</html>
